@@ -54,6 +54,8 @@ class ServerAlertNotification extends Notification implements ShouldQueue
             str_starts_with($this->key, 'redis:replication:') => __(':server: Redis replication is down', ['server' => $this->serverName]),
             str_starts_with($this->key, 'redis:persistence:') => __(':server: Redis cannot save to disk', ['server' => $this->serverName]),
             str_starts_with($this->key, 'redis:cluster:') => __(':server: Redis cluster is not healthy', ['server' => $this->serverName]),
+            $this->type === AlertType::Anomaly && str_starts_with($this->key, 'forecast:disk:') => __(':server: disk will be full soon', ['server' => $this->serverName]),
+            $this->type === AlertType::Anomaly => __(':server: unusual behaviour', ['server' => $this->serverName]),
             $this->key === 'cpu' => __(':server: high CPU usage', ['server' => $this->serverName]),
             $this->key === 'ram' => __(':server: high memory usage', ['server' => $this->serverName]),
             default => __(':server: disk is almost full', ['server' => $this->serverName]),
@@ -81,9 +83,23 @@ class ServerAlertNotification extends Notification implements ShouldQueue
             str_starts_with($this->key, 'redis:replication:') => __('Redis on port :port lost the connection to its master.', ['port' => $context['port'] ?? '?']),
             str_starts_with($this->key, 'redis:persistence:') => __('The last save of Redis on port :port to disk failed.', ['port' => $context['port'] ?? '?']),
             str_starts_with($this->key, 'redis:cluster:') => __('The state of the Redis cluster on port :port is :state.', ['port' => $context['port'] ?? '?', 'state' => $context['state'] ?? '?']),
+            $this->type === AlertType::Anomaly && str_starts_with($this->key, 'forecast:disk:') => __('Disk :mount will be full in about :days days at the current pace.', ['mount' => $context['mount'] ?? '?', 'days' => $context['days'] ?? '?']),
+            $this->type === AlertType::Anomaly => __(':metric is :value, normally :normal.', ['metric' => $this->metricLabel((string) ($context['metric'] ?? '')), 'value' => $context['value'] ?? '?', 'normal' => $context['normal'] ?? '?']),
             $this->key === 'cpu' => __('CPU usage is :value% (limit :limit%).', ['value' => $context['value'] ?? '?', 'limit' => $context['limit'] ?? '?']),
             $this->key === 'ram' => __('Memory usage is :value% (limit :limit%).', ['value' => $context['value'] ?? '?', 'limit' => $context['limit'] ?? '?']),
             default => __('Disk :mount is :value% full (limit :limit%).', ['mount' => $context['mount'] ?? '?', 'value' => $context['value'] ?? '?', 'limit' => $context['limit'] ?? '?']),
+        };
+    }
+
+    private function metricLabel(string $metric): string
+    {
+        return match ($metric) {
+            'cpu' => __('CPU usage (%)'),
+            'ram' => __('Memory usage (%)'),
+            'load' => __('Load per core'),
+            'net_rx' => __('Incoming traffic (B/s)'),
+            'net_tx' => __('Outgoing traffic (B/s)'),
+            default => $metric,
         };
     }
 

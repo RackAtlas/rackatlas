@@ -1526,5 +1526,22 @@
     "Firebase credentials on the server": "Firebase prihlasovacie údaje na serveri",
     "Registered Android apps": "Zaregistrované Android appky",
     "Turn on notifications?": "Zapnúť notifikácie?",
-    "Get critical server alerts on this phone, even when the screen is off.": "Dostávajte kritické upozornenia zo serverov na tento telefón, aj keď je obrazovka vypnutá."
+    "Get critical server alerts on this phone, even when the screen is off.": "Dostávajte kritické upozornenia zo serverov na tento telefón, aj keď je obrazovka vypnutá.",
+    "Android app": "Android aplikácia",
+    "Download APK": "Stiahnuť APK",
+    "Download Android app": "Stiahnuť Android aplikáciu",
+    "Watch around the clock": "Sledovať nonstop",
+    "Compares this server with its own normal behaviour as soon as data arrives, warns about unusual changes and disks that will fill up, and explains problems with the local model.": "Porovnáva tento server s jeho vlastným bežným správaním hneď ako prídu dáta, upozorní na nezvyčajné zmeny a disky, ktoré sa zaplnia, a problémy vysvetlí lokálnym modelom.",
+    "Watched around the clock": "Sledovaný nonstop",
+    "Disk :mount will be full in about :days days": "Disk :mount sa zaplní asi o :days dní",
+    "Unusual behaviour: :metric": "Nezvyčajné správanie: :metric",
+    ":server: disk will be full soon": ":server: disk sa čoskoro zaplní",
+    ":server: unusual behaviour": ":server: nezvyčajné správanie",
+    "Disk :mount will be full in about :days days at the current pace.": "Disk :mount sa pri súčasnom tempe zaplní asi o :days dní.",
+    ":metric is :value, normally :normal.": ":metric je :value, bežne :normal.",
+    "CPU usage (%)": "Využitie CPU (%)",
+    "Memory usage (%)": "Využitie pamäte (%)",
+    "Load per core": "Záťaž na jadro",
+    "Incoming traffic (B/s)": "Prichádzajúci prenos (B/s)",
+    "Outgoing traffic (B/s)": "Odchádzajúci prenos (B/s)"
 }

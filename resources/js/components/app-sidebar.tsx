@@ -14,6 +14,7 @@ import {
     Shield,
     SquareTerminal,
 } from 'lucide-react';
+import { AndroidAppCard } from '@/components/android-app-card';
 import AppLogo from '@/components/app-logo';
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
@@ -163,6 +164,7 @@ export function AppSidebar() {
             </SidebarContent>
 
             <SidebarFooter className="gap-2 p-3">
+                <AndroidAppCard />
                 <NavUser />
                 <p className="px-2 text-center text-xs text-muted-foreground/70 group-data-[collapsible=icon]:hidden">
                     v{__APP_VERSION__}

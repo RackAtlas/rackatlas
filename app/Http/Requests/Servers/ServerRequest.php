@@ -64,6 +64,7 @@ class ServerRequest extends FormRequest
             'server_category_id' => ['nullable', Rule::exists('server_categories', 'id')->where('team_id', $team->id)],
             'new_category' => ['nullable', 'string', 'max:100'],
             'in_maintenance' => ['nullable', 'boolean'],
+            'watch_enabled' => ['nullable', 'boolean'],
             'ignored_alerts' => ['nullable', 'array'],
             'ignored_alerts.*' => ['string', Rule::in(Server::IGNORABLE_ALERTS)],
             'auth_type' => [$isDatabase ? 'nullable' : 'required', Rule::enum(ServerAuthType::class)],

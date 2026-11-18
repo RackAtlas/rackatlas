@@ -42,3 +42,4 @@ yarn-error.log
 /opencode.json
 /opencode.jsonc
 test
+public/apps/*

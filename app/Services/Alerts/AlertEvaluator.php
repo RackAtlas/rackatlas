@@ -5,9 +5,12 @@ namespace App\Services\Alerts;
 use App\Console\Commands\CheckAgentsCommand;
 use App\Enums\AlertType;
 use App\Enums\ServerStatus;
+use App\Jobs\ExplainAlert;
 use App\Models\NotificationPreference;
 use App\Models\Server;
 use App\Notifications\ServerAlertNotification;
+use App\Services\Watch\BaselineDetector;
+use App\Services\Watch\LocalLlm;
 use App\Support\DashboardSettings;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
@@ -37,6 +40,11 @@ class AlertEvaluator
 
     /** A reading older than this is no longer proof that a database or Redis problem is gone. */
     private const FRESH_MINUTES = 5;
+
+    public function __construct(
+        private readonly BaselineDetector $baseline,
+        private readonly LocalLlm $llm,
+    ) {}
 
     /**
      * Compare the current state of the server with its open alerts. Safe to call as often
@@ -103,12 +111,17 @@ class AlertEvaluator
                 continue;
             }
 
-            $server->alerts()->create([
+            $alert = $server->alerts()->create([
                 'type' => $type,
                 'key' => $key,
                 'context' => $context,
                 'opened_at' => now(),
             ]);
+
+            // A watched server gets a short explanation from the local model, which arrives later on its own queue.
+            if ($server->watch_enabled && $type !== AlertType::Offline && $this->llm->enabled()) {
+                ExplainAlert::dispatch($alert->id)->afterCommit();
+            }
 
             $this->notify($server, $type, $key, $context, false);
         }
@@ -194,7 +207,9 @@ class AlertEvaluator
             $found['unit:'.$unit] = [AlertType::Service, ['unit' => $unit]];
         }
 
-        return $found + $this->detectDatabase($server, $openKeys) + $this->detectRedis($server, $openKeys);
+        $watched = $server->watch_enabled ? $this->baseline->detect($server, $openKeys) : [];
+
+        return $found + $watched + $this->detectDatabase($server, $openKeys) + $this->detectRedis($server, $openKeys);
     }
 
     /**
@@ -303,6 +318,12 @@ class AlertEvaluator
         return match (true) {
             str_starts_with($key, 'disk:') => 'disk',
             str_starts_with($key, 'unit:') => 'services',
+            str_starts_with($key, 'forecast:disk:') => 'disk',
+            str_starts_with($key, 'anomaly:') => match ($key) {
+                'anomaly:cpu', 'anomaly:load' => 'cpu',
+                'anomaly:ram' => 'ram',
+                default => 'net',
+            },
             default => $key,
         };
     }

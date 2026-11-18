@@ -104,6 +104,7 @@ class ServerController extends Controller
                 'failed_units' => $server->failed_units ?? [],
                 'ignored_alerts' => $server->ignored_alerts ?? [],
                 'in_maintenance' => $server->in_maintenance,
+                'watch_enabled' => $server->watch_enabled,
                 'system_info' => $server->system_info,
                 'created_at' => $server->created_at?->toIso8601String(),
                 'last_checked_at' => $server->last_checked_at?->toIso8601String(),
@@ -189,7 +190,7 @@ class ServerController extends Controller
     {
         $team = $request->team();
 
-        $server = $team->servers()->create([...$this->attributes($request, $team), 'in_maintenance' => $request->boolean('in_maintenance')]);
+        $server = $team->servers()->create([...$this->attributes($request, $team), 'in_maintenance' => $request->boolean('in_maintenance'), 'watch_enabled' => $request->boolean('watch_enabled')]);
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Server added.')]);
 
@@ -223,6 +224,7 @@ class ServerController extends Controller
                 'ssh_host_fingerprint' => $server->ssh_host_fingerprint,
                 'ignored_alerts' => $server->ignored_alerts ?? [],
                 'in_maintenance' => $server->in_maintenance,
+                'watch_enabled' => $server->watch_enabled,
             ],
         ]);
     }
@@ -251,6 +253,7 @@ class ServerController extends Controller
         // The type is fixed once the server exists.
         unset($attributes['type']);
         $attributes['in_maintenance'] = $request->boolean('in_maintenance');
+        $attributes['watch_enabled'] = $request->boolean('watch_enabled');
 
         if ($attributes['auth_type'] === ServerAuthType::Password->value && empty($attributes['password'])) {
             unset($attributes['password']);

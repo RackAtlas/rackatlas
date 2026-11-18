@@ -59,6 +59,7 @@ type Props = {
             | null;
         system_info: SystemInfo | null;
         in_maintenance: boolean;
+        watch_enabled: boolean;
         ssh_key_name: string | null;
         ssh_host_fingerprint: string | null;
         agent_version: string | null;
@@ -154,6 +155,19 @@ export default function ServerShow({
 
         if (alert.key === 'ram') {
             return t('High memory usage');
+        }
+
+        if (alert.key.startsWith('forecast:disk:')) {
+            return t('Disk :mount will be full in about :days days', {
+                mount: alert.key.slice(14),
+                days: String(alert.context?.days ?? '?'),
+            });
+        }
+
+        if (alert.type === 'anomaly') {
+            return t('Unusual behaviour: :metric', {
+                metric: String(alert.context?.metric ?? alert.key),
+            });
         }
 
         if (alert.key.startsWith('disk:')) {
@@ -390,6 +404,9 @@ export default function ServerShow({
                         <Field label={t('Maintenance')}>
                             {server.in_maintenance ? t('On') : t('Off')}
                         </Field>
+                        <Field label={t('Watched around the clock')}>
+                            {server.watch_enabled ? t('On') : t('Off')}
+                        </Field>
                         <Field label={t('Ignore warnings about')}>
                             {server.ignored_alerts.length > 0
                                 ? server.ignored_alerts
@@ -508,6 +525,12 @@ export default function ServerShow({
                                     className="flex flex-wrap items-baseline justify-between gap-x-3 px-4 py-2.5 text-sm"
                                 >
                                     <span>{alertLabel(alert)}</span>
+                                    {typeof alert.context?.summary ===
+                                        'string' && (
+                                        <span className="order-last mt-1.5 w-full whitespace-pre-line rounded-md bg-muted/50 p-2 text-xs text-muted-foreground">
+                                            {alert.context.summary}
+                                        </span>
+                                    )}
                                     <span className="text-xs text-muted-foreground">
                                         {alert.resolved_at
                                             ? t('Resolved :time', {

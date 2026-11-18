@@ -42,13 +42,14 @@ use Spatie\Activitylog\Support\LogOptions;
  * @property string|null $agent_version
  * @property array<int, string>|null $failed_units
  * @property array<int, string>|null $ignored_alerts
+ * @property bool $watch_enabled Whether the server is compared with its own normal behaviour around the clock
  * @property bool $in_maintenance While true the server raises no alerts and sends no notifications
  * @property array<string, string|int|bool>|null $system_info Facts the agent reports: OS, kernel, CPU model, pending updates
  * @property ServerStatus $status
  * @property Carbon|null $last_checked_at
  * @property Carbon|null $last_seen_at
  */
-#[Fillable(['team_id', 'type', 'server_category_id', 'name', 'provider', 'country', 'host', 'port', 'username', 'auth_type', 'uses_agent', 'agent_terminal', 'has_docker', 'password', 'ssh_key_id', 'ignored_alerts', 'in_maintenance'])]
+#[Fillable(['team_id', 'type', 'server_category_id', 'name', 'provider', 'country', 'host', 'port', 'username', 'auth_type', 'uses_agent', 'agent_terminal', 'has_docker', 'password', 'ssh_key_id', 'ignored_alerts', 'in_maintenance', 'watch_enabled'])]
 #[Hidden(['password', 'agent_token_hash'])]
 class Server extends Model
 {
@@ -80,6 +81,7 @@ class Server extends Model
             'failed_units' => 'array',
             'ignored_alerts' => 'array',
             'in_maintenance' => 'boolean',
+            'watch_enabled' => 'boolean',
             'system_info' => 'array',
         ];
     }
@@ -140,6 +142,17 @@ class Server extends Model
     public function canOpenTerminal(): bool
     {
         return $this->hasSshAccess() || $this->opensTerminalViaAgent();
+    }
+
+    /**
+     * Servers that are watched around the clock.
+     *
+     * @param  Builder<Server>  $query
+     */
+    #[Scope]
+    protected function watched(Builder $query): void
+    {
+        $query->where('watch_enabled', true)->where('in_maintenance', false);
     }
 
     /**
@@ -282,7 +295,7 @@ class Server extends Model
     {
         return LogOptions::defaults()
             ->useLogName('server')
-            ->logOnly(['type', 'name', 'provider', 'country', 'host', 'port', 'username', 'auth_type', 'uses_agent', 'agent_terminal', 'server_category_id', 'ssh_key_id', 'team_id', 'ignored_alerts', 'in_maintenance'])
+            ->logOnly(['type', 'name', 'provider', 'country', 'host', 'port', 'username', 'auth_type', 'uses_agent', 'agent_terminal', 'server_category_id', 'ssh_key_id', 'team_id', 'ignored_alerts', 'in_maintenance', 'watch_enabled'])
             ->logOnlyDirty()
             ->dontLogEmptyChanges();
     }

@@ -31,7 +31,7 @@ export type MetricsDiskPoint = {
 
 export type MetricsIncident = {
     id: number;
-    type: 'offline' | 'resource' | 'service' | 'log';
+    type: 'offline' | 'resource' | 'service' | 'log' | 'anomaly';
     key: string;
     context: Record<string, string | number> | null;
     opened_at: string;

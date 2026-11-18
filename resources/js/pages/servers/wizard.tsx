@@ -76,6 +76,7 @@ const stepFields: Record<number, string[]> = {
         'new_category',
         'ignored_alerts',
         'in_maintenance',
+        'watch_enabled',
         'has_docker',
     ],
     1: [
@@ -129,6 +130,7 @@ export default function ServerWizard({
         ssh_key_id: server?.ssh_key_id ? String(server.ssh_key_id) : '',
         ignored_alerts: server?.ignored_alerts ?? ([] as string[]),
         in_maintenance: server?.in_maintenance ?? false,
+        watch_enabled: server?.watch_enabled ?? false,
         has_docker: server?.has_docker ?? false,
     });
 
@@ -597,6 +599,30 @@ export default function ServerWizard({
                                     <span className="block text-muted-foreground">
                                         {t(
                                             'While on, this server raises no warnings and sends no notifications.',
+                                        )}
+                                    </span>
+                                </span>
+                            </label>
+
+                            <label className="flex cursor-pointer items-start gap-2 text-sm">
+                                <Checkbox
+                                    checked={form.data.watch_enabled}
+                                    onCheckedChange={(checked) =>
+                                        form.setData(
+                                            'watch_enabled',
+                                            checked === true,
+                                        )
+                                    }
+                                    className="mt-0.5"
+                                    data-test="watch-enabled"
+                                />
+                                <span>
+                                    <span className="font-medium">
+                                        {t('Watch around the clock')}
+                                    </span>
+                                    <span className="block text-muted-foreground">
+                                        {t(
+                                            'Compares this server with its own normal behaviour as soon as data arrives, warns about unusual changes and disks that will fill up, and explains problems with the local model.',
                                         )}
                                     </span>
                                 </span>
