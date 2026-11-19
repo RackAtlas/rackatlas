@@ -336,6 +336,7 @@ class AlertEvaluator
         $notification = new ServerAlertNotification($server->name, $type, $key, $context, $resolved);
 
         $server->team->members()->with('notificationPreference')->get()
+            ->reject(fn ($user) => $user->is_demo)
             ->filter(fn ($user) => NotificationPreference::for($user)->wants($type, $resolved) && $notification->via($user) !== [])
             ->each(fn ($user) => $user->notify($notification));
 

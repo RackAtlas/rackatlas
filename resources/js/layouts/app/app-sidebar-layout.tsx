@@ -1,3 +1,4 @@
+import { DemoBanner } from '@/components/demo-banner';
 import { AppContent } from '@/components/app-content';
 import { AppShell } from '@/components/app-shell';
 import { AppSidebar } from '@/components/app-sidebar';
@@ -18,6 +19,7 @@ export default function AppSidebarLayout({
                 variant="sidebar"
                 className="min-w-0 overflow-x-clip pb-[calc(3.5rem+env(safe-area-inset-bottom))] native:pb-[calc(6rem+env(safe-area-inset-bottom))] md:pb-0"
             >
+                <DemoBanner />
                 <AppSidebarHeader breadcrumbs={breadcrumbs} />
                 {children}
             </AppContent>

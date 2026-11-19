@@ -380,6 +380,87 @@ privacyForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => 
 privacy.form = privacyForm
 
 /**
+* @see \App\Http\Controllers\DemoController::__invoke
+* @see app/Http/Controllers/DemoController.php:15
+* @route '/demo'
+*/
+export const demo = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: demo.url(options),
+    method: 'get',
+})
+
+demo.definition = {
+    methods: ["get","head"],
+    url: '/demo',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\DemoController::__invoke
+* @see app/Http/Controllers/DemoController.php:15
+* @route '/demo'
+*/
+demo.url = (options?: RouteQueryOptions) => {
+    return demo.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\DemoController::__invoke
+* @see app/Http/Controllers/DemoController.php:15
+* @route '/demo'
+*/
+demo.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: demo.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\DemoController::__invoke
+* @see app/Http/Controllers/DemoController.php:15
+* @route '/demo'
+*/
+demo.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: demo.url(options),
+    method: 'head',
+})
+
+/**
+* @see \App\Http\Controllers\DemoController::__invoke
+* @see app/Http/Controllers/DemoController.php:15
+* @route '/demo'
+*/
+const demoForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: demo.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\DemoController::__invoke
+* @see app/Http/Controllers/DemoController.php:15
+* @route '/demo'
+*/
+demoForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: demo.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\DemoController::__invoke
+* @see app/Http/Controllers/DemoController.php:15
+* @route '/demo'
+*/
+demoForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: demo.url({
+        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+            _method: 'HEAD',
+            ...(options?.query ?? options?.mergeQuery ?? {}),
+        }
+    }),
+    method: 'get',
+})
+
+demo.form = demoForm
+
+/**
 * @see \App\Http\Controllers\ApiDocsController::__invoke
 * @see app/Http/Controllers/ApiDocsController.php:16
 * @route '/api-docs'

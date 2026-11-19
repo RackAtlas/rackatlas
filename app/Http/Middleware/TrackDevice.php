@@ -33,7 +33,8 @@ class TrackDevice
     {
         $user = $request->user();
 
-        if ($user === null) {
+        // The shared demo account is signed in by many visitors, there are no devices to remember.
+        if ($user === null || $user->is_demo) {
             return $next($request);
         }
 

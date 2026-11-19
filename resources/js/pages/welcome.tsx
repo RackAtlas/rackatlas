@@ -6,7 +6,7 @@ import { TurnstileField, useTurnstile } from '@/hooks/use-turnstile';
 import { openCookieSettings } from '@/hooks/use-privacy-choices';
 import { useTranslation } from '@/hooks/use-translation';
 import { cn } from '@/lib/utils';
-import { dashboard, login, register } from '@/routes';
+import { dashboard, demo, login, register } from '@/routes';
 import { store as feedbackStore } from '@/routes/feedback';
 import { localized as homeLocalized } from '@/routes/home';
 import { localized as privacyLocalized } from '@/routes/privacy';
@@ -402,6 +402,13 @@ export default function Welcome({ canRegister, faq }: Props) {
                                 </Link>
                             ) : (
                                 <>
+                                    <a
+                                        href={demo.url()}
+                                        data-test="demo-link-header"
+                                        className="hidden rounded-full px-3 py-2 font-medium whitespace-nowrap text-[var(--l-body)] hover:text-[var(--l-ink)] sm:inline-block sm:px-4"
+                                    >
+                                        {t('Try the demo')}
+                                    </a>
                                     <Link
                                         href={login()}
                                         className="rounded-full px-3 py-2 font-medium whitespace-nowrap text-[var(--l-body)] hover:text-[var(--l-ink)] sm:px-4"
@@ -467,6 +474,18 @@ export default function Welcome({ canRegister, faq }: Props) {
                                         {t('Create account')}
                                     </Link>
                                 )
+                            )}
+                            {!signedIn && (
+                                <a
+                                    href={demo.url()}
+                                    data-test="demo-link-hero"
+                                    className={cn(
+                                        primary,
+                                        'border border-[var(--l-border)] bg-[var(--l-card)] hover:border-[var(--l-muted)]',
+                                    )}
+                                >
+                                    {t('Try the demo')}
+                                </a>
                             )}
                             <a
                                 href="#how"
@@ -1038,6 +1057,16 @@ export default function Welcome({ canRegister, faq }: Props) {
                                             {t('Create account')}
                                         </Link>
                                     )}
+                                    <a
+                                        href={demo.url()}
+                                        data-test="demo-link-footer"
+                                        className={cn(
+                                            primary,
+                                            'border border-white/25 text-white hover:border-white/60',
+                                        )}
+                                    >
+                                        {t('Try the demo')}
+                                    </a>
                                     <Link
                                         href={login()}
                                         className={cn(

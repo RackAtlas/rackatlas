@@ -1,6 +1,7 @@
 import Api from './Api'
 import HomeController from './HomeController'
 import PrivacyController from './PrivacyController'
+import DemoController from './DemoController'
 import ApiDocsController from './ApiDocsController'
 import FeedbackController from './FeedbackController'
 import CrawlerController from './CrawlerController'
@@ -24,6 +25,7 @@ const Controllers = {
     Api: Object.assign(Api, Api),
     HomeController: Object.assign(HomeController, HomeController),
     PrivacyController: Object.assign(PrivacyController, PrivacyController),
+    DemoController: Object.assign(DemoController, DemoController),
     ApiDocsController: Object.assign(ApiDocsController, ApiDocsController),
     FeedbackController: Object.assign(FeedbackController, FeedbackController),
     CrawlerController: Object.assign(CrawlerController, CrawlerController),

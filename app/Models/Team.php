@@ -102,6 +102,11 @@ class Team extends Model
             return array_map(fn () => PermissionLevel::None, TeamPermission::defaults());
         }
 
+        // The demo account only looks around, whatever its role says.
+        if ($user->is_demo) {
+            return TeamPermission::defaults();
+        }
+
         if (TeamRole::from($member->pivot->role)->canManage()) {
             return array_map(fn () => PermissionLevel::Edit, TeamPermission::defaults());
         }

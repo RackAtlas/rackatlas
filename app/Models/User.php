@@ -28,6 +28,7 @@ use Spatie\Activitylog\Support\LogOptions;
  * @property string|null $locale
  * @property Carbon|null $email_verified_at
  * @property bool $is_admin
+ * @property bool $is_demo The shared read-only account behind the demo button
  * @property string $password
  * @property bool $password_login_enabled
  * @property bool $two_factor_required
@@ -57,6 +58,7 @@ class User extends Authenticatable implements HasLocalePreference, MustVerifyEma
         return [
             'email_verified_at' => 'datetime',
             'is_admin' => 'boolean',
+            'is_demo' => 'boolean',
             'password_login_enabled' => 'boolean',
             'two_factor_required' => 'boolean',
             'password' => 'hashed',

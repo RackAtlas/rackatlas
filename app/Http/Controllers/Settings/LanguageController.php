@@ -32,7 +32,10 @@ class LanguageController extends Controller
 
         app()->setLocale($validated['locale']);
 
-        $request->user()?->forceFill(['locale' => $validated['locale']])->save();
+        // The demo account is shared by every visitor, so its language is not stored.
+        if (! $request->user()?->is_demo) {
+            $request->user()?->forceFill(['locale' => $validated['locale']])->save();
+        }
 
         if (! $request->boolean('silent')) {
             Inertia::flash('toast', ['type' => 'success', 'message' => __('Language updated.')]);

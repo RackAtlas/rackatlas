@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\BlockDemoChanges;
 use App\Http\Middleware\EnsureApiScope;
 use App\Http\Middleware\EnsureTeamPermission;
 use App\Http\Middleware\HandleAppearance;
@@ -52,6 +53,7 @@ return Application::configure(basePath: dirname(__DIR__))
             SetLocale::class,
             TrackDevice::class,
             RequireTwoFactor::class,
+            BlockDemoChanges::class,
             RememberMobileLogin::class,
             NoIndexPrivatePages::class,
             VerifyTurnstile::class,

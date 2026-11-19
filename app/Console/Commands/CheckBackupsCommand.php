@@ -30,6 +30,7 @@ class CheckBackupsCommand extends Command
                     $notification = new BackupOverdueNotification($backup->id, $backup->name, $backup->expected_interval_hours);
 
                     $backup->team->members
+                        ->reject(fn ($user) => $user->is_demo)
                         ->filter(fn ($user) => $notification->via($user) !== [])
                         ->each(fn ($user) => $user->notify($notification));
 

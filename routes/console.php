@@ -18,6 +18,7 @@ Schedule::command('redis:collect-metrics')->everyMinute()->withoutOverlapping(5)
 Schedule::command('docker:collect')->everyMinute()->withoutOverlapping(5)->runInBackground();
 Schedule::command('servers:check-agents')->everyMinute()->withoutOverlapping(2)->runInBackground();
 Schedule::command('servers:evaluate-alerts')->everyMinute()->withoutOverlapping(2)->runInBackground();
+Schedule::command('demo:refresh')->everyMinute()->withoutOverlapping(2)->runInBackground();
 Schedule::command('backups:check')->everyFiveMinutes()->withoutOverlapping(5)->runInBackground();
 Schedule::command('cloudflare:refresh-ips')->dailyAt('03:10');
 Schedule::command('servers:thin-processes')->dailyAt('03:30');

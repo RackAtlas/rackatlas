@@ -11,6 +11,7 @@ use App\Http\Controllers\CurrentTeamController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DatabaseController;
 use App\Http\Controllers\DatabaseProcessController;
+use App\Http\Controllers\DemoController;
 use App\Http\Controllers\DockerController;
 use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\FeedbackController;
@@ -32,6 +33,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', HomeController::class)->name('home');
 Route::get('privacy', PrivacyController::class)->name('privacy');
+Route::get('demo', DemoController::class)->middleware('throttle:20,1')->name('demo');
 Route::get('api-docs', ApiDocsController::class)->name('api-docs');
 Route::post('feedback', [FeedbackController::class, 'store'])->middleware('throttle:5,60')->name('feedback.store');
 

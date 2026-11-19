@@ -1551,5 +1551,10 @@
     "Analyzing…": "Analyzujem…",
     "The local AI model is switched off.": "Lokálny AI model je vypnutý.",
     "Show :count more": "Zobraziť ďalšie (:count)",
-    "The servers of your team and how they are connected": "Servery vášho tímu a ako sú pripojené"
+    "The servers of your team and how they are connected": "Servery vášho tímu a ako sú pripojené",
+    "Try the demo": "Vyskúšať demo",
+    "Demo mode": "Demo režim",
+    "You are looking at made-up servers. Nothing can be changed.": "Pozeráš sa na vymyslené servery. Nič sa tu nedá meniť.",
+    "This is only a demo, nothing can be added, changed or deleted. Create an account to try it for real.": "Toto je iba demo, nič sa tu nedá pridať, upraviť ani vymazať. Vytvor si účet a vyskúšaj to naozaj.",
+    "Exit demo": "Ukončiť demo"
 }
