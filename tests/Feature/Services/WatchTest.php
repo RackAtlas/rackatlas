@@ -6,6 +6,7 @@ use App\Enums\AlertType;
 use App\Enums\ServerAuthType;
 use App\Enums\ServerStatus;
 use App\Jobs\ExplainAlert;
+use App\Jobs\ExplainLog;
 use App\Models\Server;
 use App\Models\Team;
 use App\Services\Alerts\AlertEvaluator;
@@ -269,5 +270,42 @@ class WatchTest extends TestCase
         ]);
 
         $this->assertSame([], $this->openKeys($server));
+    }
+
+    public function test_a_new_log_entry_of_a_watched_server_is_explained_by_the_local_model(): void
+    {
+        Queue::fake();
+        config(['watch.llm.enabled' => true]);
+
+        $server = $this->server(true, 10);
+        $log = $server->logs()->create(['level' => 'error', 'source' => 'nginx', 'message' => 'upstream timed out', 'count' => 1, 'occurred_at' => now()]);
+
+        Queue::assertPushed(ExplainLog::class, fn (ExplainLog $job) => $job->logId === $log->id);
+    }
+
+    public function test_log_entries_of_a_server_that_is_not_watched_are_not_sent_to_the_model(): void
+    {
+        Queue::fake();
+        config(['watch.llm.enabled' => true]);
+
+        $this->server(false, 10)->logs()->create(['level' => 'error', 'source' => 'nginx', 'message' => 'x', 'count' => 1, 'occurred_at' => now()]);
+
+        Queue::assertNothingPushed();
+    }
+
+    public function test_the_answer_of_the_model_is_stored_with_the_log_entry(): void
+    {
+        config(['watch.llm.enabled' => true, 'watch.llm.model' => 'test-model']);
+        Http::fake(['*/api/chat' => Http::response(['message' => ['content' => 'Treba skontrolovať. Nginx nestíha.']])]);
+        Queue::fake();
+
+        $server = $this->server(true, 10);
+        $log = $server->logs()->create(['level' => 'error', 'source' => 'nginx', 'message' => 'upstream timed out', 'count' => 1, 'occurred_at' => now()]);
+
+        app()->call([new ExplainLog($log->id), 'handle']);
+
+        $this->assertSame('Treba skontrolovať. Nginx nestíha.', $log->fresh()->ai_summary);
+        $this->assertSame('test-model', $log->fresh()->ai_model);
+        Http::assertSent(fn ($request) => str_contains(json_encode($request->data()), 'upstream timed out'));
     }
 }

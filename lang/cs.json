@@ -1543,5 +1543,7 @@
     "Memory usage (%)": "Využití paměti (%)",
     "Load per core": "Zátěž na jádro",
     "Incoming traffic (B/s)": "Příchozí přenos (B/s)",
-    "Outgoing traffic (B/s)": "Odchozí přenos (B/s)"
+    "Outgoing traffic (B/s)": "Odchozí přenos (B/s)",
+    "AI analysis": "AI analýza",
+    "Written by the local model :model. It can be wrong, check the message above.": "Napsal lokální model :model. Může se mýlit, zkontrolujte zprávu výše."
 }

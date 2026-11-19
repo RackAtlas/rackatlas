@@ -54,6 +54,8 @@ class LogController extends Controller
                 'level' => $log->level,
                 'source' => $log->source,
                 'message' => $log->message,
+                'ai_summary' => $log->ai_summary,
+                'ai_model' => $log->ai_model,
                 'count' => $log->count,
                 'occurred_at' => $log->occurred_at->toIso8601String(),
                 'resolved_at' => $log->resolved_at?->toIso8601String(),

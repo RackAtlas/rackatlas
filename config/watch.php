@@ -35,6 +35,8 @@ return [
         'model' => env('WATCH_LLM_MODEL', 'qwen3:8b'),
         'timeout' => (int) env('WATCH_LLM_TIMEOUT', 240),
         'keep_alive' => env('WATCH_LLM_KEEP_ALIVE', '30m'),
+        // Also look at every new error and critical log entry of a watched server.
+        'logs' => (bool) env('WATCH_LLM_LOGS', true),
         'language' => env('WATCH_LLM_LANGUAGE', 'Slovak'),
         'queue' => env('WATCH_LLM_QUEUE', 'llm'),
     ],

@@ -1,5 +1,12 @@
 import { Head, Link, router } from '@inertiajs/react';
-import { Check, CheckCheck, Copy, RotateCcw, ScrollText } from 'lucide-react';
+import {
+    Check,
+    CheckCheck,
+    Copy,
+    RotateCcw,
+    ScrollText,
+    Sparkles,
+} from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import LogController from '@/actions/App/Http/Controllers/Servers/LogController';
@@ -23,6 +30,8 @@ import type { DashboardLog } from '@/types';
 type LogEntry = DashboardLog & {
     resolved_at: string | null;
     resolved_by: string | null;
+    ai_summary: string | null;
+    ai_model: string | null;
 };
 
 type Props = {
@@ -102,6 +111,23 @@ function LogDetail({
                     {log.message}
                 </pre>
             </div>
+
+            {log.ai_summary && (
+                <div className="space-y-2" data-test="log-ai-summary">
+                    <h3 className="flex items-center gap-1.5 text-xs font-medium tracking-wide text-muted-foreground uppercase">
+                        <Sparkles className="size-3.5" />
+                        {t('AI analysis')}
+                    </h3>
+                    <p className="rounded-lg border bg-muted/30 p-4 text-sm leading-relaxed whitespace-pre-line">
+                        {log.ai_summary}
+                    </p>
+                    {log.ai_model && (
+                        <p className="text-xs text-muted-foreground">
+                            {t('Written by the local model :model. It can be wrong, check the message above.', { model: log.ai_model })}
+                        </p>
+                    )}
+                </div>
+            )}
 
             <dl className="grid grid-cols-2 gap-x-6 gap-y-5 text-sm">
                 <div>
@@ -399,8 +425,16 @@ export default function Logs({
                                             />
                                             <span className="min-w-0 flex-1 space-y-2">
                                                 <span className="flex items-baseline justify-between gap-3">
-                                                    <span className="truncate font-medium">
-                                                        {log.server_name}
+                                                    <span className="flex min-w-0 items-center gap-1.5">
+                                                        <span className="truncate font-medium">
+                                                            {log.server_name}
+                                                        </span>
+                                                        {log.ai_summary && (
+                                                            <Sparkles
+                                                                className="size-3.5 shrink-0 text-muted-foreground"
+                                                                aria-label={t('AI analysis')}
+                                                            />
+                                                        )}
                                                     </span>
                                                     <span className="shrink-0 text-xs text-muted-foreground">
                                                         {timeAgo(

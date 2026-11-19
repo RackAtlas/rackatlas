@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Jobs\ExplainLog;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -15,12 +16,14 @@ use Illuminate\Support\Carbon;
  * @property string $level
  * @property string $source
  * @property string $message
+ * @property string|null $ai_summary What the local model found in the entry, empty until it answered
+ * @property string|null $ai_model
  * @property int $count
  * @property Carbon $occurred_at
  * @property Carbon|null $resolved_at
  * @property int|null $resolved_by The user who resolved it, null when it was resolved automatically
  */
-#[Fillable(['server_id', 'level', 'source', 'message', 'count', 'occurred_at', 'resolved_at', 'resolved_by'])]
+#[Fillable(['server_id', 'level', 'source', 'message', 'ai_summary', 'ai_model', 'count', 'occurred_at', 'resolved_at', 'resolved_by'])]
 class ServerLog extends Model
 {
     use Prunable;
@@ -30,6 +33,18 @@ class ServerLog extends Model
     public const LEVELS = ['critical', 'error'];
 
     public $timestamps = false;
+
+    /**
+     * A new entry on a watched server is looked at by the local model.
+     */
+    protected static function booted(): void
+    {
+        static::created(function (ServerLog $log): void {
+            if (config('watch.llm.enabled') && config('watch.llm.logs') && $log->server?->watch_enabled) {
+                ExplainLog::dispatch($log->id)->afterCommit();
+            }
+        });
+    }
 
     protected function casts(): array
     {
