@@ -9,7 +9,6 @@ import { useMemo, useState } from 'react';
 import CustomizeSheet from '@/components/dashboard/customize-sheet';
 import BackupsOverview from '@/components/dashboard/backups-overview';
 import ProblemsList from '@/components/dashboard/problems-list';
-import RecentErrors from '@/components/dashboard/recent-errors';
 import ServerOverview from '@/components/dashboard/server-overview';
 import SummaryTiles from '@/components/dashboard/summary-tiles';
 import TopLists from '@/components/dashboard/top-lists';
@@ -21,7 +20,6 @@ import { dashboard } from '@/routes';
 import { create as createServer } from '@/routes/servers';
 import { index as teamsIndex } from '@/routes/teams';
 import type {
-    DashboardError,
     DashboardHistory,
     DashboardBackup,
     DashboardServer,
@@ -36,14 +34,12 @@ type Props = {
     generated_at: string;
     servers: DashboardServer[];
     history: DashboardHistory;
-    errors: DashboardError[];
     backups: DashboardBackup[];
 };
 
 const POLLED = [
     'servers',
     'history',
-    'errors',
     'backups',
     'backupsGlance',
     'generated_at',
@@ -70,7 +66,6 @@ function DashboardContent({
     generated_at,
     servers,
     history,
-    errors,
     backups,
 }: Props & { team: NonNullable<Props['team']> }) {
     const { t, locale } = useTranslation();
@@ -110,13 +105,6 @@ function DashboardContent({
         top: <TopLists items={items} thresholds={settings.thresholds} />,
         backups: (
             <BackupsOverview backups={backups} generatedAt={generated_at} />
-        ),
-        errors: (
-            <RecentErrors
-                errors={errors}
-                generatedAt={generated_at}
-                hours={settings.errors.hours}
-            />
         ),
     };
 

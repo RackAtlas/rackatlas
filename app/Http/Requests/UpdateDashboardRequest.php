@@ -31,8 +31,6 @@ class UpdateDashboardRequest extends FormRequest
             'servers.layout' => ['sometimes', Rule::in(DashboardSettings::LAYOUTS)],
             'servers.columns' => ['sometimes', 'integer', Rule::in(DashboardSettings::COLUMNS)],
             'servers.history_minutes' => ['sometimes', 'integer', Rule::in(DashboardSettings::HISTORY_MINUTES)],
-            'errors.limit' => ['sometimes', 'integer', Rule::in(DashboardSettings::LIST_LIMITS)],
-            'errors.hours' => ['sometimes', 'integer', Rule::in(DashboardSettings::LIST_HOURS)],
             'refresh_seconds' => ['required', 'integer', Rule::in(DashboardSettings::REFRESH_SECONDS)],
         ];
 

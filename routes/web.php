@@ -51,7 +51,8 @@ Route::prefix('app')->middleware(['auth', 'verified'])->group(function () {
     Route::post('dashboard/settings/copy', [DashboardController::class, 'copy'])->name('dashboard.settings.copy');
     Route::put('current-team', [CurrentTeamController::class, 'update'])->name('current-team.update');
 
-    Route::get('servers', [ServerController::class, 'index'])->middleware('permission:servers.view')->name('servers.index');
+    Route::get('settings/servers', [ServerController::class, 'index'])->middleware('permission:servers.view')->name('servers.index');
+    Route::redirect('servers', '/app/settings/servers');
     Route::get('servers/create', [ServerController::class, 'create'])->name('servers.create');
     Route::post('servers', [ServerController::class, 'store'])->name('servers.store');
     Route::post('servers/test-connection', TestConnectionController::class)

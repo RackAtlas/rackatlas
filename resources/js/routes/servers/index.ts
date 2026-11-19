@@ -4,7 +4,7 @@ import hostKey from './host-key'
 /**
 * @see \App\Http\Controllers\Servers\ServerController::index
 * @see app/Http/Controllers/Servers/ServerController.php:28
-* @route '/app/servers'
+* @route '/app/settings/servers'
 */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: index.url(options),
@@ -13,13 +13,13 @@ export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 index.definition = {
     methods: ["get","head"],
-    url: '/app/servers',
+    url: '/app/settings/servers',
 } satisfies RouteDefinition<["get","head"]>
 
 /**
 * @see \App\Http\Controllers\Servers\ServerController::index
 * @see app/Http/Controllers/Servers/ServerController.php:28
-* @route '/app/servers'
+* @route '/app/settings/servers'
 */
 index.url = (options?: RouteQueryOptions) => {
     return index.definition.url + queryParams(options)
@@ -28,7 +28,7 @@ index.url = (options?: RouteQueryOptions) => {
 /**
 * @see \App\Http\Controllers\Servers\ServerController::index
 * @see app/Http/Controllers/Servers/ServerController.php:28
-* @route '/app/servers'
+* @route '/app/settings/servers'
 */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: index.url(options),
@@ -38,7 +38,7 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 /**
 * @see \App\Http\Controllers\Servers\ServerController::index
 * @see app/Http/Controllers/Servers/ServerController.php:28
-* @route '/app/servers'
+* @route '/app/settings/servers'
 */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: index.url(options),
@@ -48,7 +48,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 /**
 * @see \App\Http\Controllers\Servers\ServerController::index
 * @see app/Http/Controllers/Servers/ServerController.php:28
-* @route '/app/servers'
+* @route '/app/settings/servers'
 */
 const indexForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
     action: index.url(options),
@@ -58,7 +58,7 @@ const indexForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => (
 /**
 * @see \App\Http\Controllers\Servers\ServerController::index
 * @see app/Http/Controllers/Servers/ServerController.php:28
-* @route '/app/servers'
+* @route '/app/settings/servers'
 */
 indexForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
     action: index.url(options),
@@ -68,7 +68,7 @@ indexForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
 /**
 * @see \App\Http\Controllers\Servers\ServerController::index
 * @see app/Http/Controllers/Servers/ServerController.php:28
-* @route '/app/servers'
+* @route '/app/settings/servers'
 */
 indexForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
     action: index.url({

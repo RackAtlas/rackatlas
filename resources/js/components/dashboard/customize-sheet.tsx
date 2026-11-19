@@ -94,7 +94,6 @@ function Form({
         servers: t('Server cards'),
         top: t('Top usage'),
         backups: t('Backups'),
-        errors: t('Collection errors'),
     };
 
     const metricLabel: Record<DashboardMetricId, string> = {
@@ -119,26 +118,6 @@ function Form({
             ...current,
             servers: { ...current.servers, ...patch },
         }));
-
-    const setList = (
-        key: 'errors',
-        patch: Partial<DashboardSettings['errors']>,
-    ) =>
-        setDraft((current) => ({
-            ...current,
-            [key]: { ...current[key], ...patch },
-        }));
-
-    const limitOptions: [number, string][] = [5, 10, 20].map((count) => [
-        count,
-        t(':count entries', { count }),
-    ]);
-
-    const hoursOptions: [number, string][] = [
-        [6, t('Last 6 hours')],
-        [24, t('Last 24 hours')],
-        [168, t('Last 7 days')],
-    ];
 
     const moveWidget = (index: number, delta: number) =>
         setDraft((current) => {
@@ -492,38 +471,6 @@ function Form({
                         ))}
                     </div>
                     <InputError message={firstThresholdError} />
-                </section>
-
-                <section className="space-y-3">
-                    <h3 className="text-sm font-medium">
-                        {t('Collection errors')}
-                    </h3>
-                    <Choice
-                        id="errors-limit"
-                        label={t('Number of entries')}
-                        value={draft.errors.limit}
-                        options={limitOptions}
-                        onChange={(value) =>
-                            setList('errors', {
-                                limit: Number(
-                                    value,
-                                ) as DashboardSettings['errors']['limit'],
-                            })
-                        }
-                    />
-                    <Choice
-                        id="errors-hours"
-                        label={t('Period')}
-                        value={draft.errors.hours}
-                        options={hoursOptions}
-                        onChange={(value) =>
-                            setList('errors', {
-                                hours: Number(
-                                    value,
-                                ) as DashboardSettings['errors']['hours'],
-                            })
-                        }
-                    />
                 </section>
 
                 <section className="space-y-3">

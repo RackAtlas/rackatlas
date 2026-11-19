@@ -4,6 +4,7 @@ import {
     Bell,
     ChevronsUpDown,
     MonitorSmartphone,
+    Server,
     ShieldCheck,
     User,
     Users,
@@ -17,12 +18,14 @@ import {
     SheetTitle,
 } from '@/components/ui/sheet';
 import { useCurrentUrl } from '@/hooks/use-current-url';
+import { usePermissions } from '@/hooks/use-permissions';
 import { useTranslation } from '@/hooks/use-translation';
 import { cn, toUrl } from '@/lib/utils';
 import { index as devicesIndex } from '@/routes/devices';
 import { edit as editNotifications } from '@/routes/notifications';
 import { edit } from '@/routes/profile';
 import { edit as editSecurity } from '@/routes/security';
+import { index as serversIndex } from '@/routes/servers';
 import { index as teamsIndex } from '@/routes/teams';
 import type { NavItem } from '@/types';
 
@@ -31,7 +34,7 @@ type SettingsItem = NavItem & {
     description: string;
 };
 
-const groups: { title: string; items: SettingsItem[] }[] = [
+const allGroups: { title: string; items: SettingsItem[] }[] = [
     {
         title: 'Account',
         items: [
@@ -66,6 +69,13 @@ const groups: { title: string; items: SettingsItem[] }[] = [
                 description: 'Your teams, their members and invitations',
             },
             {
+                title: 'Servers',
+                href: serversIndex(),
+                icon: Server,
+                permission: 'servers.view',
+                description: 'The servers of your team and how they are connected',
+            },
+            {
                 title: 'Notifications',
                 href: editNotifications(),
                 icon: Bell,
@@ -76,9 +86,17 @@ const groups: { title: string; items: SettingsItem[] }[] = [
     },
 ];
 
-const items = groups.flatMap((group) => group.items);
-
 export default function SettingsLayout({ children }: PropsWithChildren) {
+    const { can } = usePermissions();
+    const groups = allGroups
+        .map((group) => ({
+            ...group,
+            items: group.items.filter(
+                (item) => !item.permission || can(item.permission),
+            ),
+        }))
+        .filter((group) => group.items.length > 0);
+    const items = groups.flatMap((group) => group.items);
     const { isCurrentOrParentUrl } = useCurrentUrl();
     const { t } = useTranslation();
     const [picking, setPicking] = useState(false);

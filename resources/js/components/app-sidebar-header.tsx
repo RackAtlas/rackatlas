@@ -1,9 +1,11 @@
-import { Link } from '@inertiajs/react';
-import { ChevronLeft } from 'lucide-react';
+import { Link, usePage } from '@inertiajs/react';
+import { ChevronLeft, Shield } from 'lucide-react';
 import { Breadcrumbs } from '@/components/breadcrumbs';
 import { TeamSwitcher } from '@/components/team-switcher';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { useTranslation } from '@/hooks/use-translation';
+import { cn } from '@/lib/utils';
+import { index as adminIndex } from '@/routes/admin';
 import type { BreadcrumbItem as BreadcrumbItemType } from '@/types';
 
 /** Title bar of the mobile shell: frosted glass under the status bar, a back button, the page title. */
@@ -40,6 +42,29 @@ function NativeTopBar({ breadcrumbs }: { breadcrumbs: BreadcrumbItemType[] }) {
     );
 }
 
+function AdminLink() {
+    const { t } = useTranslation();
+    const { props, url } = usePage<{ auth: { user: { is_admin?: boolean } } }>();
+
+    if (!props.auth.user.is_admin) {
+        return null;
+    }
+
+    return (
+        <Link
+            href={adminIndex()}
+            data-test="admin-link"
+            className={cn(
+                'flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground',
+                url.startsWith('/app/admin') && 'bg-accent text-accent-foreground',
+            )}
+        >
+            <Shield className="size-4" />
+            <span className="hidden sm:inline">{t('Administration')}</span>
+        </Link>
+    );
+}
+
 export function AppSidebarHeader({
     breadcrumbs = [],
 }: {
@@ -53,7 +78,8 @@ export function AppSidebarHeader({
                     <SidebarTrigger className="-ml-1" />
                     <Breadcrumbs breadcrumbs={breadcrumbs} />
                 </div>
-                <div className="ml-auto min-w-0 shrink-0">
+                <div className="ml-auto flex min-w-0 shrink-0 items-center gap-2">
+                    <AdminLink />
                     <TeamSwitcher />
                 </div>
             </header>

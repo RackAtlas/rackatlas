@@ -1549,5 +1549,7 @@
     "Analyze with AI": "Analyzovat pomocí AI",
     "Analyze again": "Analyzovat znovu",
     "Analyzing…": "Analyzuji…",
-    "The local AI model is switched off.": "Lokální AI model je vypnutý."
+    "The local AI model is switched off.": "Lokální AI model je vypnutý.",
+    "Show :count more": "Zobrazit další (:count)",
+    "The servers of your team and how they are connected": "Servery vašeho týmu a jak jsou připojeny"
 }

@@ -21,16 +21,16 @@ export function NavMain({
     const { isCurrentUrl } = useCurrentUrl();
 
     return (
-        <SidebarGroup className="px-3 py-0 not-first:mt-4">
-            <SidebarGroupLabel className="mb-1 h-8 px-3 text-[11px] font-semibold tracking-wider text-sidebar-foreground/50 uppercase">
+        <SidebarGroup className="px-3 py-0 not-first:mt-2">
+            <SidebarGroupLabel className="mb-0.5 h-6 px-2.5 text-[11px] font-semibold tracking-wider text-sidebar-foreground/50 uppercase">
                 {t(label)}
             </SidebarGroupLabel>
-            <SidebarMenu className="gap-1">
+            <SidebarMenu className="gap-0.5">
                 {items.map((item) => (
                     <SidebarMenuItem key={item.title}>
                         <SidebarMenuButton
                             asChild
-                            className="h-10 gap-3 rounded-lg px-3 font-medium text-sidebar-foreground/70 transition-colors hover:text-sidebar-foreground data-[active=true]:bg-primary/10 data-[active=true]:text-primary dark:data-[active=true]:bg-primary/15 [&>svg]:size-[18px]"
+                            className="h-8 gap-2.5 rounded-lg px-2.5 font-medium text-sidebar-foreground/70 transition-colors hover:text-sidebar-foreground data-[active=true]:bg-primary/10 data-[active=true]:text-primary dark:data-[active=true]:bg-primary/15 [&>svg]:size-4"
                             isActive={item.isActive ?? isCurrentUrl(item.href)}
                             tooltip={{ children: t(item.title) }}
                         >

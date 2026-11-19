@@ -7,7 +7,6 @@ use App\Http\Requests\UpdateDashboardRequest;
 use App\Models\Backup;
 use App\Models\DashboardPreference;
 use App\Models\Server;
-use App\Models\ServerError;
 use App\Models\ServerMetricDisk;
 use App\Models\Team;
 use App\Models\User;
@@ -52,7 +51,6 @@ class DashboardController extends Controller
             'generated_at' => now()->toIso8601String(),
             'servers' => $servers->map(fn (Server $server) => $this->presentServer($server))->values(),
             'history' => $this->history($servers, $settings['servers']['history_minutes']),
-            'errors' => $this->recentErrors($servers, $settings['errors']),
             'backups' => $this->backups($team),
         ]);
     }
@@ -252,30 +250,5 @@ class DashboardController extends Controller
                 fn ($a, $b) => strcasecmp($a['name'], $b['name']),
             ])
             ->values();
-    }
-
-    /**
-     * @param  Collection<int, Server>  $servers
-     * @param  array{limit: int, hours: int}  $options
-     * @return Collection<int, array<string, mixed>>
-     */
-    private function recentErrors($servers, array $options)
-    {
-        $names = $servers->pluck('name', 'id');
-
-        return ServerError::query()
-            ->whereIn('server_id', $servers->pluck('id'))
-            ->where('occurred_at', '>=', now()->subHours($options['hours']))
-            ->latest('occurred_at')
-            ->limit($options['limit'])
-            ->get()
-            ->map(fn (ServerError $error) => [
-                'id' => $error->id,
-                'server_id' => $error->server_id,
-                'server_name' => $names[$error->server_id] ?? '',
-                'type' => $error->type->value,
-                'message' => $error->message,
-                'occurred_at' => $error->occurred_at->toIso8601String(),
-            ]);
     }
 }

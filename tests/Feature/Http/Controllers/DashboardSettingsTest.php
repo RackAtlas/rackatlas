@@ -21,33 +21,29 @@ class DashboardSettingsTest extends TestCase
         $this->assertSame('grid', $resolved['servers']['layout']);
         $this->assertSame(0, $resolved['servers']['columns']);
         $this->assertSame(60, $resolved['servers']['history_minutes']);
-        $this->assertSame(['limit' => 10, 'hours' => 24], $resolved['errors']);
     }
 
     public function test_a_new_widget_is_placed_after_the_widget_before_it_in_the_defaults(): void
     {
         $saved = ['widgets' => array_map(
             fn (string $id) => ['id' => $id, 'visible' => true],
-            ['summary', 'problems', 'servers', 'top', 'errors'],
+            ['summary', 'problems', 'servers', 'top'],
         )];
 
         $ids = array_column(DashboardSettings::resolve($saved)['widgets'], 'id');
 
-        $this->assertSame(['summary', 'problems', 'servers', 'top', 'backups', 'errors'], $ids);
+        $this->assertSame(['summary', 'problems', 'servers', 'top', 'backups'], $ids);
     }
 
     public function test_invalid_saved_values_fall_back_to_the_defaults(): void
     {
         $resolved = DashboardSettings::resolve([
             'servers' => ['layout' => 'cube', 'columns' => 9, 'history_minutes' => 5],
-            'errors' => ['limit' => 1000, 'hours' => 1],
         ]);
 
         $this->assertSame('grid', $resolved['servers']['layout']);
         $this->assertSame(0, $resolved['servers']['columns']);
         $this->assertSame(60, $resolved['servers']['history_minutes']);
-        $this->assertSame(10, $resolved['errors']['limit']);
-        $this->assertSame(24, $resolved['errors']['hours']);
     }
 
     public function test_new_options_are_saved_and_shown_on_the_dashboard(): void
@@ -57,15 +53,13 @@ class DashboardSettingsTest extends TestCase
         $settings['servers']['layout'] = 'list';
         $settings['servers']['columns'] = 3;
         $settings['servers']['history_minutes'] = 1440;
-        $settings['errors'] = ['limit' => 5, 'hours' => 6];
 
         $this->actingAs($team->owner)->put(route('dashboard.settings.update'), $settings)->assertSessionHasNoErrors();
 
         $this->actingAs($team->owner)->get(route('dashboard'))->assertInertia(fn ($page) => $page
             ->where('settings.servers.layout', 'list')
             ->where('settings.servers.columns', 3)
-            ->where('settings.servers.history_minutes', 1440)
-            ->where('settings.errors.hours', 6));
+            ->where('settings.servers.history_minutes', 1440));
     }
 
     public function test_options_outside_the_allowed_values_are_rejected(): void
@@ -73,10 +67,10 @@ class DashboardSettingsTest extends TestCase
         $team = Team::factory()->create();
         $settings = DashboardSettings::defaults();
         $settings['servers']['columns'] = 7;
-        $settings['errors']['limit'] = 999;
+        $settings['servers']['layout'] = 'cube';
 
         $this->actingAs($team->owner)->put(route('dashboard.settings.update'), $settings)
-            ->assertSessionHasErrors(['servers.columns', 'errors.limit']);
+            ->assertSessionHasErrors(['servers.columns', 'servers.layout']);
     }
 
     public function test_history_and_lists_follow_the_saved_options(): void

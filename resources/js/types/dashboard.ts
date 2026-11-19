@@ -3,8 +3,7 @@ export type DashboardWidgetId =
     | 'problems'
     | 'servers'
     | 'top'
-    | 'backups'
-    | 'errors';
+    | 'backups';
 
 export type DashboardMetricId =
     | 'cpu'
@@ -33,7 +32,6 @@ export type DashboardSettings = {
         columns: 0 | 1 | 2 | 3 | 4;
         history_minutes: 60 | 360 | 1440;
     };
-    errors: { limit: 5 | 10 | 20; hours: 6 | 24 | 168 };
     thresholds: DashboardThresholds;
     refresh_seconds: number;
 };

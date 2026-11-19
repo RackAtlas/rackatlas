@@ -1,4 +1,4 @@
-import { Link, usePage } from '@inertiajs/react';
+import { Link } from '@inertiajs/react';
 import {
     Activity,
     BookOpen,
@@ -10,8 +10,6 @@ import {
     LayoutGrid,
     MemoryStick,
     ScrollText,
-    Server,
-    Shield,
     SquareTerminal,
 } from 'lucide-react';
 import { AndroidAppCard } from '@/components/android-app-card';
@@ -28,7 +26,6 @@ import {
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import { dashboard, terminal } from '@/routes';
-import { index as adminIndex } from '@/routes/admin';
 import { index as applicationsIndex } from '@/routes/applications';
 import { index as backupsIndex } from '@/routes/backups';
 import { index as databasesIndex } from '@/routes/databases';
@@ -37,10 +34,9 @@ import { index as documentsIndex } from '@/routes/documents';
 import { index as logsIndex } from '@/routes/logs';
 import { index as metricsIndex } from '@/routes/metrics';
 import { index as redisIndex } from '@/routes/redis';
-import { index as serversIndex } from '@/routes/servers';
 import { index as sshKeysIndex } from '@/routes/ssh-keys';
 import { usePermissions } from '@/hooks/use-permissions';
-import type { Auth, NavItem } from '@/types';
+import type { NavItem } from '@/types';
 
 declare const __APP_VERSION__: string;
 
@@ -64,12 +60,6 @@ const mainNavItems: NavItem[] = [
         title: 'Dashboard',
         href: dashboard(),
         icon: LayoutGrid,
-    },
-    {
-        title: 'Servers',
-        permission: 'servers.view',
-        href: serversIndex(),
-        icon: Server,
     },
     {
         title: 'Terminal',
@@ -122,7 +112,6 @@ const mainNavItems: NavItem[] = [
 ];
 
 export function AppSidebar() {
-    const { props, url } = usePage<{ auth: Auth }>();
     const { can } = usePermissions();
 
     const allowed = (items: NavItem[]) =>
@@ -130,21 +119,9 @@ export function AppSidebar() {
     const visibleItems = allowed(mainNavItems);
     const visibleDatabaseItems = allowed(databaseNavItems);
 
-    const items = props.auth.user.is_admin
-        ? [
-              ...visibleItems,
-              {
-                  title: 'Administration',
-                  href: adminIndex(),
-                  icon: Shield,
-                  isActive: url.startsWith('/app/admin'),
-              },
-          ]
-        : visibleItems;
-
     return (
         <Sidebar collapsible="icon" variant="inset">
-            <SidebarHeader className="p-3 pb-2">
+            <SidebarHeader className="p-3 pb-1">
                 <SidebarMenu>
                     <SidebarMenuItem>
                         <SidebarMenuButton size="lg" asChild>
@@ -156,17 +133,17 @@ export function AppSidebar() {
                 </SidebarMenu>
             </SidebarHeader>
 
-            <SidebarContent className="pt-2">
-                <NavMain items={items} />
+            <SidebarContent className="pt-1">
+                <NavMain items={visibleItems} />
                 {visibleDatabaseItems.length > 0 && (
                     <NavMain items={visibleDatabaseItems} label="Database" />
                 )}
             </SidebarContent>
 
-            <SidebarFooter className="gap-2 p-3">
+            <SidebarFooter className="gap-1.5 p-3 pt-2">
                 <AndroidAppCard />
                 <NavUser />
-                <p className="px-2 text-center text-xs text-muted-foreground/70 group-data-[collapsible=icon]:hidden">
+                <p className="px-2 text-center text-xs text-muted-foreground/70 group-data-[collapsible=icon]:hidden [@media(max-height:760px)]:hidden">
                     v{__APP_VERSION__}
                 </p>
             </SidebarFooter>

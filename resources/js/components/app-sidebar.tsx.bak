@@ -1,0 +1,152 @@
+import { Link, usePage } from '@inertiajs/react';
+import {
+    Activity,
+    BookOpen,
+    Container,
+    Database,
+    DatabaseBackup,
+    KeyRound,
+    Layers,
+    LayoutGrid,
+    MemoryStick,
+    ScrollText,
+    SquareTerminal,
+} from 'lucide-react';
+import { AndroidAppCard } from '@/components/android-app-card';
+import AppLogo from '@/components/app-logo';
+import { NavMain } from '@/components/nav-main';
+import { NavUser } from '@/components/nav-user';
+import {
+    Sidebar,
+    SidebarContent,
+    SidebarFooter,
+    SidebarHeader,
+    SidebarMenu,
+    SidebarMenuButton,
+    SidebarMenuItem,
+} from '@/components/ui/sidebar';
+import { dashboard, terminal } from '@/routes';
+import { index as applicationsIndex } from '@/routes/applications';
+import { index as backupsIndex } from '@/routes/backups';
+import { index as databasesIndex } from '@/routes/databases';
+import { index as dockerIndex } from '@/routes/docker';
+import { index as documentsIndex } from '@/routes/documents';
+import { index as logsIndex } from '@/routes/logs';
+import { index as metricsIndex } from '@/routes/metrics';
+import { index as redisIndex } from '@/routes/redis';
+import { index as sshKeysIndex } from '@/routes/ssh-keys';
+import { usePermissions } from '@/hooks/use-permissions';
+import type { Auth, NavItem } from '@/types';
+
+declare const __APP_VERSION__: string;
+
+const databaseNavItems: NavItem[] = [
+    {
+        title: 'MySQL',
+        permission: 'databases.view',
+        href: databasesIndex(),
+        icon: Database,
+    },
+    {
+        title: 'Redis',
+        permission: 'redis.view',
+        href: redisIndex(),
+        icon: MemoryStick,
+    },
+];
+
+const mainNavItems: NavItem[] = [
+    {
+        title: 'Dashboard',
+        href: dashboard(),
+        icon: LayoutGrid,
+    },
+    {
+        title: 'Terminal',
+        permission: 'terminal.edit',
+        href: terminal(),
+        icon: SquareTerminal,
+    },
+    {
+        title: 'Applications',
+        permission: 'applications.view',
+        href: applicationsIndex(),
+        icon: Layers,
+    },
+    {
+        title: 'Docker',
+        permission: 'docker.view',
+        href: dockerIndex(),
+        icon: Container,
+    },
+    {
+        title: 'Metrics',
+        permission: 'metrics.view',
+        href: metricsIndex(),
+        icon: Activity,
+    },
+    {
+        title: 'Logs',
+        permission: 'logs.view',
+        href: logsIndex(),
+        icon: ScrollText,
+    },
+    {
+        title: 'Backups',
+        permission: 'backups.view',
+        href: backupsIndex(),
+        icon: DatabaseBackup,
+    },
+    {
+        title: 'SSH keys',
+        permission: 'ssh_keys.view',
+        href: sshKeysIndex(),
+        icon: KeyRound,
+    },
+    {
+        title: 'Documentation',
+        permission: 'docs.view',
+        href: documentsIndex(),
+        icon: BookOpen,
+    },
+];
+
+export function AppSidebar() {
+    const { can } = usePermissions();
+
+    const allowed = (items: NavItem[]) =>
+        items.filter((item) => !item.permission || can(item.permission));
+    const visibleItems = allowed(mainNavItems);
+    const visibleDatabaseItems = allowed(databaseNavItems);
+
+    return (
+        <Sidebar collapsible="icon" variant="inset">
+            <SidebarHeader className="p-3 pb-1">
+                <SidebarMenu>
+                    <SidebarMenuItem>
+                        <SidebarMenuButton size="lg" asChild>
+                            <Link href={dashboard()} prefetch>
+                                <AppLogo />
+                            </Link>
+                        </SidebarMenuButton>
+                    </SidebarMenuItem>
+                </SidebarMenu>
+            </SidebarHeader>
+
+            <SidebarContent className="pt-1">
+                <NavMain items={visibleItems} />
+                {visibleDatabaseItems.length > 0 && (
+                    <NavMain items={visibleDatabaseItems} label="Database" />
+                )}
+            </SidebarContent>
+
+            <SidebarFooter className="gap-1.5 p-3 pt-2">
+                <AndroidAppCard />
+                <NavUser />
+                <p className="px-2 text-center text-xs text-muted-foreground/70 group-data-[collapsible=icon]:hidden [@media(max-height:760px)]:hidden">
+                    v{__APP_VERSION__}
+                </p>
+            </SidebarFooter>
+        </Sidebar>
+    );
+}

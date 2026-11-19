@@ -273,12 +273,12 @@ export default function Servers({
         <>
             <Head title={t('Servers')} />
 
-            <div className="mx-auto w-full max-w-[100rem] space-y-6 p-4 md:p-6">
+            <div className="space-y-6 py-4 lg:py-6">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                     <div className="min-w-0">
-                        <h1 className="text-2xl font-semibold">
+                        <h2 className="text-xl font-semibold">
                             {t('Servers')}
-                        </h1>
+                        </h2>
                         <p className="text-sm text-muted-foreground">
                             {t('Servers of the team :team', {
                                 team: team.name,

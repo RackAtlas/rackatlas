@@ -29,7 +29,7 @@ class ServerController extends Controller
     {
         $team = $request->user()->currentTeam();
 
-        return Inertia::render('servers/index', [
+        return Inertia::render('settings/servers/index', [
             'team' => $team?->only('id', 'name'),
             'canManage' => $team !== null && $request->user()->can('permit', [$team, 'servers.edit']),
             'categories' => $team

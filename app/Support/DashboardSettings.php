@@ -8,7 +8,7 @@ namespace App\Support;
  */
 class DashboardSettings
 {
-    public const WIDGETS = ['summary', 'problems', 'servers', 'top', 'backups', 'errors'];
+    public const WIDGETS = ['summary', 'problems', 'servers', 'top', 'backups'];
 
     public const SORTS = ['name', 'status', 'cpu', 'ram', 'disk'];
 
@@ -24,10 +24,6 @@ class DashboardSettings
     public const COLUMNS = [0, 1, 2, 3, 4];
 
     public const HISTORY_MINUTES = [60, 360, 1440];
-
-    public const LIST_LIMITS = [5, 10, 20];
-
-    public const LIST_HOURS = [6, 24, 168];
 
     /**
      * @return array<string, mixed>
@@ -46,7 +42,6 @@ class DashboardSettings
                 'columns' => 0,
                 'history_minutes' => 60,
             ],
-            'errors' => ['limit' => 10, 'hours' => 24],
             'thresholds' => [
                 'cpu' => ['warn' => 80, 'critical' => 95],
                 'ram' => ['warn' => 85, 'critical' => 95],
@@ -97,10 +92,6 @@ class DashboardSettings
         $servers['columns'] = self::pick($servers['columns'], self::COLUMNS, $defaults['servers']['columns']);
         $servers['history_minutes'] = self::pick($servers['history_minutes'], self::HISTORY_MINUTES, $defaults['servers']['history_minutes']);
 
-        $errors = array_replace($defaults['errors'], array_intersect_key($saved['errors'] ?? [], $defaults['errors']));
-        $errors['limit'] = self::pick($errors['limit'], self::LIST_LIMITS, $defaults['errors']['limit']);
-        $errors['hours'] = self::pick($errors['hours'], self::LIST_HOURS, $defaults['errors']['hours']);
-
         $thresholds = $defaults['thresholds'];
         foreach ($thresholds as $key => $pair) {
             foreach (['warn', 'critical'] as $level) {
@@ -115,7 +106,6 @@ class DashboardSettings
         return [
             'widgets' => array_values($widgets),
             'servers' => $servers,
-            'errors' => $errors,
             'thresholds' => $thresholds,
             'refresh_seconds' => in_array($saved['refresh_seconds'] ?? null, self::REFRESH_SECONDS, true)
                 ? $saved['refresh_seconds']
