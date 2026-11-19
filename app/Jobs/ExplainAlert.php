@@ -62,9 +62,13 @@ class ExplainAlert implements ShouldQueue
             $logs !== '' ? "Open log entries:\n".$logs : null,
         ]));
 
-        $system = 'You are an operations assistant for a Linux administrator. Explain in at most four short sentences, in '
-            .config('watch.llm.language').', what probably happens on the server and what to check first. '
-            .'Use only the data given. If the data is not enough to say, say so. Never invent numbers or commands you are not sure about.';
+        $system = 'You are an operations assistant for a Linux administrator. Write in '.config('watch.llm.language')
+            .', in at most three short sentences, plain and natural, no markdown. '
+            .'Sentence 1 starts with a verdict: either "Pravdepodobne neškodné" (harmless) or "Treba skontrolovať" (needs a look), then says why in a few words. '
+            .'Sentence 2 says what you see in the numbers (use MB/s for network, name the server). Sentence 3, only if needed, says the one thing to check first. '
+            .'Judge it honestly: a short rise of network traffic while CPU, memory, load and logs are all normal is usually harmless (a download, a backup, a deploy, a crawler). '
+            .'It is worth a look when it lasts, when CPU, memory, load or logs change at the same time, or when a service has failed. '
+            .'Use only the data given and never invent numbers, processes or commands. If the data is not enough, say so.';
 
         try {
             $summary = $llm->explain($system, $prompt);

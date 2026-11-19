@@ -23,7 +23,19 @@ class BaselineDetector
     private const FLOORS = ['cpu' => 3.0, 'ram' => 2.0, 'load' => 0.1, 'net_rx' => 100_000.0, 'net_tx' => 100_000.0];
 
     /** A change smaller than this is never reported, however unusual it is for this server. */
-    private const MIN_JUMP = ['cpu' => 20.0, 'ram' => 10.0, 'load' => 0.5, 'net_rx' => 2_000_000.0, 'net_tx' => 2_000_000.0];
+    private const MIN_JUMP = ['cpu' => 20.0, 'ram' => 10.0, 'load' => 0.5, 'net_rx' => 10_000_000.0, 'net_tx' => 10_000_000.0];
+
+    /** Traffic comes in bursts (downloads, backups, deploys), so it must stay unusual for longer than the rest. */
+    private const CONFIRM = ['net_rx' => 10, 'net_tx' => 10];
+
+    /** The value must also be this many times the normal level, so a busy server is not flagged for being a bit busier. */
+    private const MIN_RATIO = ['net_rx' => 3.0, 'net_tx' => 3.0];
+
+    /** The newest samples (half an hour) are left out of the baseline, so a lasting rise does not become the normal level. */
+    private const SKIP_NEWEST = 30;
+
+    /** The value must beat the highest level of the baseline period (its 99th percentile) by this factor. */
+    private const PEAK_MARGIN = 1.25;
 
     /**
      * @param  array<int, string>  $openKeys
@@ -40,7 +52,7 @@ class BaselineDetector
      */
     private function detectJumps(Server $server, array $openKeys): array
     {
-        $confirm = (int) config('watch.baseline.confirm_samples');
+        $confirm = max((int) config('watch.baseline.confirm_samples'), ...array_values(self::CONFIRM));
         $samples = $server->metrics()
             ->where('collected_at', '>=', now()->subHours((int) config('watch.baseline.hours')))
             ->latest('collected_at')
@@ -67,14 +79,29 @@ class BaselineDetector
                 continue;
             }
 
-            $recent = $values->take($confirm)->values();
-            $normal = $values->slice($confirm)->values();
-            [$median, $spread] = $this->normal($normal, self::FLOORS[$metric]);
             $key = 'anomaly:'.$metric;
+
+            // One that was just closed does not come straight back; a lasting problem would have stayed open.
+            if (! in_array($key, $openKeys, true) && $this->closedRecently($server, $key)) {
+                continue;
+            }
+
+            $needed = self::CONFIRM[$metric] ?? (int) config('watch.baseline.confirm_samples');
+            $recent = $values->take($needed)->values();
+            $normal = $values->slice(max($confirm, self::SKIP_NEWEST))->values();
+            [$median, $spread] = $this->normal($normal, self::FLOORS[$metric]);
+            $peak = $this->percentile($normal, 0.99);
             $limit = (float) config('watch.baseline.z_limit') * (in_array($key, $openKeys, true) ? 0.5 : 1);
             $jump = self::MIN_JUMP[$metric] * (in_array($key, $openKeys, true) ? 0.5 : 1);
 
-            $unusual = $recent->every(fn (float $value) => ($value - $median) / $spread >= $limit && $value - $median >= $jump);
+            $isOpen = in_array($key, $openKeys, true);
+            $ratio = (self::MIN_RATIO[$metric] ?? 1.0) * ($isOpen ? 0.5 : 1);
+            $beyondPeak = $isOpen ? 0.0 : $peak * self::PEAK_MARGIN;
+
+            $unusual = $recent->count() >= $needed && $recent->every(fn (float $value) => ($value - $median) / $spread >= $limit
+                && $value - $median >= $jump
+                && $value >= $median * $ratio
+                && $value >= $beyondPeak);
 
             // The plain limit of the settings already reports a value that high.
             if (! $unusual || (isset($limits[$metric]) && $recent->first() >= $limits[$metric]['critical'])) {
@@ -85,6 +112,8 @@ class BaselineDetector
                 'metric' => $metric,
                 'value' => round($recent->first(), 2),
                 'normal' => round($median, 2),
+                'highest_in_baseline' => round($peak, 2),
+                'samples_in_a_row' => $needed,
                 'z' => round(($recent->first() - $median) / $spread, 1),
             ]];
         }
@@ -168,6 +197,21 @@ class BaselineDetector
         }
 
         return $free / $slope;
+    }
+
+    private function closedRecently(Server $server, string $key): bool
+    {
+        return $server->alerts()->where('key', $key)->where('resolved_at', '>=', now()->subMinutes((int) config('watch.baseline.cooldown_minutes')))->exists();
+    }
+
+    /**
+     * @param  Collection<int, float>  $values
+     */
+    private function percentile(Collection $values, float $fraction): float
+    {
+        $sorted = $values->sort()->values();
+
+        return $sorted->isEmpty() ? 0.0 : (float) $sorted[(int) min($sorted->count() - 1, floor($sorted->count() * $fraction))];
     }
 
     /**

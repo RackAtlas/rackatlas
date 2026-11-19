@@ -20,6 +20,8 @@ return [
         'min_samples' => (int) env('WATCH_BASELINE_MIN_SAMPLES', 120),
         // The newest samples that must all be unusual before an anomaly is raised.
         'confirm_samples' => 3,
+        // An anomaly that was closed does not open again for this many minutes.
+        'cooldown_minutes' => (int) env('WATCH_COOLDOWN_MINUTES', 30),
         // Robust z-score (distance from the median in MAD units) that counts as unusual.
         'z_limit' => (float) env('WATCH_Z_LIMIT', 5),
         // Disk forecast: warn when a disk is predicted to be full within this many days.

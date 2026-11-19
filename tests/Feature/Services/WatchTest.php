@@ -211,4 +211,63 @@ class WatchTest extends TestCase
         $this->actingAs($server->team->owner)->put(route('servers.update', $server), $payload)->assertRedirect();
         $this->assertFalse($server->fresh()->watch_enabled);
     }
+
+    /**
+     * A calm server (about 1 MB/s received) whose newest samples receive the given traffic.
+     *
+     * @param  int  $burstLength  How many of the newest samples carry the traffic.
+     */
+    private function trafficServer(int $burstLength, int $burstBytes, int $earlierPeak = 0): Server
+    {
+        $server = $this->server(true, 10);
+
+        foreach ($server->metrics()->orderByDesc('collected_at')->get() as $index => $metric) {
+            $bytes = 1_000_000 + ($index % 5) * 50_000;
+
+            if ($index < $burstLength) {
+                $bytes = $burstBytes;
+            } elseif ($earlierPeak > 0 && $index >= 100 && $index < 110) {
+                $bytes = $earlierPeak;
+            }
+
+            $metric->update(['net_rx_bps' => $bytes, 'net_tx_bps' => 1_000_000]);
+        }
+
+        return $server;
+    }
+
+    public function test_a_short_burst_of_traffic_is_not_an_anomaly(): void
+    {
+        Notification::fake();
+
+        $this->assertSame([], $this->openKeys($this->trafficServer(5, 60_000_000)));
+    }
+
+    public function test_traffic_that_stays_high_is_an_anomaly(): void
+    {
+        Notification::fake();
+
+        $server = $this->trafficServer(12, 60_000_000);
+        $this->assertSame(['anomaly:net_rx'], $this->openKeys($server));
+    }
+
+    public function test_traffic_the_server_already_had_earlier_is_not_an_anomaly(): void
+    {
+        Notification::fake();
+
+        $this->assertSame([], $this->openKeys($this->trafficServer(12, 40_000_000, 45_000_000)));
+    }
+
+    public function test_an_anomaly_that_was_just_closed_does_not_open_again_at_once(): void
+    {
+        Notification::fake();
+
+        $server = $this->trafficServer(12, 60_000_000);
+        $server->alerts()->create([
+            'type' => AlertType::Anomaly, 'key' => 'anomaly:net_rx', 'context' => [],
+            'opened_at' => now()->subMinutes(20), 'resolved_at' => now()->subMinutes(5),
+        ]);
+
+        $this->assertSame([], $this->openKeys($server));
+    }
 }
