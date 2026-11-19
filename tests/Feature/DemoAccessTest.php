@@ -90,7 +90,7 @@ class DemoAccessTest extends TestCase
         $this->assertSame(0, User::query()->where('is_demo', true)->count());
     }
 
-    public function test_refreshing_adds_a_fresh_point_and_keeps_the_servers_online(): void
+    public function test_refreshing_moves_the_history_to_now_without_adding_rows(): void
     {
         app(DemoWorkspace::class)->ensure();
         $server = Server::query()->firstOrFail();
@@ -99,7 +99,8 @@ class DemoAccessTest extends TestCase
         $this->travel(2)->minutes();
         $this->artisan('demo:refresh')->assertSuccessful();
 
-        $this->assertGreaterThan($before, $server->metrics()->count());
+        $this->assertSame($before, $server->metrics()->count());
+        $this->assertTrue($server->metrics()->max('collected_at') >= now()->subMinute()->toDateTimeString());
         $this->assertTrue($server->fresh()->last_seen_at->isToday());
     }
 

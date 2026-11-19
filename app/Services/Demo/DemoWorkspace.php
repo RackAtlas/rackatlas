@@ -74,7 +74,7 @@ class DemoWorkspace
     }
 
     /**
-     * Add the newest metric point to every demo server and keep them online.
+     * Move the demo history up to now and keep the servers online.
      */
     public function refresh(?Team $team = null): void
     {
@@ -85,31 +85,23 @@ class DemoWorkspace
         }
 
         $servers = $team->servers()->get();
-        $hasHistory = ServerMetric::query()->whereIn('server_id', $servers->modelKeys())->exists();
+        $latest = ServerMetric::query()->whereIn('server_id', $servers->modelKeys())->max('collected_at');
+
+        if ($latest === null) {
+            foreach ($servers as $server) {
+                $profile = $this->profileOf($server);
+
+                for ($at = now()->subHours(self::HISTORY_HOURS); $at->lt(now()); $at = $at->addMinutes(self::HISTORY_STEP_MINUTES)) {
+                    $this->storeMetric($server, $profile, $at);
+                }
+
+                $this->storeMetric($server, $profile, now());
+            }
+        } else {
+            $this->shiftHistory($servers->modelKeys(), (int) Carbon::parse($latest)->diffInSeconds(now(), true));
+        }
 
         foreach ($servers as $server) {
-            $profile = $this->profileOf($server);
-
-            if (! $hasHistory) {
-                $from = now()->subHours(self::HISTORY_HOURS);
-
-                for ($at = $from; $at->lt(now()); $at = $at->addMinutes(self::HISTORY_STEP_MINUTES)) {
-                    $this->storeMetric($server, $profile, $at);
-                }
-            } else {
-                $latest = ServerMetric::query()->where('server_id', $server->id)->max('collected_at');
-
-                // A long pause (a stopped scheduler) is bridged with sparse points instead of one row per minute.
-                $at = Carbon::parse($latest ?? now()->subHour())->addMinutes(self::HISTORY_STEP_MINUTES);
-                $at = $at->lt(now()->subHours(self::HISTORY_HOURS)) ? now()->subHours(self::HISTORY_HOURS) : $at;
-
-                for (; $at->lt(now()); $at = $at->addMinutes(self::HISTORY_STEP_MINUTES)) {
-                    $this->storeMetric($server, $profile, $at);
-                }
-            }
-
-            $this->storeMetric($server, $profile, now());
-
             $server->forceFill([
                 'status' => ServerStatus::Online,
                 'last_seen_at' => now(),
@@ -118,6 +110,25 @@ class DemoWorkspace
         }
 
         $this->refreshBackups($team);
+    }
+
+    /**
+     * Move the stored history forward so its newest point is "now" again. The rows are reused, so the
+     * tables never grow while the demo stays fresh.
+     *
+     * @param  array<int, int|string>  $serverIds
+     */
+    private function shiftHistory(array $serverIds, int $seconds): void
+    {
+        if ($seconds < 1) {
+            return;
+        }
+
+        $expression = DB::connection()->getDriverName() === 'sqlite'
+            ? "strftime('%Y-%m-%d %H:%M:%S', collected_at, '+{$seconds} seconds')"
+            : "collected_at + INTERVAL {$seconds} SECOND";
+
+        ServerMetric::query()->whereIn('server_id', $serverIds)->update(['collected_at' => DB::raw($expression)]);
     }
 
     private function createUser(): User
