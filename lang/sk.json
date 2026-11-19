@@ -1545,5 +1545,9 @@
     "Incoming traffic (B/s)": "Prichádzajúci prenos (B/s)",
     "Outgoing traffic (B/s)": "Odchádzajúci prenos (B/s)",
     "AI analysis": "AI analýza",
-    "Written by the local model :model. It can be wrong, check the message above.": "Napísal lokálny model :model. Môže sa mýliť, skontrolujte správu vyššie."
+    "Written by the local model :model. It can be wrong, check the message above.": "Napísal lokálny model :model. Môže sa mýliť, skontrolujte správu vyššie.",
+    "Analyze with AI": "Analyzovať pomocou AI",
+    "Analyze again": "Analyzovať znova",
+    "Analyzing…": "Analyzujem…",
+    "The local AI model is switched off.": "Lokálny AI model je vypnutý."
 }

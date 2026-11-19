@@ -6,6 +6,7 @@ use App\Models\ServerLog;
 use App\Services\Watch\LocalLlm;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
@@ -21,16 +22,39 @@ class ExplainLog implements ShouldQueue
 
     public int $timeout = 300;
 
-    public function __construct(public readonly int $logId)
+    public function __construct(public readonly int $logId, public readonly bool $force = false)
     {
         $this->onQueue((string) config('watch.llm.queue'));
     }
 
+    /**
+     * The key that tells the page an analysis of this entry is waiting or running.
+     */
+    public static function pendingKey(int $logId): string
+    {
+        return 'log-ai-pending:'.$logId;
+    }
+
     public function handle(LocalLlm $llm): void
+    {
+        try {
+            $this->explain($llm);
+        } finally {
+            Cache::forget(self::pendingKey($this->logId));
+        }
+    }
+
+    public function failed(Throwable $e): void
+    {
+        Cache::forget(self::pendingKey($this->logId));
+    }
+
+    private function explain(LocalLlm $llm): void
     {
         $entry = ServerLog::query()->with('server')->find($this->logId);
 
-        if ($entry === null || ! $llm->enabled() || $entry->ai_summary !== null || $entry->resolved_at !== null) {
+        // New entries are only judged while they are open; the one who asks for it gets an answer for any entry.
+        if ($entry === null || ! $llm->enabled() || (! $this->force && ($entry->ai_summary !== null || $entry->resolved_at !== null))) {
             return;
         }
 

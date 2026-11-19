@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\Servers;
 
 use App\Http\Controllers\Controller;
+use App\Jobs\ExplainLog;
 use App\Models\ServerLog;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -56,6 +58,7 @@ class LogController extends Controller
                 'message' => $log->message,
                 'ai_summary' => $log->ai_summary,
                 'ai_model' => $log->ai_model,
+                'ai_pending' => Cache::has(ExplainLog::pendingKey($log->id)),
                 'count' => $log->count,
                 'occurred_at' => $log->occurred_at->toIso8601String(),
                 'resolved_at' => $log->resolved_at?->toIso8601String(),
@@ -71,6 +74,7 @@ class LogController extends Controller
                 'level' => $filters['level'] ?? null,
                 'status' => $status,
             ],
+            'ai_enabled' => (bool) config('watch.llm.enabled'),
             'open_count' => $scoped()->open()->count(),
             'retention_days' => ServerLog::RETENTION_DAYS,
             'generated_at' => now()->toIso8601String(),
@@ -85,6 +89,26 @@ class LogController extends Controller
         $this->authorizeLog($request, $log);
 
         $log->update(['resolved_at' => now(), 'resolved_by' => $request->user()->id]);
+
+        return back();
+    }
+
+    /**
+     * Ask the local model to analyse one entry now, also an old or resolved one.
+     */
+    public function analyze(Request $request, ServerLog $log): RedirectResponse
+    {
+        $this->authorizeLog($request, $log);
+
+        if (! config('watch.llm.enabled')) {
+            Inertia::flash('toast', ['type' => 'error', 'message' => __('The local AI model is switched off.')]);
+
+            return back();
+        }
+
+        if (Cache::add(ExplainLog::pendingKey($log->id), true, 600)) {
+            ExplainLog::dispatch($log->id, true);
+        }
 
         return back();
     }

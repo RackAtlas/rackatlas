@@ -7,11 +7,12 @@ import {
     ScrollText,
     Sparkles,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import LogController from '@/actions/App/Http/Controllers/Servers/LogController';
 import { levelStyle } from '@/components/dashboard/recent-logs';
 import { Button } from '@/components/ui/button';
+import { Spinner } from '@/components/ui/spinner';
 import {
     Select,
     SelectContent,
@@ -32,6 +33,7 @@ type LogEntry = DashboardLog & {
     resolved_by: string | null;
     ai_summary: string | null;
     ai_model: string | null;
+    ai_pending: boolean;
 };
 
 type Props = {
@@ -47,6 +49,7 @@ type Props = {
         level: string | null;
         status: 'open' | 'resolved' | 'all';
     };
+    ai_enabled: boolean;
     open_count: number;
     retention_days: number;
     generated_at: string;
@@ -64,10 +67,14 @@ function LogDetail({
     generatedAt,
     onResolve,
     onReopen,
+    onAnalyze,
     canEdit,
+    aiEnabled,
 }: {
     log: LogEntry;
     canEdit: boolean;
+    aiEnabled: boolean;
+    onAnalyze: () => void;
     generatedAt: string;
     onResolve: () => void;
     onReopen: () => void;
@@ -111,6 +118,26 @@ function LogDetail({
                     {log.message}
                 </pre>
             </div>
+
+            {aiEnabled && canEdit && (
+                <Button
+                    variant="outline"
+                    onClick={onAnalyze}
+                    disabled={log.ai_pending}
+                    data-test="log-analyze"
+                >
+                    {log.ai_pending ? (
+                        <Spinner />
+                    ) : (
+                        <Sparkles className="size-4" />
+                    )}
+                    {log.ai_pending
+                        ? t('Analyzing…')
+                        : log.ai_summary
+                          ? t('Analyze again')
+                          : t('Analyze with AI')}
+                </Button>
+            )}
 
             {log.ai_summary && (
                 <div className="space-y-2" data-test="log-ai-summary">
@@ -198,11 +225,26 @@ export default function Logs({
     filters,
     open_count,
     retention_days,
+    ai_enabled,
     generated_at,
 }: Props) {
     const { t, locale } = useTranslation();
     const canEdit = usePermissions().can('logs.edit');
     const [selectedId, setSelectedId] = useState<number | null>(null);
+    const waiting = logs.data.some((log) => log.ai_pending);
+
+    useEffect(() => {
+        if (!waiting) {
+            return;
+        }
+
+        const timer = setInterval(
+            () => router.reload({ only: ['logs'] }),
+            4000,
+        );
+
+        return () => clearInterval(timer);
+    }, [waiting]);
 
     if (!team) {
         return (
@@ -243,6 +285,13 @@ export default function Logs({
     const resolve = (log: LogEntry) =>
         router.post(
             LogController.resolve.url(log.id),
+            {},
+            { preserveScroll: true },
+        );
+
+    const analyze = (log: LogEntry) =>
+        router.post(
+            LogController.analyze.url(log.id),
             {},
             { preserveScroll: true },
         );
@@ -460,6 +509,8 @@ export default function Logs({
                                                     }
                                                     onReopen={() => reopen(log)}
                                                     canEdit={canEdit}
+                                                    aiEnabled={ai_enabled}
+                                                    onAnalyze={() => analyze(log)}
                                                 />
                                             </div>
                                         )}
@@ -508,6 +559,8 @@ export default function Logs({
                                     onResolve={() => resolve(active)}
                                     onReopen={() => reopen(active)}
                                     canEdit={canEdit}
+                                    aiEnabled={ai_enabled}
+                                    onAnalyze={() => analyze(active)}
                                 />
                             ) : (
                                 <p className="text-sm text-muted-foreground">

@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\Servers\LogController::index
-* @see app/Http/Controllers/Servers/LogController.php:20
+* @see app/Http/Controllers/Servers/LogController.php:22
 * @route '/app/logs'
 */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ index.definition = {
 
 /**
 * @see \App\Http\Controllers\Servers\LogController::index
-* @see app/Http/Controllers/Servers/LogController.php:20
+* @see app/Http/Controllers/Servers/LogController.php:22
 * @route '/app/logs'
 */
 index.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ index.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Servers\LogController::index
-* @see app/Http/Controllers/Servers/LogController.php:20
+* @see app/Http/Controllers/Servers/LogController.php:22
 * @route '/app/logs'
 */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -35,7 +35,7 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\Servers\LogController::index
-* @see app/Http/Controllers/Servers/LogController.php:20
+* @see app/Http/Controllers/Servers/LogController.php:22
 * @route '/app/logs'
 */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -45,7 +45,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\Servers\LogController::index
-* @see app/Http/Controllers/Servers/LogController.php:20
+* @see app/Http/Controllers/Servers/LogController.php:22
 * @route '/app/logs'
 */
 const indexForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -55,7 +55,7 @@ const indexForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => (
 
 /**
 * @see \App\Http\Controllers\Servers\LogController::index
-* @see app/Http/Controllers/Servers/LogController.php:20
+* @see app/Http/Controllers/Servers/LogController.php:22
 * @route '/app/logs'
 */
 indexForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -65,7 +65,7 @@ indexForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\Servers\LogController::index
-* @see app/Http/Controllers/Servers/LogController.php:20
+* @see app/Http/Controllers/Servers/LogController.php:22
 * @route '/app/logs'
 */
 indexForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -82,7 +82,7 @@ index.form = indexForm
 
 /**
 * @see \App\Http\Controllers\Servers\LogController::resolveAll
-* @see app/Http/Controllers/Servers/LogController.php:102
+* @see app/Http/Controllers/Servers/LogController.php:128
 * @route '/app/logs/resolve-all'
 */
 export const resolveAll = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -97,7 +97,7 @@ resolveAll.definition = {
 
 /**
 * @see \App\Http\Controllers\Servers\LogController::resolveAll
-* @see app/Http/Controllers/Servers/LogController.php:102
+* @see app/Http/Controllers/Servers/LogController.php:128
 * @route '/app/logs/resolve-all'
 */
 resolveAll.url = (options?: RouteQueryOptions) => {
@@ -106,7 +106,7 @@ resolveAll.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Servers\LogController::resolveAll
-* @see app/Http/Controllers/Servers/LogController.php:102
+* @see app/Http/Controllers/Servers/LogController.php:128
 * @route '/app/logs/resolve-all'
 */
 resolveAll.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -116,7 +116,7 @@ resolveAll.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\Servers\LogController::resolveAll
-* @see app/Http/Controllers/Servers/LogController.php:102
+* @see app/Http/Controllers/Servers/LogController.php:128
 * @route '/app/logs/resolve-all'
 */
 const resolveAllForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -126,7 +126,7 @@ const resolveAllForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'
 
 /**
 * @see \App\Http\Controllers\Servers\LogController::resolveAll
-* @see app/Http/Controllers/Servers/LogController.php:102
+* @see app/Http/Controllers/Servers/LogController.php:128
 * @route '/app/logs/resolve-all'
 */
 resolveAllForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -138,7 +138,7 @@ resolveAll.form = resolveAllForm
 
 /**
 * @see \App\Http\Controllers\Servers\LogController::resolve
-* @see app/Http/Controllers/Servers/LogController.php:81
+* @see app/Http/Controllers/Servers/LogController.php:87
 * @route '/app/logs/{log}/resolve'
 */
 export const resolve = (args: { log: number | { id: number } } | [log: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -153,7 +153,7 @@ resolve.definition = {
 
 /**
 * @see \App\Http\Controllers\Servers\LogController::resolve
-* @see app/Http/Controllers/Servers/LogController.php:81
+* @see app/Http/Controllers/Servers/LogController.php:87
 * @route '/app/logs/{log}/resolve'
 */
 resolve.url = (args: { log: number | { id: number } } | [log: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
@@ -186,7 +186,7 @@ resolve.url = (args: { log: number | { id: number } } | [log: number | { id: num
 
 /**
 * @see \App\Http\Controllers\Servers\LogController::resolve
-* @see app/Http/Controllers/Servers/LogController.php:81
+* @see app/Http/Controllers/Servers/LogController.php:87
 * @route '/app/logs/{log}/resolve'
 */
 resolve.post = (args: { log: number | { id: number } } | [log: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -196,7 +196,7 @@ resolve.post = (args: { log: number | { id: number } } | [log: number | { id: nu
 
 /**
 * @see \App\Http\Controllers\Servers\LogController::resolve
-* @see app/Http/Controllers/Servers/LogController.php:81
+* @see app/Http/Controllers/Servers/LogController.php:87
 * @route '/app/logs/{log}/resolve'
 */
 const resolveForm = (args: { log: number | { id: number } } | [log: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -206,7 +206,7 @@ const resolveForm = (args: { log: number | { id: number } } | [log: number | { i
 
 /**
 * @see \App\Http\Controllers\Servers\LogController::resolve
-* @see app/Http/Controllers/Servers/LogController.php:81
+* @see app/Http/Controllers/Servers/LogController.php:87
 * @route '/app/logs/{log}/resolve'
 */
 resolveForm.post = (args: { log: number | { id: number } } | [log: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -217,8 +217,88 @@ resolveForm.post = (args: { log: number | { id: number } } | [log: number | { id
 resolve.form = resolveForm
 
 /**
+* @see \App\Http\Controllers\Servers\LogController::analyze
+* @see app/Http/Controllers/Servers/LogController.php:99
+* @route '/app/logs/{log}/analyze'
+*/
+export const analyze = (args: { log: number | { id: number } } | [log: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: analyze.url(args, options),
+    method: 'post',
+})
+
+analyze.definition = {
+    methods: ["post"],
+    url: '/app/logs/{log}/analyze',
+} satisfies RouteDefinition<["post"]>
+
+/**
+* @see \App\Http\Controllers\Servers\LogController::analyze
+* @see app/Http/Controllers/Servers/LogController.php:99
+* @route '/app/logs/{log}/analyze'
+*/
+analyze.url = (args: { log: number | { id: number } } | [log: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
+    if (typeof args === 'string' || typeof args === 'number') {
+        args = { log: args }
+    }
+
+    if (typeof args === 'object' && !Array.isArray(args) && 'id' in args) {
+        args = { log: args.id }
+    }
+
+    if (Array.isArray(args)) {
+        args = {
+            log: args[0],
+        }
+    }
+
+    args = applyUrlDefaults(args)
+
+    const parsedArgs = {
+        log: typeof args.log === 'object'
+        ? args.log.id
+        : args.log,
+    }
+
+    return analyze.definition.url
+            .replace('{log}', parsedArgs.log.toString())
+            .replace(/\/+$/, '') + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\Servers\LogController::analyze
+* @see app/Http/Controllers/Servers/LogController.php:99
+* @route '/app/logs/{log}/analyze'
+*/
+analyze.post = (args: { log: number | { id: number } } | [log: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: analyze.url(args, options),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\Servers\LogController::analyze
+* @see app/Http/Controllers/Servers/LogController.php:99
+* @route '/app/logs/{log}/analyze'
+*/
+const analyzeForm = (args: { log: number | { id: number } } | [log: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: analyze.url(args, options),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\Servers\LogController::analyze
+* @see app/Http/Controllers/Servers/LogController.php:99
+* @route '/app/logs/{log}/analyze'
+*/
+analyzeForm.post = (args: { log: number | { id: number } } | [log: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: analyze.url(args, options),
+    method: 'post',
+})
+
+analyze.form = analyzeForm
+
+/**
 * @see \App\Http\Controllers\Servers\LogController::reopen
-* @see app/Http/Controllers/Servers/LogController.php:90
+* @see app/Http/Controllers/Servers/LogController.php:116
 * @route '/app/logs/{log}/resolve'
 */
 export const reopen = (args: { log: number | { id: number } } | [log: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -233,7 +313,7 @@ reopen.definition = {
 
 /**
 * @see \App\Http\Controllers\Servers\LogController::reopen
-* @see app/Http/Controllers/Servers/LogController.php:90
+* @see app/Http/Controllers/Servers/LogController.php:116
 * @route '/app/logs/{log}/resolve'
 */
 reopen.url = (args: { log: number | { id: number } } | [log: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
@@ -266,7 +346,7 @@ reopen.url = (args: { log: number | { id: number } } | [log: number | { id: numb
 
 /**
 * @see \App\Http\Controllers\Servers\LogController::reopen
-* @see app/Http/Controllers/Servers/LogController.php:90
+* @see app/Http/Controllers/Servers/LogController.php:116
 * @route '/app/logs/{log}/resolve'
 */
 reopen.delete = (args: { log: number | { id: number } } | [log: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -276,7 +356,7 @@ reopen.delete = (args: { log: number | { id: number } } | [log: number | { id: n
 
 /**
 * @see \App\Http\Controllers\Servers\LogController::reopen
-* @see app/Http/Controllers/Servers/LogController.php:90
+* @see app/Http/Controllers/Servers/LogController.php:116
 * @route '/app/logs/{log}/resolve'
 */
 const reopenForm = (args: { log: number | { id: number } } | [log: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -291,7 +371,7 @@ const reopenForm = (args: { log: number | { id: number } } | [log: number | { id
 
 /**
 * @see \App\Http\Controllers\Servers\LogController::reopen
-* @see app/Http/Controllers/Servers/LogController.php:90
+* @see app/Http/Controllers/Servers/LogController.php:116
 * @route '/app/logs/{log}/resolve'
 */
 reopenForm.delete = (args: { log: number | { id: number } } | [log: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -306,6 +386,6 @@ reopenForm.delete = (args: { log: number | { id: number } } | [log: number | { i
 
 reopen.form = reopenForm
 
-const LogController = { index, resolveAll, resolve, reopen }
+const LogController = { index, resolveAll, resolve, analyze, reopen }
 
 export default LogController

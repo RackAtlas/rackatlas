@@ -115,6 +115,7 @@ Route::prefix('app')->middleware(['auth', 'verified'])->group(function () {
     Route::get('logs', [LogController::class, 'index'])->middleware('permission:logs.view')->name('logs.index');
     Route::post('logs/resolve-all', [LogController::class, 'resolveAll'])->name('logs.resolve-all');
     Route::post('logs/{log}/resolve', [LogController::class, 'resolve'])->name('logs.resolve');
+    Route::post('logs/{log}/analyze', [LogController::class, 'analyze'])->middleware('throttle:20,1')->name('logs.analyze');
     Route::delete('logs/{log}/resolve', [LogController::class, 'reopen'])->name('logs.reopen');
 
     Route::get('ssh-keys', [SshKeyController::class, 'index'])->middleware('permission:ssh_keys.view')->name('ssh-keys.index');
