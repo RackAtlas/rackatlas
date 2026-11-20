@@ -1584,5 +1584,11 @@
     "Run one command on the server. It works on Debian and Ubuntu with systemd and on Windows 10/11 and Windows Server.": "Spusťte na serveru jeden příkaz. Funguje na Debianu a Ubuntu se systemd a na Windows 10/11 a Windows Serveru.",
     "Open PowerShell on the server as administrator (right click, Run as administrator).": "Na serveru otevřete PowerShell jako správce (pravý klik, Spustit jako správce).",
     "The agent runs as the Windows service RackAtlasAgent, starts with Windows and updates itself (every update is signed). It reports CPU, memory, disks, network, the busiest programs, services and serious Event Log entries. The terminal, Docker and Redis are not available on Windows. To remove it: rackatlas-agent.exe uninstall in C:\\Program Files\\RackAtlas.": "Agent běží jako služba Windows RackAtlasAgent, startuje s Windows a aktualizuje se sám (každá aktualizace je podepsaná). Hlásí CPU, paměť, disky, síť, nejnáročnější programy, služby a závažné záznamy z protokolu událostí. Terminál, Docker a Redis na Windows nejsou dostupné. Odinstalace: rackatlas-agent.exe uninstall v C:\\Program Files\\RackAtlas.",
-    "Create a new token below to get the install command for Windows.": "Vytvořte níže nový token a získáte instalační příkaz pro Windows."
+    "Create a new token below to get the install command for Windows.": "Vytvořte níže nový token a získáte instalační příkaz pro Windows.",
+    "Windows server": "Windows server",
+    "Windows 10/11 or Windows Server. CPU, memory, disks, services and Event Log errors through the agent.": "Windows 10/11 nebo Windows Server. CPU, paměť, disky, služby a chyby z protokolu událostí přes agenta.",
+    "How the agent works on Windows": "Jak agent funguje na Windows",
+    "After saving you get one PowerShell command. Run it as administrator on the server.": "Po uložení dostanete jeden příkaz pro PowerShell. Spusťte ho na serveru jako správce.",
+    "It installs the agent as a Windows service that starts with Windows and updates itself.": "Nainstaluje agenta jako službu Windows, která startuje s Windows a aktualizuje se sama.",
+    "Nothing connects into your server, so no port has to be opened. The terminal is not available on Windows.": "Nic se nepřipojuje do vašeho serveru, takže není třeba otevírat žádný port. Terminál na Windows není dostupný."
 }

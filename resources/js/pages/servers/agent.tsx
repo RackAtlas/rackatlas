@@ -142,7 +142,15 @@ export default function AgentInstall({
 }: Props) {
     const { t, locale } = useTranslation();
     const connected = server.last_seen_at !== null;
-    const [platform, setPlatform] = useState<'linux' | 'windows'>('linux');
+    const [platform, setPlatform] = useState<'linux' | 'windows'>(() => {
+        try {
+            return sessionStorage.getItem('agent-platform') === 'windows'
+                ? 'windows'
+                : 'linux';
+        } catch {
+            return 'linux';
+        }
+    });
 
     // Check every few seconds whether the first report arrived.
     usePoll(5000, { only: ['server', 'generated_at'] });

@@ -9,6 +9,7 @@ import {
     ShieldCheck,
     Plus,
     Radio,
+    AppWindow,
     ServerCog,
     Wifi,
     XCircle,
@@ -102,6 +103,8 @@ export default function ServerWizard({
     const editing = server !== null;
 
     const [step, setStep] = useState(0);
+    // A Windows server is a server that can only use the agent: no SSH, no terminal.
+    const [windows, setWindows] = useState(false);
     const [keys, setKeys] = useState<SshKey[]>(initialKeys);
     const [addingKey, setAddingKey] = useState(false);
     const [categoryChoice, setCategoryChoice] = useState(
@@ -243,8 +246,18 @@ export default function ServerWizard({
         }));
     };
 
-    const chooseType = (type: 'server' | 'mysql' | 'redis') => {
+    const chooseType = (kind: 'server' | 'windows' | 'mysql' | 'redis') => {
+        const type = kind === 'windows' ? 'server' : kind;
         const database = type !== 'server';
+        setWindows(kind === 'windows');
+        try {
+            sessionStorage.setItem(
+                'agent-platform',
+                kind === 'windows' ? 'windows' : 'linux',
+            );
+        } catch {
+            // the install page then simply starts on Linux
+        }
 
         form.setData((data) => ({
             ...data,
@@ -387,7 +400,7 @@ export default function ServerWizard({
                                 <div
                                     role="radiogroup"
                                     aria-label={t('What do you want to add?')}
-                                    className="grid gap-3 sm:grid-cols-3"
+                                    className="grid gap-3 sm:grid-cols-2"
                                 >
                                     {(
                                         [
@@ -398,6 +411,14 @@ export default function ServerWizard({
                                                     'CPU, memory, disks, services and logs of a machine.',
                                                 ),
                                                 ServerCog,
+                                            ],
+                                            [
+                                                'windows',
+                                                t('Windows server'),
+                                                t(
+                                                    'Windows 10/11 or Windows Server. CPU, memory, disks, services and Event Log errors through the agent.',
+                                                ),
+                                                AppWindow,
                                             ],
                                             [
                                                 'mysql',
@@ -422,13 +443,30 @@ export default function ServerWizard({
                                             type="button"
                                             role="radio"
                                             aria-checked={
-                                                form.data.type === value
+                                                value === 'windows'
+                                                    ? windows
+                                                    : form.data.type ===
+                                                          value &&
+                                                      !(
+                                                          value === 'server' &&
+                                                          windows
+                                                      )
                                             }
                                             onClick={() => chooseType(value)}
                                             data-test={`type-${value}`}
                                             className={cn(
                                                 'flex items-start gap-3 rounded-lg border bg-card p-4 text-left transition-colors',
-                                                form.data.type === value
+                                                (
+                                                    value === 'windows'
+                                                        ? windows
+                                                        : form.data.type ===
+                                                              value &&
+                                                          !(
+                                                              value ===
+                                                                  'server' &&
+                                                              windows
+                                                          )
+                                                )
                                                     ? 'border-primary bg-primary/5 ring-1 ring-primary'
                                                     : 'hover:bg-muted/50',
                                             )}
@@ -701,7 +739,7 @@ export default function ServerWizard({
 
                     {step === 1 && (
                         <>
-                            {!isDatabase && (
+                            {!isDatabase && !windows && (
                                 <div
                                     role="radiogroup"
                                     aria-label={t('How do we get the data?')}
@@ -770,7 +808,32 @@ export default function ServerWizard({
                                 </div>
                             )}
 
-                            {isAgent && (
+                            {isAgent && windows && (
+                                <div className="space-y-3 rounded-lg border bg-muted/30 p-4 text-sm">
+                                    <p className="font-medium">
+                                        {t('How the agent works on Windows')}
+                                    </p>
+                                    <ul className="list-disc space-y-1.5 pl-5 text-muted-foreground">
+                                        <li>
+                                            {t(
+                                                'After saving you get one PowerShell command. Run it as administrator on the server.',
+                                            )}
+                                        </li>
+                                        <li>
+                                            {t(
+                                                'It installs the agent as a Windows service that starts with Windows and updates itself.',
+                                            )}
+                                        </li>
+                                        <li>
+                                            {t(
+                                                'Nothing connects into your server, so no port has to be opened. The terminal is not available on Windows.',
+                                            )}
+                                        </li>
+                                    </ul>
+                                </div>
+                            )}
+
+                            {isAgent && !windows && (
                                 <div className="space-y-3 rounded-lg border bg-muted/30 p-4 text-sm">
                                     <p className="font-medium">
                                         {t('How the agent works')}
@@ -800,7 +863,7 @@ export default function ServerWizard({
                                 </div>
                             )}
 
-                            {isAgent && agentTerminalOption}
+                            {isAgent && !windows && agentTerminalOption}
 
                             {isMysql && !editing && (
                                 <CreateUserCommand
