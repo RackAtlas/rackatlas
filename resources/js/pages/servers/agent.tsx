@@ -28,6 +28,7 @@ type Props = {
     };
     install_command: string | null;
     manual_command: string | null;
+    windows_command: string | null;
     update_command: string;
     terminal_command: string | null;
     base_url: string;
@@ -134,12 +135,14 @@ export default function AgentInstall({
     server,
     install_command,
     manual_command,
+    windows_command,
     update_command,
     terminal_command,
     generated_at,
 }: Props) {
     const { t, locale } = useTranslation();
     const connected = server.last_seen_at !== null;
+    const [platform, setPlatform] = useState<'linux' | 'windows'>('linux');
 
     // Check every few seconds whether the first report arrived.
     usePoll(5000, { only: ['server', 'generated_at'] });
@@ -157,9 +160,31 @@ export default function AgentInstall({
                     </h1>
                     <p className="text-sm text-muted-foreground">
                         {t(
-                            'Run one command on the server. It works on Debian and Ubuntu with systemd.',
+                            'Run one command on the server. It works on Debian and Ubuntu with systemd and on Windows 10/11 and Windows Server.',
                         )}
                     </p>
+                    <div
+                        role="tablist"
+                        className="inline-flex gap-1 rounded-lg bg-muted p-1 text-sm"
+                    >
+                        {(['linux', 'windows'] as const).map((item) => (
+                            <button
+                                key={item}
+                                type="button"
+                                role="tab"
+                                aria-selected={platform === item}
+                                onClick={() => setPlatform(item)}
+                                className={cn(
+                                    'rounded-md px-3 py-1 font-medium transition-colors',
+                                    platform === item
+                                        ? 'bg-background shadow-sm'
+                                        : 'text-muted-foreground hover:text-foreground',
+                                )}
+                            >
+                                {item === 'linux' ? 'Linux' : 'Windows'}
+                            </button>
+                        ))}
+                    </div>
                 </div>
 
                 <div
@@ -201,7 +226,41 @@ export default function AgentInstall({
                     </div>
                 </div>
 
-                {install_command ? (
+                {platform === 'windows' && windows_command && (
+                    <div className="space-y-4 rounded-xl border bg-card p-5">
+                        <ol className="list-decimal space-y-3 pl-5 text-sm">
+                            <li>
+                                {t(
+                                    'Open PowerShell on the server as administrator (right click, Run as administrator).',
+                                )}
+                            </li>
+                            <li className="space-y-2">
+                                <span>{t('Run this command:')}</span>
+                                <CopyField value={windows_command} />
+                            </li>
+                            <li>
+                                {t(
+                                    'Wait a minute. The status above turns green when the first report arrives.',
+                                )}
+                            </li>
+                        </ol>
+                        <p className="text-sm text-muted-foreground">
+                            {t(
+                                'The agent runs as the Windows service RackAtlasAgent, starts with Windows and updates itself (every update is signed). It reports CPU, memory, disks, network, the busiest programs, services and serious Event Log entries. The terminal, Docker and Redis are not available on Windows. To remove it: rackatlas-agent.exe uninstall in C:\\Program Files\\RackAtlas.',
+                            )}
+                        </p>
+                    </div>
+                )}
+
+                {platform === 'windows' && !windows_command && (
+                    <div className="rounded-xl border bg-card p-5 text-sm text-muted-foreground">
+                        {t(
+                            'Create a new token below to get the install command for Windows.',
+                        )}
+                    </div>
+                )}
+
+                {platform === 'linux' && install_command ? (
                     <div className="space-y-4 rounded-xl border bg-card p-5">
                         <ol className="list-decimal space-y-3 pl-5 text-sm">
                             <li>
@@ -228,7 +287,7 @@ export default function AgentInstall({
                             </span>
                         </div>
                     </div>
-                ) : (
+                ) : platform === 'linux' || !windows_command ? (
                     <div className="space-y-3 rounded-xl border bg-card p-5 text-sm">
                         <p className="text-muted-foreground">
                             {t(
@@ -258,9 +317,9 @@ export default function AgentInstall({
                             {t('Create a new token')}
                         </Button>
                     </div>
-                )}
+                ) : null}
 
-                {manual_command && (
+                {platform === 'linux' && manual_command && (
                     <details className="rounded-xl border bg-card p-4 text-sm">
                         <summary className="cursor-pointer font-medium">
                             {t('Install step by step with apt')}
@@ -276,17 +335,21 @@ export default function AgentInstall({
                     </details>
                 )}
 
-                <div className="space-y-2 rounded-xl border bg-card p-4 text-sm">
-                    <p className="font-medium">{t('Update the agent later')}</p>
-                    <p className="text-muted-foreground">
-                        {t(
-                            'The agent comes from the signed RackAtlas apt repository, so it is updated together with the system. To update only the agent:',
-                        )}
-                    </p>
-                    <CopyField value={update_command} />
-                </div>
+                {platform === 'linux' && (
+                    <div className="space-y-2 rounded-xl border bg-card p-4 text-sm">
+                        <p className="font-medium">
+                            {t('Update the agent later')}
+                        </p>
+                        <p className="text-muted-foreground">
+                            {t(
+                                'The agent comes from the signed RackAtlas apt repository, so it is updated together with the system. To update only the agent:',
+                            )}
+                        </p>
+                        <CopyField value={update_command} />
+                    </div>
+                )}
 
-                {terminal_command && (
+                {platform === 'linux' && terminal_command && (
                     <div className="space-y-2 rounded-xl border bg-card p-4 text-sm">
                         <p className="font-medium">
                             {t('Terminal through the agent')}
@@ -300,43 +363,47 @@ export default function AgentInstall({
                     </div>
                 )}
 
-                <RedisAgentSetup />
+                {platform === 'linux' && <RedisAgentSetup />}
 
-                <details className="rounded-xl border bg-card p-4 text-sm">
-                    <summary className="cursor-pointer font-medium">
-                        {t('What does the installer do?')}
-                    </summary>
-                    <ul className="mt-3 list-disc space-y-1.5 pl-5 text-muted-foreground">
-                        <li>
-                            {t(
-                                'Adds the signed RackAtlas apt repository and installs the package rackatlas-agent from it.',
-                            )}
-                        </li>
-                        <li>
-                            {t(
-                                'To update later: sudo apt update && sudo apt install --only-upgrade rackatlas-agent',
-                            )}
-                        </li>
-                        <li>
-                            {t(
-                                'Creates the system user rackatlas-agent without a login and without root rights.',
-                            )}
-                        </li>
-                        <li>
-                            {t(
-                                'Stores the address and the token in /etc/rackatlas-agent/agent.conf.',
-                            )}
-                        </li>
-                        <li>
-                            {t(
-                                'Starts a systemd timer that reports once a minute.',
-                            )}
-                        </li>
-                        <li>
-                            {t('To remove it: sudo apt remove rackatlas-agent')}
-                        </li>
-                    </ul>
-                </details>
+                {platform === 'linux' && (
+                    <details className="rounded-xl border bg-card p-4 text-sm">
+                        <summary className="cursor-pointer font-medium">
+                            {t('What does the installer do?')}
+                        </summary>
+                        <ul className="mt-3 list-disc space-y-1.5 pl-5 text-muted-foreground">
+                            <li>
+                                {t(
+                                    'Adds the signed RackAtlas apt repository and installs the package rackatlas-agent from it.',
+                                )}
+                            </li>
+                            <li>
+                                {t(
+                                    'To update later: sudo apt update && sudo apt install --only-upgrade rackatlas-agent',
+                                )}
+                            </li>
+                            <li>
+                                {t(
+                                    'Creates the system user rackatlas-agent without a login and without root rights.',
+                                )}
+                            </li>
+                            <li>
+                                {t(
+                                    'Stores the address and the token in /etc/rackatlas-agent/agent.conf.',
+                                )}
+                            </li>
+                            <li>
+                                {t(
+                                    'Starts a systemd timer that reports once a minute.',
+                                )}
+                            </li>
+                            <li>
+                                {t(
+                                    'To remove it: sudo apt remove rackatlas-agent',
+                                )}
+                            </li>
+                        </ul>
+                    </details>
+                )}
 
                 <div className="flex gap-2">
                     <Button asChild>

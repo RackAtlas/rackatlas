@@ -42,4 +42,5 @@ yarn-error.log
 /opencode.json
 /opencode.jsonc
 test
-public/apps/*
+public/apps/*/public/agent/windows/dev/
+/agent/windows/update.key

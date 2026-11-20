@@ -1580,5 +1580,9 @@
     "Black": "Černá",
     "Grey": "Šedá",
     "Midnight blue": "Půlnoční modrá",
-    "Forest": "Lesní"
+    "Forest": "Lesní",
+    "Run one command on the server. It works on Debian and Ubuntu with systemd and on Windows 10/11 and Windows Server.": "Spusťte na serveru jeden příkaz. Funguje na Debianu a Ubuntu se systemd a na Windows 10/11 a Windows Serveru.",
+    "Open PowerShell on the server as administrator (right click, Run as administrator).": "Na serveru otevřete PowerShell jako správce (pravý klik, Spustit jako správce).",
+    "The agent runs as the Windows service RackAtlasAgent, starts with Windows and updates itself (every update is signed). It reports CPU, memory, disks, network, the busiest programs, services and serious Event Log entries. The terminal, Docker and Redis are not available on Windows. To remove it: rackatlas-agent.exe uninstall in C:\\Program Files\\RackAtlas.": "Agent běží jako služba Windows RackAtlasAgent, startuje s Windows a aktualizuje se sám (každá aktualizace je podepsaná). Hlásí CPU, paměť, disky, síť, nejnáročnější programy, služby a závažné záznamy z protokolu událostí. Terminál, Docker a Redis na Windows nejsou dostupné. Odinstalace: rackatlas-agent.exe uninstall v C:\\Program Files\\RackAtlas.",
+    "Create a new token below to get the install command for Windows.": "Vytvořte níže nový token a získáte instalační příkaz pro Windows."
 }

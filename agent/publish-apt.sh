@@ -1,6 +1,7 @@
 #!/bin/sh
 #
-# Builds the agent package and adds it to the signed apt repository in public/apt.
+# Builds the agent package and adds it to the signed apt repository in public/apt, and builds and signs
+# the Windows agent in public/agent/windows (publish-windows.sh; RACKATLAS_NO_WINDOWS=1 skips it).
 #
 #   agent/publish-apt.sh              sign with the key in agent/SIGNING_KEY
 #   agent/publish-apt.sh KEYID        sign with another GPG key
@@ -39,7 +40,11 @@ esac
 WORK="$(mktemp -d)"
 trap 'rm -rf "$WORK"' EXIT
 
-sh "$SCRIPT_DIR/build-deb.sh" "$WORK" >/dev/null
+RACKATLAS_NO_WINDOWS=1 sh "$SCRIPT_DIR/build-deb.sh" "$WORK" >/dev/null
 
 # shellcheck disable=SC2086
 python3 "$SCRIPT_DIR/apt-repo.py" --deb "$WORK/rackatlas-agent.deb" --repo "$REPO" $SIGN
+
+if [ -z "${RACKATLAS_NO_WINDOWS:-}" ]; then
+  sh "$SCRIPT_DIR/publish-windows.sh"
+fi

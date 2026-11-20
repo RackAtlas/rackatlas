@@ -1,0 +1,13 @@
+{
+  "version": "1.0.0",
+  "files": {
+    "amd64": {
+      "path": "agent/windows/rackatlas-agent-amd64.exe",
+      "sha256": "89445b34b6989e676e421fecbed91861d2973dba5007970b511f33837faff9e0"
+    },
+    "arm64": {
+      "path": "agent/windows/rackatlas-agent-arm64.exe",
+      "sha256": "38202e5adefe559e28a4e00a048f9ac87be9d424fbedf8f231336eb4c89163b4"
+    }
+  }
+}

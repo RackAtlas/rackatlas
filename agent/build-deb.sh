@@ -69,3 +69,9 @@ else
 fi
 
 echo "Built $OUT (version $VERSION)"
+
+# The same command builds the Windows agent next to the package (public/agent/windows/dev, not committed).
+# RACKATLAS_NO_WINDOWS=1 skips it; publish-apt.sh does, it publishes Windows with publish-windows.sh.
+if [ -z "${RACKATLAS_NO_WINDOWS:-}" ]; then
+  sh "$SCRIPT_DIR/build-windows.sh" "$(dirname "$OUT")/windows/dev"
+fi

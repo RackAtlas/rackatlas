@@ -182,3 +182,23 @@ arguments, change both.
 - [ ] Package and repository tested in a temporary directory, nothing left in `public/apt`.
 - [ ] UI text and `lang/sk.json` / `lang/cs.json` updated if the install page or the data shown changed.
 - [ ] The owner knows they must run `agent/publish-apt.sh KEYID`, commit and deploy.
+
+## Windows agent (`agent/windows`)
+
+A Go program for Windows 10/11 and Windows Server (amd64 and arm64), without the terminal, Docker and Redis. It sends
+the same `###SECTION` report as the shell agent to `/api/agent/ingest`, so the server code is shared. Run as the
+service `RackAtlasAgent` (LocalSystem), config in `%ProgramData%\RackAtlas\agent.conf`.
+
+- Versioned separately in `agent/windows/VERSION`. Raise it when the Go code changes.
+- `agent/build-windows.sh` cross-compiles (only Go needed). `agent/build-deb.sh` runs it too (into
+  `public/agent/windows/dev`, not committed), unless `RACKATLAS_NO_WINDOWS=1`.
+- `agent/publish-windows.sh` (called by `publish-apt.sh`) builds into `public/agent/windows`, signs
+  `manifest.json` with `agent/windows/update.key` (private, git-ignored, back it up) and the public key
+  `update.pub` is built into the agent. Commit `public/agent/windows` and `update.pub`, then deploy.
+- Self-update: every 6 h the agent fetches `manifest.json` + `.sig`, verifies the ed25519 signature and the sha256, swaps
+  the exe (old one kept as `.old`) and exits with a failure code so the service recovery action restarts it. A new
+  version that does not send one accepted report in 3 starts is rolled back.
+- Windows services are reported as `<Name>.service` (unit pattern of the server); "load" is the number of busy cores;
+  Event Log Critical/Error entries are sent as the journal sections.
+- Installer: `public/agent/install.ps1`. The install page shows the PowerShell command next to the Linux one.
+- `go vet` and `go test` run on any OS (non-Windows builds use stubs); the Windows code can only be run on Windows.

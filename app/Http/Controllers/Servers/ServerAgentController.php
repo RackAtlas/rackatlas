@@ -31,6 +31,7 @@ class ServerAgentController extends Controller
             ],
             'install_command' => $token ? $this->installCommand($base, $token, $server->agent_terminal) : null,
             'manual_command' => $token ? $this->manualCommand($base, $token, $server->agent_terminal) : null,
+            'windows_command' => $token ? $this->windowsCommand($base, $token) : null,
             'terminal_command' => $server->agent_terminal
                 ? 'sudo apt update && sudo apt install --only-upgrade rackatlas-agent && sudo systemctl enable --now rackatlas-terminal'
                 : null,
@@ -52,6 +53,14 @@ class ServerAgentController extends Controller
         Inertia::flash('toast', ['type' => 'success', 'message' => __('A new token was created. The old one no longer works.')]);
 
         return to_route('servers.agent.show', $server);
+    }
+
+    /** One line for an elevated PowerShell; the token is in an environment variable of that session only. */
+    private function windowsCommand(string $base, string $token): string
+    {
+        $address = str_replace("'", "''", $base);
+
+        return sprintf("\$env:RACKATLAS_URL='%s'; \$env:RACKATLAS_TOKEN='%s'; irm \"\$env:RACKATLAS_URL/agent/install.ps1\" | iex", $address, $token);
     }
 
     /** Pass the token through standard input instead of exposing it in process arguments. */
