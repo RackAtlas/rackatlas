@@ -81,4 +81,19 @@ class WindowsAgentTest extends TestCase
             ->get(route('servers.agent.show', $server))
             ->assertInertia(fn (Assert $page) => $page->where('windows_command', null));
     }
+
+    public function test_a_windows_server_added_with_the_wizard_goes_to_the_install_page(): void
+    {
+        $team = Team::factory()->create();
+
+        $this->actingAs($team->owner)
+            ->post(route('servers.store'), [
+                'type' => 'server', 'name' => 'win', 'provider' => '', 'country' => '', 'host' => '', 'port' => '22',
+                'username' => 'root', 'server_category_id' => '', 'new_category' => '', 'auth_type' => 'agent',
+                'uses_agent' => false, 'agent_terminal' => false, 'password' => '', 'ssh_key_id' => '',
+                'ignored_alerts' => [], 'in_maintenance' => false, 'watch_enabled' => false, 'has_docker' => false,
+            ])
+            ->assertSessionHasNoErrors()
+            ->assertRedirect(route('servers.agent.show', $team->servers()->firstOrFail()));
+    }
 }

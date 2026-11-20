@@ -29,6 +29,7 @@ use App\Http\Controllers\Servers\TestConnectionController;
 use App\Http\Controllers\Settings\LanguageController;
 use App\Http\Controllers\Terminal\TerminalController;
 use App\Http\Controllers\Terminal\TerminalSessionController;
+use Illuminate\Routing\RedirectController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', HomeController::class)->name('home');
@@ -54,7 +55,10 @@ Route::prefix('app')->middleware(['auth', 'verified'])->group(function () {
     Route::put('current-team', [CurrentTeamController::class, 'update'])->name('current-team.update');
 
     Route::get('settings/servers', [ServerController::class, 'index'])->middleware('permission:servers.view')->name('servers.index');
-    Route::redirect('servers', '/app/settings/servers');
+    // GET only: Route::redirect() answers every method, and a cached route table then lets it swallow POST /servers.
+    Route::match(['GET', 'HEAD'], 'servers', RedirectController::class)
+        ->defaults('destination', '/app/settings/servers')
+        ->defaults('status', 302);
     Route::get('servers/create', [ServerController::class, 'create'])->name('servers.create');
     Route::post('servers', [ServerController::class, 'store'])->name('servers.store');
     Route::post('servers/test-connection', TestConnectionController::class)
