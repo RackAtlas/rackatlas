@@ -4,6 +4,10 @@
 # switched back on even then.
 set -euo pipefail
 
+# The panel starts the deploy without $HOME; composer, npm and git need one.
+export HOME="${HOME:-/root}"
+export COMPOSER_HOME="${COMPOSER_HOME:-$HOME/.composer}"
+
 APP_DIR="${APP_DIR:-/www/wwwroot/rackatlas.dev}"
 SERVICES="rackatlas-scheduler rackatlas-queue rackatlas-ssr rackatlas-terminal"
 
@@ -13,7 +17,9 @@ cd "$APP_DIR"
 php artisan down --retry=30 || true
 trap 'php artisan up || true' EXIT
 
-git pull origin main
+# The checkout belongs to www but the deploy runs as root: git refuses that ("dubious ownership")
+# unless the directory is marked safe. -c needs no $HOME and no global config.
+git -c safe.directory="$APP_DIR" pull origin main
 
 composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
 
