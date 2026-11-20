@@ -8,14 +8,22 @@
         {{-- Inline script to detect system dark mode preference and apply it immediately --}}
         <script>
             (function() {
-                const appearance = '{{ $appearance ?? "system" }}';
+                const read = (key, fallback) => {
+                    try { return localStorage.getItem(key) || fallback; } catch (e) { return fallback; }
+                };
+                const appearance = read('appearance', '{{ $appearance ?? "system" }}');
+                const dark = appearance === 'dark'
+                    || (appearance === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+                const themes = dark
+                    ? { dark: 1, graphite: 1, midnight: 1, forest: 1 }
+                    : { light: 1, sand: 1, mist: 1 };
+                const theme = read(dark ? 'theme-night' : 'theme-day', dark ? 'dark' : 'light');
+                const root = document.documentElement;
 
-                if (appearance === 'system') {
-                    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                root.classList.toggle('dark', dark);
 
-                    if (prefersDark) {
-                        document.documentElement.classList.add('dark');
-                    }
+                if (themes[theme] && theme !== 'light' && theme !== 'dark') {
+                    root.dataset.theme = theme;
                 }
             })();
         </script>
@@ -23,11 +31,11 @@
         {{-- Inline style to set the HTML background color based on our theme in app.css --}}
         <style>
             html {
-                background-color: oklch(1 0 0);
+                background-color: var(--background, oklch(1 0 0));
             }
 
             html.dark {
-                background-color: oklch(0.145 0 0);
+                background-color: var(--background, oklch(0.145 0 0));
             }
         </style>
 

@@ -1,4 +1,16 @@
 import { Form, Head, Link, usePage } from '@inertiajs/react';
+import {
+    BookOpen,
+    Cog,
+    Container,
+    Database,
+    Fingerprint,
+    HardDriveDownload,
+    MapPin,
+    Sparkles,
+    SquareTerminal,
+} from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import { useEffect, useRef } from 'react';
 import type { ReactNode } from 'react';
 import InputError from '@/components/input-error';
@@ -874,44 +886,105 @@ export default function Welcome({ canRegister, faq }: Props) {
                     id="new"
                     className="mx-auto max-w-[1240px] scroll-mt-24 px-4 pt-10 pb-10 sm:px-8"
                 >
-                    <Eyebrow>{t("What's new")}</Eyebrow>
-                    <h2 className="mb-9 max-w-[620px] text-[clamp(1.9rem,3.6vw,2.9rem)] leading-[1.05] font-semibold tracking-[-0.04em]">
-                        {t('More than monitoring')}
-                    </h2>
+                    <div className="mb-9 flex flex-wrap items-end justify-between gap-x-10 gap-y-4">
+                        <div>
+                            <Eyebrow>{t("What's new")}</Eyebrow>
+                            <h2 className="max-w-[620px] text-[clamp(1.9rem,3.6vw,2.9rem)] leading-[1.05] font-semibold tracking-[-0.04em]">
+                                {t('More than monitoring')}
+                            </h2>
+                        </div>
+                        <p className="max-w-[420px] text-[15.5px] text-[var(--l-body)]">
+                            {t(
+                                'RackAtlas keeps growing. These are the newest things you can use today.',
+                            )}
+                        </p>
+                    </div>
                     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                        {[
+                        {(
                             [
-                                t('Backups'),
-                                t(
-                                    'See whether your backups ran on time. A script reports to a URL and you get a notification when one is missing.',
-                                ),
-                            ],
-                            [
-                                t('Terminal in the browser'),
-                                t(
-                                    'Open an end-to-end encrypted SSH terminal to your server without opening any port.',
-                                ),
-                            ],
-                            [
-                                t('Passkeys and two-factor'),
-                                t(
-                                    'Sign in with a passkey or an authenticator app and keep your account safe.',
-                                ),
-                            ],
-                            [
-                                t('Docker and services'),
-                                t(
-                                    'Containers and failed services next to the rest of the server data.',
-                                ),
-                            ],
-                            [
-                                t('Maps and teams'),
-                                t(
-                                    'Place servers on a map and share them with your team, each with their own notifications.',
-                                ),
-                            ],
-                        ].map(([title, text]) => (
-                            <Tile key={title}>
+                                [
+                                    Database,
+                                    t('MySQL and Redis'),
+                                    t(
+                                        'Connections, queries, memory and replication. Stop a runaway MySQL query straight from the browser.',
+                                    ),
+                                    true,
+                                ],
+                                [
+                                    Sparkles,
+                                    t('AI analysis of logs'),
+                                    t(
+                                        'Not sure what a log entry means? Get a plain explanation and a suggested fix in one click.',
+                                    ),
+                                    true,
+                                ],
+                                [
+                                    Cog,
+                                    t('Services and their journal'),
+                                    t(
+                                        'See which services run on each server and read their journal without logging in over SSH.',
+                                    ),
+                                    true,
+                                ],
+                                [
+                                    BookOpen,
+                                    t('Server documentation'),
+                                    t(
+                                        'Keep notes, access details and runbooks next to the server, and see which servers still have none.',
+                                    ),
+                                    true,
+                                ],
+                                [
+                                    HardDriveDownload,
+                                    t('Backups'),
+                                    t(
+                                        'See whether your backups ran on time. A script reports to a URL and you get a notification when one is missing.',
+                                    ),
+                                ],
+                                [
+                                    SquareTerminal,
+                                    t('Terminal in the browser'),
+                                    t(
+                                        'Open an end-to-end encrypted SSH terminal to your server without opening any port.',
+                                    ),
+                                ],
+                                [
+                                    Container,
+                                    t('Docker and services'),
+                                    t(
+                                        'Containers and failed services next to the rest of the server data.',
+                                    ),
+                                ],
+                                [
+                                    MapPin,
+                                    t('Maps and teams'),
+                                    t(
+                                        'Place servers on a map and share them with your team, each with their own notifications.',
+                                    ),
+                                ],
+                                [
+                                    Fingerprint,
+                                    t('Passkeys and two-factor'),
+                                    t(
+                                        'Sign in with a passkey or an authenticator app and keep your account safe.',
+                                    ),
+                                ],
+                            ] as [LucideIcon, string, string, boolean?][]
+                        ).map(([Icon, title, text, isNew]) => (
+                            <Tile key={title} className="group">
+                                <div className="mb-4 flex items-center justify-between">
+                                    <span className="flex size-10 items-center justify-center rounded-xl bg-[var(--l-soft)] text-[var(--l-accent)] transition-colors group-hover:bg-[var(--l-accent)] group-hover:text-white">
+                                        <Icon
+                                            className="size-5"
+                                            strokeWidth={1.8}
+                                        />
+                                    </span>
+                                    {isNew && (
+                                        <span className="rounded-full bg-[var(--l-accent)]/12 px-2.5 py-0.5 font-mono text-[11px] font-medium tracking-wide text-[var(--l-accent)] uppercase">
+                                            {t('New')}
+                                        </span>
+                                    )}
+                                </div>
                                 <h3 className="mb-2 text-lg font-semibold tracking-[-0.02em]">
                                     {title}
                                 </h3>

@@ -4,14 +4,47 @@ import { useSyncExternalStore } from 'react';
 export type ResolvedAppearance = 'light' | 'dark';
 export type Appearance = ResolvedAppearance | 'system';
 
+export type Theme =
+    'light' | 'sand' | 'mist' | 'dark' | 'graphite' | 'midnight' | 'forest';
+
+export const THEMES: Record<Theme, ResolvedAppearance> = {
+    light: 'light',
+    sand: 'light',
+    mist: 'light',
+    dark: 'dark',
+    graphite: 'dark',
+    midnight: 'dark',
+    forest: 'dark',
+};
+
 export type UseAppearanceReturn = {
     readonly appearance: Appearance;
     readonly resolvedAppearance: ResolvedAppearance;
+    readonly dayTheme: Theme;
+    readonly nightTheme: Theme;
+    readonly theme: Theme;
     readonly updateAppearance: (mode: Appearance) => void;
+    readonly updateTheme: (kind: ResolvedAppearance, theme: Theme) => void;
 };
 
 const listeners = new Set<() => void>();
 let currentAppearance: Appearance = 'system';
+let dayTheme: Theme = 'light';
+let nightTheme: Theme = 'dark';
+let snapshot = '';
+
+const readTheme = (
+    key: string,
+    kind: ResolvedAppearance,
+    fallback: Theme,
+): Theme => {
+    const value = localStorage.getItem(key) as Theme | null;
+
+    return value && THEMES[value] === kind ? value : fallback;
+};
+
+const pickTheme = (appearance: Appearance): Theme =>
+    isDarkMode(appearance) ? nightTheme : dayTheme;
 
 const prefersDark = (): boolean => {
     if (typeof window === 'undefined') {
@@ -50,10 +83,18 @@ const applyTheme = (appearance: Appearance): void => {
         return;
     }
 
-    const isDark = isDarkMode(appearance);
+    const theme = pickTheme(appearance);
+    const isDark = THEMES[theme] === 'dark';
+    const root = document.documentElement;
 
-    document.documentElement.classList.toggle('dark', isDark);
-    document.documentElement.style.colorScheme = isDark ? 'dark' : 'light';
+    root.classList.toggle('dark', isDark);
+    root.style.colorScheme = isDark ? 'dark' : 'light';
+
+    if (theme === 'light' || theme === 'dark') {
+        delete root.dataset.theme;
+    } else {
+        root.dataset.theme = theme;
+    }
 };
 
 const subscribe = (callback: () => void) => {
@@ -85,6 +126,9 @@ export function initializeTheme(): void {
     }
 
     currentAppearance = getStoredAppearance();
+    dayTheme = readTheme('theme-day', 'light', 'light');
+    nightTheme = readTheme('theme-night', 'dark', 'dark');
+    snapshot = `${currentAppearance}|${dayTheme}|${nightTheme}`;
     applyTheme(currentAppearance);
 
     // Set up system theme change listener
@@ -92,15 +136,48 @@ export function initializeTheme(): void {
 }
 
 export function useAppearance(): UseAppearanceReturn {
-    const appearance: Appearance = useSyncExternalStore(
+    // The React compiler only re-renders on values it sees, so the state is read from the snapshot.
+    const state = useSyncExternalStore(
         subscribe,
-        () => currentAppearance,
-        () => 'system',
+        () => snapshot,
+        () => '',
     );
+    const [storedAppearance, storedDay, storedNight] = state.split('|') as [
+        Appearance?,
+        Theme?,
+        Theme?,
+    ];
+
+    const appearance: Appearance = storedAppearance ?? currentAppearance;
+    const day: Theme = storedDay ?? dayTheme;
+    const night: Theme = storedNight ?? nightTheme;
 
     const resolvedAppearance: ResolvedAppearance = isDarkMode(appearance)
         ? 'dark'
         : 'light';
+
+    const refresh = (): void => {
+        snapshot = `${currentAppearance}|${dayTheme}|${nightTheme}`;
+        applyTheme(currentAppearance);
+        notify();
+    };
+
+    const updateTheme = (kind: ResolvedAppearance, theme: Theme): void => {
+        if (THEMES[theme] !== kind) {
+            return;
+        }
+
+        if (kind === 'light') {
+            dayTheme = theme;
+            localStorage.setItem('theme-day', theme);
+        } else {
+            nightTheme = theme;
+            localStorage.setItem('theme-night', theme);
+        }
+
+        setCookie(kind === 'light' ? 'theme_day' : 'theme_night', theme);
+        refresh();
+    };
 
     const updateAppearance = (mode: Appearance): void => {
         currentAppearance = mode;
@@ -111,9 +188,16 @@ export function useAppearance(): UseAppearanceReturn {
         // Store in cookie for SSR...
         setCookie('appearance', mode);
 
-        applyTheme(mode);
-        notify();
+        refresh();
     };
 
-    return { appearance, resolvedAppearance, updateAppearance } as const;
+    return {
+        appearance,
+        resolvedAppearance,
+        dayTheme: day,
+        nightTheme: night,
+        theme: resolvedAppearance === 'dark' ? night : day,
+        updateAppearance,
+        updateTheme,
+    } as const;
 }
