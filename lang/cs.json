@@ -1590,5 +1590,10 @@
     "How the agent works on Windows": "Jak agent funguje na Windows",
     "After saving you get one PowerShell command. Run it as administrator on the server.": "Po uložení dostanete jeden příkaz pro PowerShell. Spusťte ho na serveru jako správce.",
     "It installs the agent as a Windows service that starts with Windows and updates itself.": "Nainstaluje agenta jako službu Windows, která startuje s Windows a aktualizuje se sama.",
-    "Nothing connects into your server, so no port has to be opened. The terminal is not available on Windows.": "Nic se nepřipojuje do vašeho serveru, takže není třeba otevírat žádný port. Terminál na Windows není dostupný."
+    "Nothing connects into your server, so no port has to be opened. The terminal is not available on Windows.": "Nic se nepřipojuje do vašeho serveru, takže není třeba otevírat žádný port. Terminál na Windows není dostupný.",
+    "Server monitoring without open ports": "Monitoring serverů bez otevírání portů",
+    "Monitoring for Linux and Windows servers": "Monitoring pro servery s Linuxem a Windows",
+    "One command on a Linux or Windows server and the data starts flowing. Updates are just as simple.": "Jeden příkaz na serveru s Linuxem nebo Windows a data začnou přicházet. Aktualizace jsou stejně jednoduché.",
+    "Windows servers": "Windows servery",
+    "Windows 10/11 and Windows Server too: CPU, memory, disks, services and Event Log errors. One PowerShell command, and the agent updates itself.": "I Windows 10/11 a Windows Server: CPU, paměť, disky, služby a chyby z protokolu událostí. Jeden příkaz v PowerShellu a agent se aktualizuje sám."
 }

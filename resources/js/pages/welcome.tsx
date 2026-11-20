@@ -2,7 +2,7 @@ import { Form, Head, Link, usePage } from '@inertiajs/react';
 import {
     BookOpen,
     Cog,
-    Container,
+    MonitorCog,
     Database,
     Fingerprint,
     HardDriveDownload,
@@ -351,7 +351,7 @@ export default function Welcome({ canRegister, faq }: Props) {
     const primary =
         'inline-flex items-center justify-center rounded-full px-6 py-3 text-[15px] font-medium transition-transform hover:-translate-y-px';
 
-    const title = t('Linux server monitoring without open ports');
+    const title = t('Server monitoring without open ports');
     return (
         <>
             <Head title={title} />
@@ -449,10 +449,10 @@ export default function Welcome({ canRegister, faq }: Props) {
                     <div className="max-w-[660px] min-w-0 flex-[1_1_580px]">
                         <p className="mb-6 inline-flex items-center gap-2.5 rounded-full border border-[var(--l-border)] bg-[var(--l-card)] py-1.5 pr-3.5 pl-2.5 font-mono text-[12.5px] text-[var(--l-body)]">
                             <span className="size-2 rounded-full bg-[var(--l-dot)]" />
-                            {t('Monitoring for Debian and Ubuntu servers')}
+                            {t('Monitoring for Linux and Windows servers')}
                         </p>
                         <h1 className="mb-6 text-[clamp(2.3rem,4.4vw,3.7rem)] leading-[1.04] font-semibold tracking-[-0.045em]">
-                            {t('Linux server monitoring')}
+                            {t('Server monitoring')}
                             <br />
                             <span className="text-[var(--l-accent)]">
                                 {t('without open ports.')}
@@ -672,6 +672,8 @@ export default function Welcome({ canRegister, faq }: Props) {
                 <p className="mx-auto flex max-w-[1240px] flex-wrap justify-center gap-x-7 gap-y-2 px-4 pt-9 pb-6 font-mono text-[13px] text-[var(--l-muted)] sm:px-8">
                     <span>Debian</span>
                     <span>Ubuntu</span>
+                    <span>Windows</span>
+                    <span>Windows Server</span>
                     <span>systemd</span>
                     <span>HTTPS</span>
                     <span>{t('agent without root rights')}</span>
@@ -823,9 +825,12 @@ export default function Welcome({ canRegister, faq }: Props) {
                             <div className="mb-3 overflow-x-auto rounded-xl bg-[var(--l-soft)] px-3.5 py-3 font-mono text-[12.5px] whitespace-nowrap">
                                 sudo apt install rackatlas-agent
                             </div>
+                            <div className="mb-3 overflow-x-auto rounded-xl bg-[var(--l-soft)] px-3.5 py-3 font-mono text-[12.5px] whitespace-nowrap">
+                                irm https://…/agent/install.ps1 | iex
+                            </div>
                             <p className="text-[15px] text-[var(--l-body)]">
                                 {t(
-                                    'One command on the server and the data starts flowing. Updates are just as simple.',
+                                    'One command on a Linux or Windows server and the data starts flowing. Updates are just as simple.',
                                 )}
                             </p>
                         </Tile>
@@ -903,6 +908,14 @@ export default function Welcome({ canRegister, faq }: Props) {
                         {(
                             [
                                 [
+                                    MonitorCog,
+                                    t('Windows servers'),
+                                    t(
+                                        'Windows 10/11 and Windows Server too: CPU, memory, disks, services and Event Log errors. One PowerShell command, and the agent updates itself.',
+                                    ),
+                                    true,
+                                ],
+                                [
                                     Database,
                                     t('MySQL and Redis'),
                                     t(
@@ -946,13 +959,6 @@ export default function Welcome({ canRegister, faq }: Props) {
                                     t('Terminal in the browser'),
                                     t(
                                         'Open an end-to-end encrypted SSH terminal to your server without opening any port.',
-                                    ),
-                                ],
-                                [
-                                    Container,
-                                    t('Docker and services'),
-                                    t(
-                                        'Containers and failed services next to the rest of the server data.',
                                     ),
                                 ],
                                 [
@@ -1184,7 +1190,7 @@ export default function Welcome({ canRegister, faq }: Props) {
                                 RackAtlas
                             </a>
                             <p className="mt-3 leading-normal">
-                                {t('Linux server monitoring')}{' '}
+                                {t('Server monitoring')}{' '}
                                 {t('without open ports.')}
                             </p>
                         </div>
