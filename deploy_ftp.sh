@@ -4,6 +4,11 @@
 # switched back on even then.
 set -euo pipefail
 
+# The system php (/usr/bin/php) has no dom, xml or pdo_mysql; the one of the panel has, and it is the one PHP-FPM
+# runs the site with. composer, artisan and the queue use whatever "php" is first in PATH.
+PHP_BIN_DIR="${PHP_BIN_DIR:-/www/server/php/85/bin}"
+[ -x "$PHP_BIN_DIR/php" ] && export PATH="$PHP_BIN_DIR:$PATH"
+
 # The panel starts the deploy without $HOME; composer, npm and git need one.
 export HOME="${HOME:-/root}"
 export COMPOSER_HOME="${COMPOSER_HOME:-$HOME/.composer}"
