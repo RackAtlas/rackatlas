@@ -8,6 +8,8 @@ set -euo pipefail
 # runs the site with. composer, artisan and the queue use whatever "php" is first in PATH.
 PHP_BIN_DIR="${PHP_BIN_DIR:-/www/server/php/85/bin}"
 [ -x "$PHP_BIN_DIR/php" ] && export PATH="$PHP_BIN_DIR:$PATH"
+# /usr/bin/composer starts with "#!/usr/bin/php", so it ignores PATH: it is started through the right php explicitly.
+PHP_BIN="$(command -v php)"
 
 # The panel starts the deploy without $HOME; composer, npm and git need one.
 export HOME="${HOME:-/root}"
@@ -26,7 +28,7 @@ trap 'php artisan up || true' EXIT
 # unless the directory is marked safe. -c needs no $HOME and no global config.
 git -c safe.directory="$APP_DIR" pull origin main
 
-composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
+"$PHP_BIN" "$(command -v composer)" install --no-dev --optimize-autoloader --no-interaction --prefer-dist
 
 # Clear the old caches before the migrations, so they run against the new code and config.
 php artisan optimize:clear
