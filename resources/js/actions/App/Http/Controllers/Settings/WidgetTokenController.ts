@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\Settings\WidgetTokenController::__invoke
-* @see app/Http/Controllers/Settings/WidgetTokenController.php:19
+* @see app/Http/Controllers/Settings/WidgetTokenController.php:23
 * @route '/app/widget-token'
 */
 const WidgetTokenController = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -16,7 +16,7 @@ WidgetTokenController.definition = {
 
 /**
 * @see \App\Http\Controllers\Settings\WidgetTokenController::__invoke
-* @see app/Http/Controllers/Settings/WidgetTokenController.php:19
+* @see app/Http/Controllers/Settings/WidgetTokenController.php:23
 * @route '/app/widget-token'
 */
 WidgetTokenController.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ WidgetTokenController.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Settings\WidgetTokenController::__invoke
-* @see app/Http/Controllers/Settings/WidgetTokenController.php:19
+* @see app/Http/Controllers/Settings/WidgetTokenController.php:23
 * @route '/app/widget-token'
 */
 WidgetTokenController.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -35,7 +35,7 @@ WidgetTokenController.post = (options?: RouteQueryOptions): RouteDefinition<'pos
 
 /**
 * @see \App\Http\Controllers\Settings\WidgetTokenController::__invoke
-* @see app/Http/Controllers/Settings/WidgetTokenController.php:19
+* @see app/Http/Controllers/Settings/WidgetTokenController.php:23
 * @route '/app/widget-token'
 */
 const WidgetTokenControllerForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -45,7 +45,7 @@ const WidgetTokenControllerForm = (options?: RouteQueryOptions): RouteFormDefini
 
 /**
 * @see \App\Http\Controllers\Settings\WidgetTokenController::__invoke
-* @see app/Http/Controllers/Settings/WidgetTokenController.php:19
+* @see app/Http/Controllers/Settings/WidgetTokenController.php:23
 * @route '/app/widget-token'
 */
 WidgetTokenControllerForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({

@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Enums\AlertType;
 use App\Enums\ServerStatus;
+use App\Enums\TeamRole;
 use App\Models\ApiToken;
 use App\Models\FcmToken;
 use App\Models\NotificationPreference;
@@ -82,19 +83,35 @@ class MobileSupportTest extends TestCase
         $this->withToken($plain)->getJson('/api/v1/widget')->assertForbidden();
     }
 
-    public function test_the_app_gets_a_widget_key_and_a_new_one_replaces_the_old_one(): void
+    public function test_the_app_gets_a_widget_key_for_every_team_and_new_keys_replace_the_old_ones(): void
     {
         $team = Team::factory()->create();
         $user = $team->owner;
+        $other = Team::factory()->create();
+        $other->members()->attach($user->id, ['role' => TeamRole::Member->value]);
 
         $first = $this->actingAs($user)->withHeader('User-Agent', 'RackAtlasApp')
-            ->postJson(route('widget-token.store'))->assertCreated()->json('token');
+            ->postJson(route('widget-token.store'))->assertCreated()->assertJsonCount(2, 'teams');
         $second = $this->actingAs($user)->withHeader('User-Agent', 'RackAtlasApp')
-            ->postJson(route('widget-token.store'))->assertCreated()->json('token');
+            ->postJson(route('widget-token.store'))->assertCreated()->assertJsonCount(2, 'teams');
 
-        $this->assertNotSame($first, $second);
+        $this->assertEqualsCanonicalizing([$team->id, $other->id], array_column($second->json('teams'), 'id'));
+        $this->assertNull(ApiToken::findByPlainToken($first->json('teams.0.token')));
         $this->assertSame(1, $team->apiTokens()->where('name', 'Android widget')->count());
-        $this->assertNull(ApiToken::findByPlainToken($first));
+        $this->assertSame(1, $other->apiTokens()->where('name', 'Android widget')->count());
+    }
+
+    public function test_a_team_without_access_to_servers_gets_no_widget_key(): void
+    {
+        $team = Team::factory()->create();
+        $other = Team::factory()->create();
+        $other->members()->attach($team->owner->id, [
+            'role' => TeamRole::Member->value, 'permissions' => json_encode(['servers' => 'none']),
+        ]);
+
+        $this->actingAs($team->owner)->withHeader('User-Agent', 'RackAtlasApp')
+            ->postJson(route('widget-token.store'))->assertCreated()->assertJsonCount(1, 'teams')
+            ->assertJsonPath('teams.0.id', $team->id);
     }
 
     public function test_the_website_cannot_ask_for_a_widget_key(): void

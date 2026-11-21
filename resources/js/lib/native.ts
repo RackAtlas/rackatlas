@@ -173,6 +173,7 @@ export function resetNativePrompts(): void {
     try {
         localStorage.removeItem(PUSH_CHOICE_KEY);
         localStorage.removeItem(BIOMETRIC_ASKED_KEY);
+        localStorage.removeItem('ra_widget_teams');
     } catch {
         // Nothing stored, nothing to reset.
     }
@@ -399,16 +400,16 @@ export function setScreenSecure(secure: boolean): void {
     callNative('RackAtlas', 'setSecure', { secure }).catch(() => {});
 }
 
-/** Gives the home-screen widget its own read-only token. Older app builds have no widget and ignore it. */
-export async function setWidgetToken(
-    token: string,
+/** Gives the home-screen widgets a read-only key per team. Older app builds have no widget and ignore it. */
+export async function setWidgetTeams(
+    teams: { id: number; name: string; token: string }[],
     baseUrl: string,
 ): Promise<void> {
     if (!isNativeApp()) {
         return;
     }
 
-    await callNative('RackAtlas', 'setWidget', { token, baseUrl }).catch(
+    await callNative('RackAtlas', 'setWidget', { teams, baseUrl }).catch(
         () => {},
     );
 }

@@ -16,10 +16,11 @@ import {
     isNativeApp,
     refreshWidget,
     setScreenSecure,
-    setWidgetToken,
+    setWidgetTeams,
     widgetState,
 } from '@/lib/native';
 
+const WIDGET_TEAMS_KEY = 'ra_widget_teams';
 const APK_URL = '/apps/app-release.apk';
 
 const olderThan = (current: string, minimum: string): boolean => {
@@ -47,10 +48,15 @@ function xsrfToken(): string {
  */
 export function NativeExtras() {
     const { t } = useTranslation();
-    const { biometrics, minAppVersion } = usePage<{
+    const { biometrics, minAppVersion, teams } = usePage<{
         biometrics: boolean;
         minAppVersion: string | null;
+        teams: { id: number }[];
     }>().props;
+    const teamSignature = teams
+        .map((team) => team.id)
+        .sort((a, b) => a - b)
+        .join(',');
     const [outdated, setOutdated] = useState(false);
 
     useEffect(() => {
@@ -71,7 +77,16 @@ export function NativeExtras() {
                 return;
             }
 
-            if (state.configured) {
+            let known: string | null = null;
+
+            try {
+                known = localStorage.getItem(WIDGET_TEAMS_KEY);
+            } catch {
+                // Without storage the keys are simply issued again at every start.
+            }
+
+            // Keys are issued once, and again when the user joins or leaves a team.
+            if (state.configured && known === teamSignature) {
                 refreshWidget();
 
                 return;
@@ -92,18 +107,25 @@ export function NativeExtras() {
 
                 if (response.ok) {
                     const data = (await response.json()) as {
-                        token: string;
                         url: string;
+                        teams: { id: number; name: string; token: string }[];
                     };
 
-                    await setWidgetToken(data.token, data.url);
+                    await setWidgetTeams(data.teams, data.url);
+
+                    try {
+                        localStorage.setItem(WIDGET_TEAMS_KEY, teamSignature);
+                    } catch {
+                        // Harmless, see above.
+                    }
+
                     refreshWidget();
                 }
             } catch {
                 // The widget stays unconfigured until the next start.
             }
         })();
-    }, []);
+    }, [teamSignature]);
 
     useEffect(() => {
         if (!isNativeApp() || !minAppVersion) {

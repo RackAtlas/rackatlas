@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../wayfinder'
 /**
 * @see \App\Http\Controllers\Settings\WidgetTokenController::__invoke
-* @see app/Http/Controllers/Settings/WidgetTokenController.php:19
+* @see app/Http/Controllers/Settings/WidgetTokenController.php:23
 * @route '/app/widget-token'
 */
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -16,7 +16,7 @@ store.definition = {
 
 /**
 * @see \App\Http\Controllers\Settings\WidgetTokenController::__invoke
-* @see app/Http/Controllers/Settings/WidgetTokenController.php:19
+* @see app/Http/Controllers/Settings/WidgetTokenController.php:23
 * @route '/app/widget-token'
 */
 store.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ store.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Settings\WidgetTokenController::__invoke
-* @see app/Http/Controllers/Settings/WidgetTokenController.php:19
+* @see app/Http/Controllers/Settings/WidgetTokenController.php:23
 * @route '/app/widget-token'
 */
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -35,7 +35,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\Settings\WidgetTokenController::__invoke
-* @see app/Http/Controllers/Settings/WidgetTokenController.php:19
+* @see app/Http/Controllers/Settings/WidgetTokenController.php:23
 * @route '/app/widget-token'
 */
 const storeForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -45,7 +45,7 @@ const storeForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => 
 
 /**
 * @see \App\Http\Controllers\Settings\WidgetTokenController::__invoke
-* @see app/Http/Controllers/Settings/WidgetTokenController.php:19
+* @see app/Http/Controllers/Settings/WidgetTokenController.php:23
 * @route '/app/widget-token'
 */
 storeForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
