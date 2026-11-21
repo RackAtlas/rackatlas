@@ -13,7 +13,6 @@ import {
 import { useTranslation } from '@/hooks/use-translation';
 import {
     appVersion,
-    haptic,
     isNativeApp,
     refreshWidget,
     setScreenSecure,
@@ -44,8 +43,7 @@ function xsrfToken(): string {
 
 /**
  * Inside the Android app only, and only when the installed build supports it: hides the app in the recent
- * screen while biometrics are on, keeps the home-screen widget supplied with a key, taps give a short
- * vibration, and an app that is too old is asked to update.
+ * screen while biometrics are on, keeps the home-screen widget supplied with a key, and an app that is too old is asked to update.
  */
 export function NativeExtras() {
     const { t } = useTranslation();
@@ -118,28 +116,6 @@ export function NativeExtras() {
             }
         });
     }, [minAppVersion]);
-
-    useEffect(() => {
-        if (!isNativeApp()) {
-            return;
-        }
-
-        const onPress = (event: Event) => {
-            const target = event.target as HTMLElement | null;
-
-            if (
-                target?.closest(
-                    '[role="switch"],[role="checkbox"],[role="tab"],[data-native-press]',
-                )
-            ) {
-                haptic('light');
-            }
-        };
-
-        document.addEventListener('click', onPress, true);
-
-        return () => document.removeEventListener('click', onPress, true);
-    }, []);
 
     return (
         <Dialog open={outdated} onOpenChange={setOutdated}>

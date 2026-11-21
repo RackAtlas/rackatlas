@@ -47,6 +47,33 @@ class MobileSupportTest extends TestCase
             ->assertJsonCount(2, 'alerts.items');
     }
 
+    public function test_the_widget_endpoint_shows_mysql_and_redis(): void
+    {
+        $team = Team::factory()->create();
+        $server = $this->server($team, 'db', ServerStatus::Online);
+        $server->databaseMetrics()->create([
+            'collected_at' => now(), 'uptime_seconds' => 10, 'threads_connected' => 40, 'threads_running' => 1, 'max_connections' => 100,
+            'questions_total' => 1, 'queries_per_second' => '12.5', 'slow_queries_total' => 0, 'aborted_connects_total' => 0,
+        ]);
+        $server->redisMetrics()->create([
+            'collected_at' => now(), 'port' => 6379, 'uptime_seconds' => 10, 'connected_clients' => 1, 'blocked_clients' => 0, 'max_clients' => 100,
+            'used_memory' => 1048576, 'max_memory' => 4194304, 'used_memory_rss' => 1, 'commands_total' => 1, 'commands_per_second' => '300',
+            'keyspace_hits_total' => 90, 'keyspace_misses_total' => 10, 'evicted_keys_total' => 0, 'rejected_connections_total' => 0,
+            'keys_count' => 5, 'connected_replicas' => 0,
+        ]);
+        [, $plain] = ApiToken::issue($team, $team->owner, 'Widget', [ApiToken::SCOPE_SERVERS]);
+
+        $this->withToken($plain)->getJson('/api/v1/widget')
+            ->assertOk()
+            ->assertJsonPath('database.count', 1)
+            ->assertJsonPath('database.connections_percent', 40)
+            ->assertJsonPath('database.queries_per_second', 12.5)
+            ->assertJsonPath('redis.count', 1)
+            ->assertJsonPath('redis.memory_percent', 25)
+            ->assertJsonPath('redis.hit_rate', 90)
+            ->assertJsonPath('redis.commands_per_second', 300);
+    }
+
     public function test_the_widget_endpoint_needs_the_servers_scope(): void
     {
         $team = Team::factory()->create();

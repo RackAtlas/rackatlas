@@ -355,27 +355,6 @@ export function startAppLinks(open: (path: string) => void): void {
 }
 
 
-type HapticKind = 'light' | 'medium' | 'heavy' | 'success' | 'warning' | 'error';
-
-/** A short vibration for taps and results. Silently does nothing on the web or in an older app build. */
-export function haptic(kind: HapticKind = 'light'): void {
-    if (!isNativeApp()) {
-        return;
-    }
-
-    if (kind === 'success' || kind === 'warning' || kind === 'error') {
-        callNative('Haptics', 'notification', {
-            type: kind.toUpperCase(),
-        }).catch(() => {});
-
-        return;
-    }
-
-    callNative('Haptics', 'impact', { style: kind.toUpperCase() }).catch(
-        () => {},
-    );
-}
-
 /** Opens the system share sheet in the app; resolves false when it is unavailable so the caller can fall back. */
 export async function shareText(
     title: string,

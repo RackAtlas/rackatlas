@@ -8,7 +8,6 @@ import type { Ref } from 'react';
 import TerminalSessionController from '@/actions/App/Http/Controllers/Terminal/TerminalSessionController';
 import { Button } from '@/components/ui/button';
 import { useTranslation } from '@/hooks/use-translation';
-import { haptic } from '@/lib/native';
 import {
     beginHandshake,
     pinFingerprint,
@@ -466,7 +465,6 @@ export default function TerminalView({
                         aria-pressed={ctrl}
                         onPointerDown={(event) => event.preventDefault()}
                         onClick={() => {
-                            haptic('light');
                             setCtrl(!ctrl);
                             term.current?.focus();
                         }}
@@ -486,7 +484,6 @@ export default function TerminalView({
                             // Keeps the focus in the terminal, so the keyboard stays open.
                             onPointerDown={(event) => event.preventDefault()}
                             onClick={() => {
-                                haptic('light');
                                 term.current?.input(key.data, true);
                             }}
                             className="min-w-11 shrink-0 rounded-md bg-white/10 px-3 py-2 font-mono text-sm text-slate-200 active:bg-white/20"

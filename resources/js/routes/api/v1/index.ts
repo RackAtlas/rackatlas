@@ -86,7 +86,7 @@ me.form = meForm
 
 /**
 * @see \App\Http\Controllers\Api\V1\WidgetController::__invoke
-* @see app/Http/Controllers/Api/V1/WidgetController.php:19
+* @see app/Http/Controllers/Api/V1/WidgetController.php:23
 * @route '/api/v1/widget'
 */
 export const widget = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -101,7 +101,7 @@ widget.definition = {
 
 /**
 * @see \App\Http\Controllers\Api\V1\WidgetController::__invoke
-* @see app/Http/Controllers/Api/V1/WidgetController.php:19
+* @see app/Http/Controllers/Api/V1/WidgetController.php:23
 * @route '/api/v1/widget'
 */
 widget.url = (options?: RouteQueryOptions) => {
@@ -110,7 +110,7 @@ widget.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Api\V1\WidgetController::__invoke
-* @see app/Http/Controllers/Api/V1/WidgetController.php:19
+* @see app/Http/Controllers/Api/V1/WidgetController.php:23
 * @route '/api/v1/widget'
 */
 widget.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -120,7 +120,7 @@ widget.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\Api\V1\WidgetController::__invoke
-* @see app/Http/Controllers/Api/V1/WidgetController.php:19
+* @see app/Http/Controllers/Api/V1/WidgetController.php:23
 * @route '/api/v1/widget'
 */
 widget.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -130,7 +130,7 @@ widget.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\Api\V1\WidgetController::__invoke
-* @see app/Http/Controllers/Api/V1/WidgetController.php:19
+* @see app/Http/Controllers/Api/V1/WidgetController.php:23
 * @route '/api/v1/widget'
 */
 const widgetForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -140,7 +140,7 @@ const widgetForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => 
 
 /**
 * @see \App\Http\Controllers\Api\V1\WidgetController::__invoke
-* @see app/Http/Controllers/Api/V1/WidgetController.php:19
+* @see app/Http/Controllers/Api/V1/WidgetController.php:23
 * @route '/api/v1/widget'
 */
 widgetForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -150,7 +150,7 @@ widgetForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\Api\V1\WidgetController::__invoke
-* @see app/Http/Controllers/Api/V1/WidgetController.php:19
+* @see app/Http/Controllers/Api/V1/WidgetController.php:23
 * @route '/api/v1/widget'
 */
 widgetForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
