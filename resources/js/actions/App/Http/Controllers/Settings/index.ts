@@ -1,4 +1,5 @@
 import LanguageController from './LanguageController'
+import WidgetTokenController from './WidgetTokenController'
 import ProfileController from './ProfileController'
 import TwoFactorRequiredController from './TwoFactorRequiredController'
 import SecurityController from './SecurityController'
@@ -15,6 +16,7 @@ import AcceptTeamInvitationController from './AcceptTeamInvitationController'
 
 const Settings = {
     LanguageController: Object.assign(LanguageController, LanguageController),
+    WidgetTokenController: Object.assign(WidgetTokenController, WidgetTokenController),
     ProfileController: Object.assign(ProfileController, ProfileController),
     TwoFactorRequiredController: Object.assign(TwoFactorRequiredController, TwoFactorRequiredController),
     SecurityController: Object.assign(SecurityController, SecurityController),

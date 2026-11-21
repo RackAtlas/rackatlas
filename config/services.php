@@ -60,4 +60,9 @@ return [
         ],
     ],
 
+    'mobile' => [
+        // Android app builds older than this are asked to update (semver, e.g. 1.2.0). Empty = never ask.
+        'min_version' => env('MOBILE_MIN_VERSION'),
+    ],
+
 ];

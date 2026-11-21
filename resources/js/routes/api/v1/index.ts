@@ -84,8 +84,90 @@ meForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
 
 me.form = meForm
 
+/**
+* @see \App\Http\Controllers\Api\V1\WidgetController::__invoke
+* @see app/Http/Controllers/Api/V1/WidgetController.php:19
+* @route '/api/v1/widget'
+*/
+export const widget = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: widget.url(options),
+    method: 'get',
+})
+
+widget.definition = {
+    methods: ["get","head"],
+    url: '/api/v1/widget',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\Api\V1\WidgetController::__invoke
+* @see app/Http/Controllers/Api/V1/WidgetController.php:19
+* @route '/api/v1/widget'
+*/
+widget.url = (options?: RouteQueryOptions) => {
+    return widget.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\Api\V1\WidgetController::__invoke
+* @see app/Http/Controllers/Api/V1/WidgetController.php:19
+* @route '/api/v1/widget'
+*/
+widget.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: widget.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\Api\V1\WidgetController::__invoke
+* @see app/Http/Controllers/Api/V1/WidgetController.php:19
+* @route '/api/v1/widget'
+*/
+widget.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: widget.url(options),
+    method: 'head',
+})
+
+/**
+* @see \App\Http\Controllers\Api\V1\WidgetController::__invoke
+* @see app/Http/Controllers/Api/V1/WidgetController.php:19
+* @route '/api/v1/widget'
+*/
+const widgetForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: widget.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\Api\V1\WidgetController::__invoke
+* @see app/Http/Controllers/Api/V1/WidgetController.php:19
+* @route '/api/v1/widget'
+*/
+widgetForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: widget.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\Api\V1\WidgetController::__invoke
+* @see app/Http/Controllers/Api/V1/WidgetController.php:19
+* @route '/api/v1/widget'
+*/
+widgetForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: widget.url({
+        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+            _method: 'HEAD',
+            ...(options?.query ?? options?.mergeQuery ?? {}),
+        }
+    }),
+    method: 'get',
+})
+
+widget.form = widgetForm
+
 const v1 = {
     me: Object.assign(me, me),
+    widget: Object.assign(widget, widget),
     servers: Object.assign(servers, servers),
     applications: Object.assign(applications, applications),
     backups: Object.assign(backups, backups),

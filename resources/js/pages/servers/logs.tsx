@@ -5,6 +5,7 @@ import {
     Copy,
     RotateCcw,
     ScrollText,
+    Share2,
     Sparkles,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
@@ -23,6 +24,7 @@ import {
 import { usePermissions } from '@/hooks/use-permissions';
 import { useTranslation } from '@/hooks/use-translation';
 import { timeAgo } from '@/lib/dashboard';
+import { isNativeApp, shareText } from '@/lib/native';
 import { cn } from '@/lib/utils';
 import { index } from '@/routes/logs';
 import { index as teamsIndex } from '@/routes/teams';
@@ -81,6 +83,17 @@ function LogDetail({
 }) {
     const { t, locale } = useTranslation();
 
+    const share = async () => {
+        const shared = await shareText(
+            `${log.server_name} · ${log.level}`,
+            log.message,
+        );
+
+        if (!shared) {
+            await copy();
+        }
+    };
+
     const copy = async () => {
         try {
             await navigator.clipboard.writeText(log.message);
@@ -109,10 +122,23 @@ function LogDetail({
                     <h3 className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
                         {t('Message')}
                     </h3>
-                    <Button variant="ghost" size="sm" onClick={copy}>
-                        <Copy className="size-3.5" />
-                        {t('Copy')}
-                    </Button>
+                    <div className="flex items-center gap-1">
+                        {isNativeApp() && (
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={share}
+                                data-test="log-share"
+                            >
+                                <Share2 className="size-3.5" />
+                                {t('Share')}
+                            </Button>
+                        )}
+                        <Button variant="ghost" size="sm" onClick={copy}>
+                            <Copy className="size-3.5" />
+                            {t('Copy')}
+                        </Button>
+                    </div>
                 </div>
                 <pre className="max-h-80 overflow-auto rounded-lg border bg-muted/50 p-4 font-mono text-xs leading-relaxed break-words whitespace-pre-wrap">
                     {log.message}

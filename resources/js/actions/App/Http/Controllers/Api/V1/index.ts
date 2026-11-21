@@ -1,4 +1,5 @@
 import MeController from './MeController'
+import WidgetController from './WidgetController'
 import ServerController from './ServerController'
 import ServerMetricController from './ServerMetricController'
 import ApplicationController from './ApplicationController'
@@ -7,6 +8,7 @@ import AlertController from './AlertController'
 
 const V1 = {
     MeController: Object.assign(MeController, MeController),
+    WidgetController: Object.assign(WidgetController, WidgetController),
     ServerController: Object.assign(ServerController, ServerController),
     ServerMetricController: Object.assign(ServerMetricController, ServerMetricController),
     ApplicationController: Object.assign(ApplicationController, ApplicationController),

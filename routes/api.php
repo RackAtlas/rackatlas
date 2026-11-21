@@ -43,6 +43,7 @@ Route::match(['get', 'post'], 'webhooks/backups/{token}', BackupWebhookControlle
 // External API for the keys of a team (Grafana and the like): JSON only, read-only, every route needs a scope.
 Route::prefix('v1')->name('api.v1.')->middleware([RequireJson::class, AuthenticateApiToken::class])->group(function () {
     Route::get('me', V1\MeController::class)->name('me');
+    Route::get('widget', V1\WidgetController::class)->middleware('api.scope:servers:read')->name('widget');
 
     Route::middleware('api.scope:servers:read')->group(function () {
         Route::get('servers', [V1\ServerController::class, 'index'])->name('servers.index');

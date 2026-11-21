@@ -3,6 +3,8 @@
 namespace App\Notifications\Channels;
 
 use App\Models\FcmToken;
+use App\Models\Server;
+use App\Models\ServerAlert;
 use App\Models\User;
 use App\Services\Notifications\FcmClient;
 use Illuminate\Notifications\Notification;
@@ -15,7 +17,11 @@ use Throwable;
  */
 class FcmChannel
 {
+    /** Loud: sound, heads-up, shown on the lock screen. For outages and other critical problems. */
     public const ANDROID_CHANNEL = 'alerts';
+
+    /** Quiet: no heads-up. For high resource use, anomalies and "resolved" messages. */
+    public const ANDROID_CHANNEL_QUIET = 'warnings';
 
     public static function configured(): bool
     {
@@ -63,12 +69,13 @@ class FcmChannel
         }
 
         $payload = $notification->toWebPush($notifiable);
+        $badge = $this->openAlerts($notifiable);
         $client = app(FcmClient::class);
         $results = [];
 
         /** @var FcmToken $token */
         foreach ($tokens as $token) {
-            $answer = $client->send($this->message($token->token, $payload));
+            $answer = $client->send($this->message($token->token, $payload, $badge));
 
             if ($answer['unregistered']) {
                 $token->delete();
@@ -94,12 +101,24 @@ class FcmChannel
     }
 
     /**
+     * The number on the icon of the app: the problems that are open on the servers of the user's teams.
+     */
+    private function openAlerts(User $user): int
+    {
+        return ServerAlert::query()
+            ->whereNull('resolved_at')
+            ->whereIn('server_id', Server::query()->whereIn('team_id', $user->teams()->select('teams.id'))->select('id'))
+            ->count();
+    }
+
+    /**
      * @param  array<string, mixed>  $payload
      * @return array<string, mixed>
      */
-    public function message(string $token, array $payload): array
+    public function message(string $token, array $payload, int $openAlerts = 0): array
     {
         $tag = (string) ($payload['tag'] ?? 'rackatlas');
+        $critical = (bool) ($payload['critical'] ?? true);
 
         return [
             'token' => $token,
@@ -109,13 +128,14 @@ class FcmChannel
             ],
             'data' => ['url' => (string) ($payload['url'] ?? '/'), 'tag' => $tag],
             'android' => [
-                'priority' => 'HIGH',
+                'priority' => $critical ? 'HIGH' : 'NORMAL',
                 'ttl' => '3600s',
                 'notification' => [
-                    'channel_id' => self::ANDROID_CHANNEL,
+                    'channel_id' => $critical ? self::ANDROID_CHANNEL : self::ANDROID_CHANNEL_QUIET,
                     'tag' => $tag,
                     'sound' => 'default',
-                    'notification_priority' => 'PRIORITY_MAX',
+                    'notification_priority' => $critical ? 'PRIORITY_MAX' : 'PRIORITY_DEFAULT',
+                    'notification_count' => $openAlerts,
                     'visibility' => 'PUBLIC',
                     'default_vibrate_timings' => true,
                     'default_light_settings' => true,

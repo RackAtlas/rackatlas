@@ -148,7 +148,7 @@ update.form = updateForm
 
 /**
 * @see \App\Http\Controllers\Settings\NotificationController::test
-* @see app/Http/Controllers/Settings/NotificationController.php:61
+* @see app/Http/Controllers/Settings/NotificationController.php:65
 * @route '/app/settings/notifications/test'
 */
 export const test = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -163,7 +163,7 @@ test.definition = {
 
 /**
 * @see \App\Http\Controllers\Settings\NotificationController::test
-* @see app/Http/Controllers/Settings/NotificationController.php:61
+* @see app/Http/Controllers/Settings/NotificationController.php:65
 * @route '/app/settings/notifications/test'
 */
 test.url = (options?: RouteQueryOptions) => {
@@ -172,7 +172,7 @@ test.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Settings\NotificationController::test
-* @see app/Http/Controllers/Settings/NotificationController.php:61
+* @see app/Http/Controllers/Settings/NotificationController.php:65
 * @route '/app/settings/notifications/test'
 */
 test.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -182,7 +182,7 @@ test.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\Settings\NotificationController::test
-* @see app/Http/Controllers/Settings/NotificationController.php:61
+* @see app/Http/Controllers/Settings/NotificationController.php:65
 * @route '/app/settings/notifications/test'
 */
 const testForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -192,7 +192,7 @@ const testForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => (
 
 /**
 * @see \App\Http\Controllers\Settings\NotificationController::test
-* @see app/Http/Controllers/Settings/NotificationController.php:61
+* @see app/Http/Controllers/Settings/NotificationController.php:65
 * @route '/app/settings/notifications/test'
 */
 testForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({

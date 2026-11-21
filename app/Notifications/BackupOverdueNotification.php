@@ -59,6 +59,11 @@ class BackupOverdueNotification extends Notification implements ShouldQueue
     /**
      * @return array<string, mixed>
      */
+    public function isCritical(): bool
+    {
+        return false;
+    }
+
     public function toWebPush(User $notifiable): array
     {
         return [

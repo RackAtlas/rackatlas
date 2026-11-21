@@ -176,6 +176,8 @@ export function resetNativePrompts(): void {
     } catch {
         // Nothing stored, nothing to reset.
     }
+
+    clearWidget();
 }
 
 let pushStarted = false;
@@ -216,6 +218,16 @@ export async function startNativePush(options: {
 
             return;
         }
+
+        await callNative('PushNotifications', 'createChannel', {
+            id: 'warnings',
+            name: 'Warnings',
+            description:
+                'Less urgent notices, such as an overdue backup. Quiet, no sound.',
+            importance: 3,
+            visibility: 1,
+            vibration: false,
+        }).catch(() => {});
 
         await callNative('PushNotifications', 'createChannel', {
             id: 'alerts',
@@ -340,4 +352,116 @@ export function startAppLinks(open: (path: string) => void): void {
             open(path);
         })
         .catch(() => {});
+}
+
+
+type HapticKind = 'light' | 'medium' | 'heavy' | 'success' | 'warning' | 'error';
+
+/** A short vibration for taps and results. Silently does nothing on the web or in an older app build. */
+export function haptic(kind: HapticKind = 'light'): void {
+    if (!isNativeApp()) {
+        return;
+    }
+
+    if (kind === 'success' || kind === 'warning' || kind === 'error') {
+        callNative('Haptics', 'notification', {
+            type: kind.toUpperCase(),
+        }).catch(() => {});
+
+        return;
+    }
+
+    callNative('Haptics', 'impact', { style: kind.toUpperCase() }).catch(
+        () => {},
+    );
+}
+
+/** Opens the system share sheet in the app; resolves false when it is unavailable so the caller can fall back. */
+export async function shareText(
+    title: string,
+    text: string,
+): Promise<boolean> {
+    if (!isNativeApp()) {
+        return false;
+    }
+
+    try {
+        await callNative('Share', 'share', { title, text, dialogTitle: title });
+
+        return true;
+    } catch (error) {
+        // A dismissed sheet rejects too, which is not a missing plugin.
+        return !String(error).includes('unavailable') &&
+            !String(error).includes('not implemented');
+    }
+}
+
+/** The installed app build, or null on the web and in builds without the App plugin. */
+export async function appVersion(): Promise<string | null> {
+    if (!isNativeApp()) {
+        return null;
+    }
+
+    try {
+        const info = await callNative<{ version?: string }>('App', 'getInfo');
+
+        return info?.version ?? null;
+    } catch {
+        return null;
+    }
+}
+
+/** Hides the app from the recent-apps screen and blocks screenshots (custom plugin, newer builds only). */
+export function setScreenSecure(secure: boolean): void {
+    if (!isNativeApp()) {
+        return;
+    }
+
+    callNative('RackAtlas', 'setSecure', { secure }).catch(() => {});
+}
+
+/** Gives the home-screen widget its own read-only token. Older app builds have no widget and ignore it. */
+export async function setWidgetToken(
+    token: string,
+    baseUrl: string,
+): Promise<void> {
+    if (!isNativeApp()) {
+        return;
+    }
+
+    await callNative('RackAtlas', 'setWidget', { token, baseUrl }).catch(
+        () => {},
+    );
+}
+
+export async function widgetState(): Promise<{
+    available: boolean;
+    configured: boolean;
+}> {
+    if (!isNativeApp()) {
+        return { available: false, configured: false };
+    }
+
+    try {
+        const state = await callNative<{ configured?: boolean }>(
+            'RackAtlas',
+            'state',
+        );
+
+        return { available: true, configured: Boolean(state?.configured) };
+    } catch {
+        return { available: false, configured: false };
+    }
+}
+
+export function clearWidget(): void {
+    if (isNativeApp()) {
+        callNative('RackAtlas', 'clearWidget').catch(() => {});
+    }
+}
+
+export function refreshWidget(): void {
+    if (isNativeApp()) {
+        callNative('RackAtlas', 'refreshWidget').catch(() => {});
+    }
 }

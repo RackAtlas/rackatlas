@@ -47,7 +47,7 @@ class PushSubscriptionControllerTest extends TestCase
 
     public function test_existing_untrusted_subscriptions_are_never_contacted(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->admin()->create();
         $user->pushSubscriptions()->create([
             'endpoint' => 'https://127.0.0.1/private', 'endpoint_hash' => hash('sha256', 'legacy'),
             'public_key' => 'key', 'auth_token' => 'secret', 'content_encoding' => 'aes128gcm',

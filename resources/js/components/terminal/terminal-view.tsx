@@ -8,6 +8,7 @@ import type { Ref } from 'react';
 import TerminalSessionController from '@/actions/App/Http/Controllers/Terminal/TerminalSessionController';
 import { Button } from '@/components/ui/button';
 import { useTranslation } from '@/hooks/use-translation';
+import { haptic } from '@/lib/native';
 import {
     beginHandshake,
     pinFingerprint,
@@ -69,6 +70,36 @@ function csrfToken(): string {
     return match ? decodeURIComponent(match[1]) : '';
 }
 
+/** The keys a phone keyboard lacks. Sent to the shell as the escape sequences a real keyboard would produce. */
+const EXTRA_KEYS: { label: string; data: string; name: string }[] = [
+    { label: 'Esc', data: '\x1b', name: 'Escape' },
+    { label: 'Tab', data: '\t', name: 'Tab' },
+    { label: '↑', data: '\x1b[A', name: 'Arrow up' },
+    { label: '↓', data: '\x1b[B', name: 'Arrow down' },
+    { label: '←', data: '\x1b[D', name: 'Arrow left' },
+    { label: '→', data: '\x1b[C', name: 'Arrow right' },
+    { label: '|', data: '|', name: 'Pipe' },
+    { label: '~', data: '~', name: 'Tilde' },
+    { label: '/', data: '/', name: 'Slash' },
+    { label: '-', data: '-', name: 'Dash' },
+];
+
+/** A phone or tablet: the keyboard is on the screen and has no Esc, Tab, Ctrl or arrows. */
+const hasTouchKeyboard = (): boolean =>
+    typeof window !== 'undefined' &&
+    window.matchMedia('(pointer: coarse)').matches;
+
+/** Ctrl plus a letter or one of @[\\]^_ as the control character the shell expects, or null. */
+function controlCharacter(data: string): string | null {
+    if (data.length !== 1) {
+        return null;
+    }
+
+    const code = data.toUpperCase().charCodeAt(0);
+
+    return code >= 64 && code <= 95 ? String.fromCharCode(code - 64) : null;
+}
+
 /**
  * One terminal: asks the app for a one-time ticket, opens a WebSocket to the terminal server with it and
  * wires the keyboard and the screen to the SSH shell on the other side.
@@ -82,6 +113,10 @@ export default function TerminalView({
 }: Props) {
     const { t } = useTranslation();
     const [prompt, setPrompt] = useState<IdentityPrompt | null>(null);
+    const [keyBar] = useState(hasTouchKeyboard);
+    const [ctrl, setCtrl] = useState(false);
+    const ctrlRef = useRef(false);
+    ctrlRef.current = ctrl;
     const host = useRef<HTMLDivElement>(null);
     const term = useRef<Terminal | null>(null);
     const fit = useRef<FitAddon | null>(null);
@@ -185,7 +220,15 @@ export default function TerminalView({
             socket?.close();
         };
 
-        terminal.onData((data) => {
+        terminal.onData((typed) => {
+            let data = typed;
+
+            // The Ctrl key of the key bar applies to the next character only.
+            if (ctrlRef.current) {
+                setCtrl(false);
+                data = controlCharacter(typed) ?? typed;
+            }
+
             if (socket?.readyState !== WebSocket.OPEN) {
                 return;
             }
@@ -408,8 +451,51 @@ export default function TerminalView({
     }, [active]);
 
     return (
-        <div className="relative h-full w-full">
-            <div ref={host} className="h-full w-full" />
+        <div className="relative flex h-full w-full flex-col">
+            <div ref={host} className="min-h-0 w-full flex-1" />
+
+            {keyBar && (
+                <div
+                    className="flex shrink-0 gap-1 overflow-x-auto border-t border-white/10 bg-[#12151b] p-1.5"
+                    role="toolbar"
+                    aria-label={t('Extra keys')}
+                    data-test="terminal-key-bar"
+                >
+                    <button
+                        type="button"
+                        aria-pressed={ctrl}
+                        onPointerDown={(event) => event.preventDefault()}
+                        onClick={() => {
+                            haptic('light');
+                            setCtrl(!ctrl);
+                            term.current?.focus();
+                        }}
+                        className={`min-w-11 shrink-0 rounded-md px-3 py-2 font-mono text-sm ${
+                            ctrl
+                                ? 'bg-emerald-500 text-black'
+                                : 'bg-white/10 text-slate-200'
+                        }`}
+                    >
+                        Ctrl
+                    </button>
+                    {EXTRA_KEYS.map((key) => (
+                        <button
+                            key={key.name}
+                            type="button"
+                            aria-label={t(key.name)}
+                            // Keeps the focus in the terminal, so the keyboard stays open.
+                            onPointerDown={(event) => event.preventDefault()}
+                            onClick={() => {
+                                haptic('light');
+                                term.current?.input(key.data, true);
+                            }}
+                            className="min-w-11 shrink-0 rounded-md bg-white/10 px-3 py-2 font-mono text-sm text-slate-200 active:bg-white/20"
+                        >
+                            {key.label}
+                        </button>
+                    ))}
+                </div>
+            )}
 
             {prompt && (
                 <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/70 p-4">

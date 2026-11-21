@@ -41,6 +41,15 @@ class ServerAlertNotification extends Notification implements ShouldQueue
         $this->afterCommit();
     }
 
+    /**
+     * An outage, a failed service, a critical log entry or a broken database is worth waking somebody up.
+     * High resource use, an anomaly and every "resolved" message can wait.
+     */
+    public function isCritical(): bool
+    {
+        return ! $this->resolved && ! in_array($this->type, [AlertType::Resource, AlertType::Anomaly], true);
+    }
+
     public function title(): string
     {
         $title = match (true) {
@@ -129,6 +138,7 @@ class ServerAlertNotification extends Notification implements ShouldQueue
             'body' => $this->body(),
             'url' => route('dashboard', [], false),
             'tag' => 'alert-'.$this->type->value.'-'.md5($this->serverName.$this->key),
+            'critical' => $this->isCritical(),
         ];
     }
 }

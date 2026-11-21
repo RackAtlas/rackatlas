@@ -6,6 +6,7 @@ import PushSubscriptionController from "@/actions/App/Http/Controllers/Settings/
 import { SettingsSection } from "@/components/settings/section";
 import { PushDiagnostics } from "@/components/notifications/push-diagnostics";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { usePushSubscription } from "@/hooks/use-push-subscription";
@@ -23,6 +24,10 @@ type Preferences = {
     notify_database: boolean;
     notify_redis: boolean;
     notify_recovery: boolean;
+    quiet_hours_enabled: boolean;
+    quiet_from: string;
+    quiet_until: string;
+    timezone: string | null;
 };
 
 type Device = {
@@ -103,8 +108,15 @@ export default function Notifications({
     const set = (key: keyof Preferences) => (value: boolean) =>
         form.setData(key, value);
 
-    const save = () =>
+    const save = () => {
+        form.transform((data) => ({
+            ...data,
+            timezone:
+                Intl.DateTimeFormat().resolvedOptions().timeZone ??
+                data.timezone,
+        }));
         form.put(NotificationController.update.url(), { preserveScroll: true });
+    };
 
     const registerDevice = async () => {
         if (await push.subscribe()) {
@@ -164,6 +176,57 @@ export default function Notifications({
                             onChange={set("push_enabled")}
                         />
                     </div>
+                </div>
+            </SettingsSection>
+
+            <SettingsSection
+                title={t("Quiet hours")}
+                description={t(
+                    "During these hours only critical alerts make your phone ring. Everything else waits in the app and email.",
+                )}
+            >
+                <div className="space-y-4">
+                    <Row
+                        id="quiet_hours_enabled"
+                        title={t("Mute non-critical push at night")}
+                        description={t(
+                            "Critical alerts, such as a server going offline, always get through.",
+                        )}
+                        checked={form.data.quiet_hours_enabled}
+                        onChange={set("quiet_hours_enabled")}
+                    />
+                    {form.data.quiet_hours_enabled && (
+                        <div className="grid max-w-sm grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="quiet_from">{t("From")}</Label>
+                                <Input
+                                    id="quiet_from"
+                                    type="time"
+                                    value={form.data.quiet_from}
+                                    onChange={(event) =>
+                                        form.setData(
+                                            "quiet_from",
+                                            event.target.value,
+                                        )
+                                    }
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="quiet_until">{t("Until")}</Label>
+                                <Input
+                                    id="quiet_until"
+                                    type="time"
+                                    value={form.data.quiet_until}
+                                    onChange={(event) =>
+                                        form.setData(
+                                            "quiet_until",
+                                            event.target.value,
+                                        )
+                                    }
+                                />
+                            </div>
+                        </div>
+                    )}
                 </div>
             </SettingsSection>
 

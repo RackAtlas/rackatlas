@@ -20,18 +20,30 @@ trait UsesPreferredChannels
         $preference = NotificationPreference::for($notifiable);
         $channels = [];
 
+        // In the quiet hours only the critical ones may wake the phone up. Mail is read when the user wants to.
+        $pushAllowed = $preference->push_enabled && ($this->isCritical() || ! $preference->inQuietHours());
+
         if ($preference->email_enabled && $notifiable->hasVerifiedEmail()) {
             $channels[] = 'mail';
         }
 
-        if ($preference->push_enabled && WebPushChannel::configured() && $notifiable->pushSubscriptions()->exists()) {
+        if ($pushAllowed && WebPushChannel::configured() && $notifiable->pushSubscriptions()->exists()) {
             $channels[] = WebPushChannel::class;
         }
 
-        if ($preference->push_enabled && FcmChannel::configured() && $notifiable->fcmTokens()->exists()) {
+        if ($pushAllowed && FcmChannel::configured() && $notifiable->fcmTokens()->exists()) {
             $channels[] = FcmChannel::class;
         }
 
         return $channels;
+    }
+
+    /**
+     * A critical notification uses the loud "alerts" channel of the phone and is pushed even in the quiet
+     * hours. The others arrive silently and wait for the end of the quiet hours.
+     */
+    public function isCritical(): bool
+    {
+        return true;
     }
 }

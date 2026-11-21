@@ -22,7 +22,7 @@ class NotificationController extends Controller
         $preference = NotificationPreference::for($user);
 
         return Inertia::render('settings/notifications', [
-            'preferences' => $preference->only(NotificationPreference::FLAGS),
+            'preferences' => $preference->only([...NotificationPreference::FLAGS, ...NotificationPreference::QUIET_FIELDS]),
             'email' => $user->email,
             'emailVerified' => $user->hasVerifiedEmail(),
             'pushAvailable' => WebPushChannel::configured(),
@@ -39,9 +39,13 @@ class NotificationController extends Controller
 
     public function update(Request $request): RedirectResponse
     {
-        $validated = $request->validate(
-            array_fill_keys(NotificationPreference::FLAGS, ['required', 'boolean']),
-        );
+        $validated = $request->validate([
+            ...array_fill_keys(NotificationPreference::FLAGS, ['required', 'boolean']),
+            'quiet_hours_enabled' => ['sometimes', 'boolean'],
+            'quiet_from' => ['sometimes', 'date_format:H:i'],
+            'quiet_until' => ['sometimes', 'date_format:H:i'],
+            'timezone' => ['nullable', 'timezone:all'],
+        ]);
 
         $user = $request->user();
 

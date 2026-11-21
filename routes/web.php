@@ -28,6 +28,7 @@ use App\Http\Controllers\Servers\ServerController;
 use App\Http\Controllers\Servers\SshKeyController;
 use App\Http\Controllers\Servers\TestConnectionController;
 use App\Http\Controllers\Settings\LanguageController;
+use App\Http\Controllers\Settings\WidgetTokenController;
 use App\Http\Controllers\Terminal\TerminalController;
 use App\Http\Controllers\Terminal\TerminalSessionController;
 use Illuminate\Routing\RedirectController;
@@ -55,6 +56,7 @@ Route::prefix('app')->middleware(['auth', 'verified'])->group(function () {
     Route::post('dashboard/settings/copy', [DashboardController::class, 'copy'])->name('dashboard.settings.copy');
     Route::put('current-team', [CurrentTeamController::class, 'update'])->name('current-team.update');
     Route::post('feedback', AppFeedbackController::class)->middleware('throttle:5,60')->name('app.feedback.store');
+    Route::post('widget-token', WidgetTokenController::class)->middleware('throttle:6,60')->name('widget-token.store');
 
     Route::get('settings/servers', [ServerController::class, 'index'])->middleware('permission:servers.view')->name('servers.index');
     // GET only: Route::redirect() answers every method, and a cached route table then lets it swallow POST /servers.
