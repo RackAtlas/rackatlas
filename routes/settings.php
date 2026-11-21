@@ -57,12 +57,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('app/settings/notifications/test', [NotificationController::class, 'test'])
         ->middleware('throttle:6,1')
         ->name('notifications.test');
-    Route::get('app/settings/notifications/diagnostics', [NotificationDiagnosticsController::class, 'show'])->name('notification-diagnostics.show');
+    Route::get('app/settings/notifications/diagnostics', [NotificationDiagnosticsController::class, 'show'])
+        ->middleware('can:access-admin')
+        ->name('notification-diagnostics.show');
     Route::post('app/settings/notifications/diagnostics/connectivity', [NotificationDiagnosticsController::class, 'connectivity'])
-        ->middleware('throttle:10,1')
+        ->middleware(['can:access-admin', 'throttle:10,1'])
         ->name('notification-diagnostics.connectivity');
     Route::post('app/settings/notifications/diagnostics/push', [NotificationDiagnosticsController::class, 'push'])
-        ->middleware('throttle:10,1')
+        ->middleware(['can:access-admin', 'throttle:10,1'])
         ->name('notification-diagnostics.push');
     Route::post('app/settings/notifications/push', [PushSubscriptionController::class, 'store'])
         ->middleware('throttle:20,1')

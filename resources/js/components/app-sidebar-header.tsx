@@ -1,6 +1,7 @@
 import { Link, usePage } from '@inertiajs/react';
 import { ChevronLeft, Shield } from 'lucide-react';
 import { Breadcrumbs } from '@/components/breadcrumbs';
+import { FeedbackDialog } from '@/components/feedback-dialog';
 import { TeamSwitcher } from '@/components/team-switcher';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { useTranslation } from '@/hooks/use-translation';
@@ -79,6 +80,7 @@ export function AppSidebarHeader({
                     <Breadcrumbs breadcrumbs={breadcrumbs} />
                 </div>
                 <div className="ml-auto flex min-w-0 shrink-0 items-center gap-2">
+                    <FeedbackDialog />
                     <AdminLink />
                     <TeamSwitcher />
                 </div>

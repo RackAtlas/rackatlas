@@ -1,16 +1,17 @@
-import { Head, router, useForm } from '@inertiajs/react';
-import { BellRing, Mail, Smartphone, Trash2 } from 'lucide-react';
-import type { ReactNode } from 'react';
-import NotificationController from '@/actions/App/Http/Controllers/Settings/NotificationController';
-import PushSubscriptionController from '@/actions/App/Http/Controllers/Settings/PushSubscriptionController';
-import { SettingsSection } from '@/components/settings/section';
-import { PushDiagnostics } from '@/components/notifications/push-diagnostics';
-import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
-import { usePushSubscription } from '@/hooks/use-push-subscription';
-import { useTranslation } from '@/hooks/use-translation';
-import { edit } from '@/routes/notifications';
+import { Head, router, useForm, usePage } from "@inertiajs/react";
+import { BellRing, Mail, Smartphone, Trash2 } from "lucide-react";
+import type { ReactNode } from "react";
+import NotificationController from "@/actions/App/Http/Controllers/Settings/NotificationController";
+import PushSubscriptionController from "@/actions/App/Http/Controllers/Settings/PushSubscriptionController";
+import { SettingsSection } from "@/components/settings/section";
+import { PushDiagnostics } from "@/components/notifications/push-diagnostics";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { usePushSubscription } from "@/hooks/use-push-subscription";
+import { useTranslation } from "@/hooks/use-translation";
+import type { Auth } from "@/types";
+import { edit } from "@/routes/notifications";
 
 type Preferences = {
     email_enabled: boolean;
@@ -91,6 +92,8 @@ export default function Notifications({
     devices,
 }: Props) {
     const { t, locale } = useTranslation();
+    const { props } = usePage<{ auth: Auth }>();
+    const isAdmin = props.auth.user?.is_admin === true;
     const form = useForm<Preferences>(preferences);
     const push = usePushSubscription(
         vapidPublicKey,
@@ -105,7 +108,7 @@ export default function Notifications({
 
     const registerDevice = async () => {
         if (await push.subscribe()) {
-            router.reload({ only: ['devices'] });
+            router.reload({ only: ["devices"] });
         }
     };
 
@@ -128,110 +131,110 @@ export default function Notifications({
 
     return (
         <>
-            <Head title={t('Notifications')} />
+            <Head title={t("Notifications")} />
 
             <SettingsSection
-                title={t('Channels')}
-                description={t('Choose where the notifications are sent.')}
+                title={t("Channels")}
+                description={t("Choose where the notifications are sent.")}
             >
                 <div className="space-y-4">
                     <div className="divide-y">
                         <Row
                             id="email_enabled"
                             icon={<Mail className="size-5" />}
-                            title={t('Email')}
+                            title={t("Email")}
                             description={
                                 emailVerified
-                                    ? t('Sent to :email', { email })
+                                    ? t("Sent to :email", { email })
                                     : t(
-                                          'Verify your email address to receive notifications by email.',
+                                          "Verify your email address to receive notifications by email.",
                                       )
                             }
                             checked={form.data.email_enabled}
-                            onChange={set('email_enabled')}
+                            onChange={set("email_enabled")}
                         />
                         <Row
                             id="push_enabled"
                             icon={<Smartphone className="size-5" />}
-                            title={t('Push notifications')}
+                            title={t("Push notifications")}
                             description={t(
-                                'Instant messages on your phone or computer, even when the app is closed.',
+                                "Instant messages on your phone or computer, even when the app is closed.",
                             )}
                             checked={form.data.push_enabled}
-                            onChange={set('push_enabled')}
+                            onChange={set("push_enabled")}
                         />
                     </div>
                 </div>
             </SettingsSection>
 
             <SettingsSection
-                title={t('What to notify about')}
-                description={t('The same choice applies to email and push.')}
+                title={t("What to notify about")}
+                description={t("The same choice applies to email and push.")}
             >
                 <div className="space-y-4">
                     <div className="divide-y">
                         <Row
                             id="notify_offline"
-                            title={t('Server is offline')}
+                            title={t("Server is offline")}
                             description={t(
-                                'The server did not respond for more than 3 minutes.',
+                                "The server did not respond for more than 3 minutes.",
                             )}
                             checked={form.data.notify_offline}
-                            onChange={set('notify_offline')}
+                            onChange={set("notify_offline")}
                         />
                         <Row
                             id="notify_resources"
-                            title={t('Critical resource usage')}
+                            title={t("Critical resource usage")}
                             description={t(
-                                'CPU, memory or a disk above the critical limit.',
+                                "CPU, memory or a disk above the critical limit.",
                             )}
                             checked={form.data.notify_resources}
-                            onChange={set('notify_resources')}
+                            onChange={set("notify_resources")}
                         />
                         <Row
                             id="notify_services"
-                            title={t('A service failed')}
+                            title={t("A service failed")}
                             description={t(
-                                'A systemd unit on the server is in the failed state.',
+                                "A systemd unit on the server is in the failed state.",
                             )}
                             checked={form.data.notify_services}
-                            onChange={set('notify_services')}
+                            onChange={set("notify_services")}
                         />
                         <Row
                             id="notify_logs"
-                            title={t('Critical errors in the log')}
+                            title={t("Critical errors in the log")}
                             description={t(
-                                'At most one message every 15 minutes per server.',
+                                "At most one message every 15 minutes per server.",
                             )}
                             checked={form.data.notify_logs}
-                            onChange={set('notify_logs')}
+                            onChange={set("notify_logs")}
                         />
                         <Row
                             id="notify_database"
-                            title={t('Database problems')}
+                            title={t("Database problems")}
                             description={t(
-                                'Connections almost exhausted or a broken or lagging replica.',
+                                "Connections almost exhausted or a broken or lagging replica.",
                             )}
                             checked={form.data.notify_database}
-                            onChange={set('notify_database')}
+                            onChange={set("notify_database")}
                         />
                         <Row
                             id="notify_redis"
-                            title={t('Redis problems')}
+                            title={t("Redis problems")}
                             description={t(
-                                'Memory almost full, replication down, failed save to disk or an unhealthy cluster.',
+                                "Memory almost full, replication down, failed save to disk or an unhealthy cluster.",
                             )}
                             checked={form.data.notify_redis}
-                            onChange={set('notify_redis')}
+                            onChange={set("notify_redis")}
                         />
                         <Row
                             id="notify_recovery"
-                            title={t('Also tell me when it is resolved')}
+                            title={t("Also tell me when it is resolved")}
                             description={t(
-                                'One more message when the problem is gone.',
+                                "One more message when the problem is gone.",
                             )}
                             checked={form.data.notify_recovery}
-                            onChange={set('notify_recovery')}
+                            onChange={set("notify_recovery")}
                         />
                     </div>
 
@@ -240,7 +243,7 @@ export default function Notifications({
                             onClick={save}
                             disabled={form.processing || !form.isDirty}
                         >
-                            {t('Save')}
+                            {t("Save")}
                         </Button>
                         <Button
                             variant="outline"
@@ -254,34 +257,34 @@ export default function Notifications({
                             disabled={form.isDirty}
                         >
                             <BellRing className="size-4" />
-                            {t('Send a test')}
+                            {t("Send a test")}
                         </Button>
                     </div>
                 </div>
             </SettingsSection>
 
             <SettingsSection
-                title={t('Devices for push')}
+                title={t("Devices for push")}
                 description={t(
-                    'Register this browser or phone to receive push notifications.',
+                    "Register this browser or phone to receive push notifications.",
                 )}
             >
                 {!pushAvailable ? (
                     <p className="rounded-xl border border-dashed bg-card p-4 text-sm text-muted-foreground">
                         {t(
-                            'Push notifications are not set up on this server yet (VAPID keys are missing).',
+                            "Push notifications are not set up on this server yet (VAPID keys are missing).",
                         )}
                     </p>
-                ) : push.state === 'unsupported' ? (
+                ) : push.state === "unsupported" ? (
                     <p className="rounded-xl border border-dashed bg-card p-4 text-sm text-muted-foreground">
                         {t(
-                            'This browser does not support push notifications. On iPhone, add the app to the home screen first.',
+                            "This browser does not support push notifications. On iPhone, add the app to the home screen first.",
                         )}
                     </p>
-                ) : push.state === 'denied' ? (
+                ) : push.state === "denied" ? (
                     <p className="rounded-xl border border-dashed bg-card p-4 text-sm text-muted-foreground">
                         {t(
-                            'Notifications are blocked for this site. Allow them in the browser settings and reload the page.',
+                            "Notifications are blocked for this site. Allow them in the browser settings and reload the page.",
                         )}
                     </p>
                 ) : (
@@ -292,13 +295,13 @@ export default function Notifications({
                                 disabled={push.busy}
                             >
                                 <Smartphone className="size-4" />
-                                {t('Register this device')}
+                                {t("Register this device")}
                             </Button>
                             {push.error && (
                                 <p className="text-sm text-destructive">
-                                    {push.error === 'error'
+                                    {push.error === "error"
                                         ? t(
-                                              'The device could not be registered.',
+                                              "The device could not be registered.",
                                           )
                                         : push.error}
                                 </p>
@@ -317,27 +320,27 @@ export default function Notifications({
                                 <Smartphone className="size-5 shrink-0 text-muted-foreground" />
                                 <div className="min-w-0 flex-1">
                                     <p className="truncate text-sm font-medium">
-                                        {device.name ?? t('Device')}
+                                        {device.name ?? t("Device")}
                                         {device.endpoint_hash ===
                                             push.endpointHash && (
                                             <span className="ml-2 rounded-md bg-primary/10 px-1.5 py-0.5 text-[11px] font-normal text-primary">
-                                                {t('This device')}
+                                                {t("This device")}
                                             </span>
                                         )}
                                     </p>
                                     <p className="truncate text-xs text-muted-foreground">
                                         {device.last_used_at
-                                            ? t('Last used :time', {
+                                            ? t("Last used :time", {
                                                   time:
                                                       formatDate(
                                                           device.last_used_at,
-                                                      ) ?? '',
+                                                      ) ?? "",
                                               })
-                                            : t('Registered :time', {
+                                            : t("Registered :time", {
                                                   time:
                                                       formatDate(
                                                           device.created_at,
-                                                      ) ?? '',
+                                                      ) ?? "",
                                               })}
                                     </p>
                                 </div>
@@ -345,7 +348,7 @@ export default function Notifications({
                                     variant="ghost"
                                     size="icon"
                                     className="size-10 md:size-9"
-                                    aria-label={t('Remove device')}
+                                    aria-label={t("Remove device")}
                                     onClick={() => void removeDevice(device)}
                                 >
                                     <Trash2 className="size-4" />
@@ -356,15 +359,19 @@ export default function Notifications({
                 )}
             </SettingsSection>
 
-            <PushDiagnostics
-                vapidPublicKey={vapidPublicKey}
-                registeredHashes={devices.map((device) => device.endpoint_hash)}
-                onReregister={async () => {
-                    await push.unsubscribe();
-                    await push.subscribe();
-                    router.reload({ only: ['devices'] });
-                }}
-            />
+            {isAdmin && (
+                <PushDiagnostics
+                    vapidPublicKey={vapidPublicKey}
+                    registeredHashes={devices.map(
+                        (device) => device.endpoint_hash,
+                    )}
+                    onReregister={async () => {
+                        await push.unsubscribe();
+                        await push.subscribe();
+                        router.reload({ only: ["devices"] });
+                    }}
+                />
+            )}
         </>
     );
 }
@@ -372,7 +379,7 @@ export default function Notifications({
 Notifications.layout = {
     breadcrumbs: [
         {
-            title: 'Notifications',
+            title: "Notifications",
             href: edit(),
         },
     ],

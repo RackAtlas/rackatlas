@@ -8,6 +8,7 @@ import CrawlerController from './CrawlerController'
 import Settings from './Settings'
 import DashboardController from './DashboardController'
 import CurrentTeamController from './CurrentTeamController'
+import AppFeedbackController from './AppFeedbackController'
 import Servers from './Servers'
 import DatabaseController from './DatabaseController'
 import DatabaseProcessController from './DatabaseProcessController'
@@ -32,6 +33,7 @@ const Controllers = {
     Settings: Object.assign(Settings, Settings),
     DashboardController: Object.assign(DashboardController, DashboardController),
     CurrentTeamController: Object.assign(CurrentTeamController, CurrentTeamController),
+    AppFeedbackController: Object.assign(AppFeedbackController, AppFeedbackController),
     Servers: Object.assign(Servers, Servers),
     DatabaseController: Object.assign(DatabaseController, DatabaseController),
     DatabaseProcessController: Object.assign(DatabaseProcessController, DatabaseProcessController),

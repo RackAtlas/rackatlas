@@ -1595,5 +1595,6 @@
     "Monitoring for Linux and Windows servers": "Monitoring pro servery s Linuxem a Windows",
     "One command on a Linux or Windows server and the data starts flowing. Updates are just as simple.": "Jeden příkaz na serveru s Linuxem nebo Windows a data začnou přicházet. Aktualizace jsou stejně jednoduché.",
     "Windows servers": "Windows servery",
-    "Windows 10/11 and Windows Server too: CPU, memory, disks, services and Event Log errors. One PowerShell command, and the agent updates itself.": "I Windows 10/11 a Windows Server: CPU, paměť, disky, služby a chyby z protokolu událostí. Jeden příkaz v PowerShellu a agent se aktualizuje sám."
+    "Windows 10/11 and Windows Server too: CPU, memory, disks, services and Event Log errors. One PowerShell command, and the agent updates itself.": "I Windows 10/11 a Windows Server: CPU, paměť, disky, služby a chyby z protokolu událostí. Jeden příkaz v PowerShellu a agent se aktualizuje sám.",
+    "Tell us what to improve": "Řekněte nám, co zlepšit"
 }

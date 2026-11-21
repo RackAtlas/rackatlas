@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\ActivityController as AdminActivityController;
 use App\Http\Controllers\Admin\TeamController as AdminTeamController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\ApiDocsController;
+use App\Http\Controllers\AppFeedbackController;
 use App\Http\Controllers\ApplicationController;
 use App\Http\Controllers\BackupController;
 use App\Http\Controllers\CrawlerController;
@@ -53,6 +54,7 @@ Route::prefix('app')->middleware(['auth', 'verified'])->group(function () {
     Route::delete('dashboard/settings', [DashboardController::class, 'reset'])->name('dashboard.settings.reset');
     Route::post('dashboard/settings/copy', [DashboardController::class, 'copy'])->name('dashboard.settings.copy');
     Route::put('current-team', [CurrentTeamController::class, 'update'])->name('current-team.update');
+    Route::post('feedback', AppFeedbackController::class)->middleware('throttle:5,60')->name('app.feedback.store');
 
     Route::get('settings/servers', [ServerController::class, 'index'])->middleware('permission:servers.view')->name('servers.index');
     // GET only: Route::redirect() answers every method, and a cached route table then lets it swallow POST /servers.
