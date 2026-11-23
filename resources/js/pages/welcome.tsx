@@ -8,12 +8,19 @@ import {
     HardDriveDownload,
     MapPin,
     Sparkles,
+    Play,
     SquareTerminal,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import InputError from '@/components/input-error';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogTitle,
+} from '@/components/ui/dialog';
 import { TurnstileField, useTurnstile } from '@/hooks/use-turnstile';
 import { openCookieSettings } from '@/hooks/use-privacy-choices';
 import { useTranslation } from '@/hooks/use-translation';
@@ -302,6 +309,7 @@ export default function Welcome({ canRegister, faq }: Props) {
     const { t, locale } = useTranslation();
 
     const sample = useRef<HTMLDivElement>(null);
+    const [watching, setWatching] = useState(false);
 
     // The sample dashboard plays its fill-in once, when it first comes into view.
     useEffect(() => {
@@ -519,9 +527,10 @@ export default function Welcome({ canRegister, faq }: Props) {
                     <div
                         ref={sample}
                         className="relative min-w-0 flex-[1_1_540px]"
-                        aria-hidden="true"
                     >
-                        <div className="alert-in absolute right-3 -bottom-7 z-10 w-[270px] rounded-xl border border-[var(--l-warn-border)] bg-[var(--l-card)] p-3 shadow-[0_20px_40px_-20px_rgba(15,25,20,0.45)] sm:right-6">
+                        <div
+                            aria-hidden="true"
+                            className="alert-in pointer-events-none absolute right-3 -bottom-7 z-10 w-[270px] rounded-xl border border-[var(--l-warn-border)] bg-[var(--l-card)] p-3 shadow-[0_20px_40px_-20px_rgba(15,25,20,0.45)] sm:right-6">
                             <div className="flex items-start gap-2.5">
                                 <Mark className="mt-0.5 size-[22px] shrink-0" />
                                 <div className="min-w-0">
@@ -538,7 +547,10 @@ export default function Welcome({ canRegister, faq }: Props) {
                                 </div>
                             </div>
                         </div>
-                        <div className="overflow-hidden rounded-2xl border border-[var(--l-border)] bg-[var(--l-card)] shadow-[0_40px_90px_-40px_rgba(15,25,20,0.4)]">
+                        <div
+                            aria-hidden="true"
+                            className="overflow-hidden rounded-2xl border border-[var(--l-border)] bg-[var(--l-card)] shadow-[0_40px_90px_-40px_rgba(15,25,20,0.4)]"
+                        >
                             <div className="flex items-center gap-2 border-b border-[var(--l-border)] bg-[var(--l-soft)] px-4 py-3">
                                 <span className="size-2.5 rounded-full bg-[var(--l-border)]" />
                                 <span className="size-2.5 rounded-full bg-[var(--l-border)]" />
@@ -666,8 +678,39 @@ export default function Welcome({ canRegister, faq }: Props) {
                                 </div>
                             </div>
                         </div>
+                        <button
+                            type="button"
+                            onClick={() => setWatching(true)}
+                            data-test="demo-video-play"
+                            className="group absolute inset-0 z-[5] flex cursor-pointer items-center justify-center rounded-2xl bg-[var(--l-bg)]/30 backdrop-blur-[1.5px] transition-colors hover:bg-[var(--l-bg)]/10 focus-visible:ring-2 focus-visible:ring-[var(--l-accent)] focus-visible:outline-none"
+                        >
+                            <span className="flex items-center gap-3 rounded-full border border-[var(--l-border)] bg-[var(--l-card)] py-2.5 pr-5 pl-3 text-sm font-semibold shadow-[0_20px_40px_-18px_rgba(15,25,20,0.55)] transition-transform group-hover:scale-105">
+                                <span className="flex size-10 items-center justify-center rounded-full bg-[var(--l-accent)] text-white dark:text-[#04130c]">
+                                    <Play className="ml-0.5 size-4 fill-current" />
+                                </span>
+                                {t('Watch the demo')}
+                            </span>
+                        </button>
                     </div>
                 </section>
+
+                <Dialog open={watching} onOpenChange={setWatching}>
+                    <DialogContent className="max-w-[min(1100px,calc(100%-2rem))] gap-0 overflow-hidden border-0 bg-black p-0 sm:max-w-[min(1100px,calc(100%-2rem))]">
+                        <DialogTitle className="sr-only">
+                            {t('Video demo of RackAtlas')}
+                        </DialogTitle>
+                        <DialogDescription className="sr-only">
+                            {t('A short tour of the RackAtlas application.')}
+                        </DialogDescription>
+                        <video
+                            src="/assets/rackatlas_demo_video.webm"
+                            className="block aspect-video w-full bg-black"
+                            controls
+                            autoPlay
+                            playsInline
+                        />
+                    </DialogContent>
+                </Dialog>
 
                 <p className="mx-auto flex max-w-[1240px] flex-wrap justify-center gap-x-7 gap-y-2 px-4 pt-9 pb-6 font-mono text-[13px] text-[var(--l-muted)] sm:px-8">
                     <span>Debian</span>

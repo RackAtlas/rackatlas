@@ -1679,5 +1679,8 @@
     "Open an SSH terminal to your server in the browser, with files and saved commands.": "Otvor SSH terminál na server v prehliadači, so súbormi a uloženými príkazmi.",
     "This server cannot transfer files.": "Tento server nevie prenášať súbory.",
     "No SSH login details. Edit the server and fill them in to use the terminal.": "Chýbajú SSH prihlasovacie údaje. Upravte server a doplňte ich, aby ste mohli používať terminál.",
-    "This server has no SSH login details. Fill them in to use the terminal.": "Tento server nemá SSH prihlasovacie údaje. Doplňte ich, aby ste mohli používať terminál."
+    "This server has no SSH login details. Fill them in to use the terminal.": "Tento server nemá SSH prihlasovacie údaje. Doplňte ich, aby ste mohli používať terminál.",
+    "Video demo of RackAtlas": "Video ukážka RackAtlas",
+    "Watch the demo": "Pozrieť ukážku",
+    "A short tour of the RackAtlas application.": "Krátka prehliadka aplikácie RackAtlas."
 }
