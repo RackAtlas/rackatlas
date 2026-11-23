@@ -2,7 +2,14 @@ import { FitAddon } from '@xterm/addon-fit';
 import { WebLinksAddon } from '@xterm/addon-web-links';
 import { Terminal } from '@xterm/xterm';
 import '@xterm/xterm/css/xterm.css';
-import { ShieldCheck, TriangleAlert } from 'lucide-react';
+import {
+    CaseSensitive,
+    ChevronDown,
+    ChevronUp,
+    ShieldCheck,
+    TriangleAlert,
+    X,
+} from 'lucide-react';
 import { useEffect, useImperativeHandle, useRef, useState } from 'react';
 import type { Ref } from 'react';
 import TerminalSessionController from '@/actions/App/Http/Controllers/Terminal/TerminalSessionController';
@@ -14,20 +21,47 @@ import {
     pinnedFingerprint,
 } from '@/lib/terminal-e2e';
 import type { Handshake, KeyReply, SecureChannel } from '@/lib/terminal-e2e';
+import { TransferError, createFileClient } from '@/lib/terminal-files';
+import type { FileClient } from '@/lib/terminal-files';
 
 export type TerminalState = 'connecting' | 'ready' | 'closed' | 'error';
+
+/** What the bridge reports once the shell is open. */
+export type TerminalInfo = {
+    /** The shell runs in tmux on the server and survives a lost connection. */
+    persistent: boolean;
+    /** The bridge can move files over SFTP (ssh servers only). */
+    files: boolean;
+};
 
 export type TerminalHandle = {
     clear: () => void;
     focus: () => void;
     copySelection: () => Promise<boolean>;
+    openSearch: () => void;
+    /** Types into the shell like the keyboard does, without telling `onTyped`. */
+    sendInput: (data: string) => void;
+    /** All the text in the scrollback and on the screen. */
+    getText: () => string;
+    /** The whole history kept by tmux on the server, or null when the session is not kept there. */
+    getHistory: () => Promise<string | null>;
+    /** Ends the shell for good (also the tmux session behind it) before the tab goes away. */
+    end: () => void;
+    getFiles: () => FileClient | null;
 };
 
 type Props = {
     serverId: number;
+    /** Names the shell kept on the server, so a reconnect or a reload finds the same one. */
+    sessionKey: string;
+    /** Ask the bridge to keep the shell running on the server (tmux). */
+    persist: boolean;
     active: boolean;
     fontSize: number;
     onState: (state: TerminalState, message?: string) => void;
+    onInfo?: (info: TerminalInfo) => void;
+    /** Everything the user types, so another terminal can get it too. */
+    onTyped?: (data: string) => void;
     ref?: Ref<TerminalHandle>;
 };
 
@@ -62,6 +96,7 @@ type IdentityPrompt = {
 };
 
 const encoder = new TextEncoder();
+const decoder = new TextDecoder();
 
 function csrfToken(): string {
     const match = document.cookie.match(/(?:^|; )XSRF-TOKEN=([^;]+)/);
@@ -105,9 +140,13 @@ function controlCharacter(data: string): string | null {
  */
 export default function TerminalView({
     serverId,
+    sessionKey,
+    persist,
     active,
     fontSize,
     onState,
+    onInfo,
+    onTyped,
     ref,
 }: Props) {
     const { t } = useTranslation();
@@ -121,8 +160,150 @@ export default function TerminalView({
     const fit = useRef<FitAddon | null>(null);
     const onStateRef = useRef(onState);
     onStateRef.current = onState;
+    const onInfoRef = useRef(onInfo);
+    onInfoRef.current = onInfo;
+    const onTypedRef = useRef(onTyped);
+    onTypedRef.current = onTyped;
+    const inputRef = useRef<(data: string) => void>(() => {});
+    const endRef = useRef<() => void>(() => {});
+    const filesRef = useRef<FileClient | null>(null);
+    const persistentRef = useRef(false);
+    const [searchOpen, setSearchOpen] = useState(false);
+    const [query, setQuery] = useState('');
+    const [matchCase, setMatchCase] = useState(false);
+    const [position, setPosition] = useState({ current: 0, total: 0 });
+    const searchInput = useRef<HTMLInputElement>(null);
+    const searchState = useRef({ query: '', matchCase: false, cursor: -1 });
+    const openSearchRef = useRef<() => void>(() => {});
+
+    openSearchRef.current = () => {
+        const selected = term.current?.getSelection() ?? '';
+
+        if (selected !== '' && !selected.includes('\n')) {
+            setQuery(selected);
+        }
+
+        setSearchOpen(true);
+        requestAnimationFrame(() => {
+            searchInput.current?.focus();
+            searchInput.current?.select();
+        });
+    };
+
+    /** Every place the text occurs in the buffer, one line of the screen at a time. */
+    const findMatches = (text: string, sensitive: boolean) => {
+        const buffer = term.current?.buffer.active;
+        const found: { row: number; col: number; length: number }[] = [];
+
+        if (!buffer || text === '') {
+            return found;
+        }
+
+        const needle = sensitive ? text : text.toLowerCase();
+
+        for (let row = 0; row < buffer.length; row++) {
+            const raw = buffer.getLine(row)?.translateToString(true) ?? '';
+            const line = sensitive ? raw : raw.toLowerCase();
+            let from = line.indexOf(needle);
+
+            while (from !== -1) {
+                found.push({ row, col: from, length: needle.length });
+                from = line.indexOf(needle, from + needle.length);
+            }
+        }
+
+        // The newest match comes first: it is the nearest to the prompt, where people look first.
+        return found.reverse();
+    };
+
+    /** Selects and scrolls to a match. `step` moves from the one shown now (1 = older), 0 starts from the newest. */
+    const goToMatch = (step: 1 | -1 | 0) => {
+        const terminal = term.current;
+        const matches = findMatches(query, matchCase);
+
+        if (!terminal || matches.length === 0) {
+            terminal?.clearSelection();
+            setPosition({ current: 0, total: 0 });
+            searchState.current.cursor = -1;
+
+            return;
+        }
+
+        const previous = searchState.current.cursor;
+        const index =
+            step === 0 || previous < 0
+                ? 0
+                : (previous + step + matches.length) % matches.length;
+
+        searchState.current.cursor = index;
+
+        const match = matches[index];
+
+        terminal.select(match.col, match.row, match.length);
+        terminal.scrollToLine(
+            Math.max(0, match.row - Math.floor(terminal.rows / 2)),
+        );
+        setPosition({ current: index + 1, total: matches.length });
+    };
+
+    const closeSearch = () => {
+        setSearchOpen(false);
+        term.current?.clearSelection();
+        searchState.current.cursor = -1;
+        setPosition({ current: 0, total: 0 });
+        term.current?.focus();
+    };
+
+    useEffect(() => {
+        searchState.current = { query, matchCase, cursor: -1 };
+
+        if (!searchOpen) {
+            return;
+        }
+
+        const matches = findMatches(query, matchCase);
+
+        if (matches.length === 0) {
+            term.current?.clearSelection();
+            setPosition({ current: 0, total: 0 });
+
+            return;
+        }
+
+        goToMatch(0);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [query, matchCase, searchOpen]);
 
     useImperativeHandle(ref, () => ({
+        openSearch: () => openSearchRef.current(),
+        sendInput: (data: string) => inputRef.current(data),
+        getText: () => {
+            const buffer = term.current?.buffer.active;
+            const lines: string[] = [];
+
+            if (!buffer) {
+                return '';
+            }
+
+            for (let row = 0; row < buffer.length; row++) {
+                const line = buffer.getLine(row);
+                const text = line?.translateToString(true) ?? '';
+
+                if (line?.isWrapped && lines.length > 0) {
+                    lines[lines.length - 1] += text;
+                } else {
+                    lines.push(text);
+                }
+            }
+
+            return lines.join('\n').replace(/\s+$/, '');
+        },
+        getHistory: async () =>
+            persistentRef.current && filesRef.current
+                ? filesRef.current.history().catch(() => null)
+                : null,
+        end: () => endRef.current(),
+        getFiles: () => filesRef.current,
         clear: () => term.current?.clear(),
         focus: () => term.current?.focus(),
         copySelection: async () => {
@@ -154,6 +335,7 @@ export default function TerminalView({
             scrollback: 5000,
             theme: THEME,
             allowProposedApi: true,
+            macOptionClickForcesSelection: true,
         });
         const fitAddon = new FitAddon();
 
@@ -166,9 +348,51 @@ export default function TerminalView({
         let socket: WebSocket | null = null;
         let disposed = false;
         let finished = false;
-
         // Through the agent everything after the handshake is end-to-end encrypted.
         let secure = false;
+        // Whether the next binary frame from the bridge belongs to the file channel (it announces itself with {"t":"f"}).
+        let fileNext = false;
+        let agentFiles = false;
+        const files = createFileClient({
+            get flowControl() {
+                return secure;
+            },
+            send: (frame) => {
+                if (socket?.readyState !== WebSocket.OPEN) {
+                    throw new TransferError(
+                        'closed',
+                        'The connection is closed.',
+                    );
+                }
+
+                if (!secure) {
+                    socket.send(JSON.stringify(frame));
+
+                    return;
+                }
+
+                if (channel === null) {
+                    throw new TransferError(
+                        'closed',
+                        'The encrypted connection is not ready.',
+                    );
+                }
+
+                // Encrypting is asynchronous, but the frames come out of it in the order they went in.
+                channel.files
+                    .encrypt(encoder.encode(JSON.stringify(frame)))
+                    .then((encrypted) => {
+                        if (socket?.readyState === WebSocket.OPEN) {
+                            socket.send(JSON.stringify({ t: 'f' }));
+                            socket.send(encrypted);
+                        }
+                    })
+                    .catch(() => fail(t('The encrypted connection failed.')));
+            },
+        });
+
+        filesRef.current = files;
+        persistentRef.current = false;
         let handshake: Handshake | null = null;
         let handshakeTimer: ReturnType<typeof setTimeout> | undefined;
         let channel: SecureChannel | null = null;
@@ -219,15 +443,8 @@ export default function TerminalView({
             socket?.close();
         };
 
-        terminal.onData((typed) => {
-            let data = typed;
-
-            // The Ctrl key of the key bar applies to the next character only.
-            if (ctrlRef.current) {
-                setCtrl(false);
-                data = controlCharacter(typed) ?? typed;
-            }
-
+        /** Sends keystrokes to the shell, encrypted when the terminal runs through the agent. */
+        const write = (data: string) => {
             if (socket?.readyState !== WebSocket.OPEN) {
                 return;
             }
@@ -247,6 +464,46 @@ export default function TerminalView({
                     }
                 })
                 .catch(() => fail(t('The encrypted connection failed.')));
+        };
+
+        inputRef.current = write;
+        endRef.current = () => {
+            if (socket?.readyState === WebSocket.OPEN && !secure) {
+                socket.send(JSON.stringify({ t: 'end' }));
+            }
+        };
+
+        terminal.onData((typed) => {
+            let data = typed;
+
+            // The Ctrl key of the key bar applies to the next character only.
+            if (ctrlRef.current) {
+                setCtrl(false);
+                data = controlCharacter(typed) ?? typed;
+            }
+
+            write(data);
+            onTypedRef.current?.(data);
+        });
+        // Cmd+F (Ctrl+Shift+F elsewhere) searches the output. Plain Ctrl+F stays with the shell.
+        terminal.attachCustomKeyEventHandler((event) => {
+            const isMac = /Mac|iPhone|iPad/.test(navigator.platform);
+            const wanted = isMac
+                ? event.metaKey && !event.ctrlKey
+                : event.ctrlKey && event.shiftKey;
+
+            if (
+                event.type === 'keydown' &&
+                wanted &&
+                event.key.toLowerCase() === 'f'
+            ) {
+                event.preventDefault();
+                openSearchRef.current();
+
+                return false;
+            }
+
+            return true;
         });
         terminal.onResize(sendSize);
 
@@ -263,7 +520,11 @@ export default function TerminalView({
                             Accept: 'application/json',
                             'X-XSRF-TOKEN': csrfToken(),
                         },
-                        body: JSON.stringify({ server_id: serverId }),
+                        body: JSON.stringify({
+                            server_id: serverId,
+                            session: sessionKey,
+                            persist,
+                        }),
                     },
                 );
                 const data = await response.json().catch(() => ({}));
@@ -326,6 +587,10 @@ export default function TerminalView({
 
                     channel = await verified.open();
                     resolveChannel(channel);
+                    onInfoRef.current?.({
+                        persistent: false,
+                        files: agentFiles,
+                    });
                     onStateRef.current('ready');
                     terminal.focus();
                 };
@@ -336,6 +601,27 @@ export default function TerminalView({
 
                         if (!secure) {
                             terminal.write(bytes);
+
+                            return;
+                        }
+
+                        if (fileNext) {
+                            fileNext = false;
+
+                            void channelReady
+                                .then((ready) => ready.files.decrypt(bytes))
+                                .then((plain) =>
+                                    files.handle(
+                                        JSON.parse(decoder.decode(plain)),
+                                    ),
+                                )
+                                .catch(() =>
+                                    fail(
+                                        t(
+                                            'The encrypted connection could not be verified.',
+                                        ),
+                                    ),
+                                );
 
                             return;
                         }
@@ -357,13 +643,27 @@ export default function TerminalView({
 
                     const message = JSON.parse(event.data);
 
-                    if (message.t === 'status' && message.state === 'ready') {
+                    if (message.t === 'f') {
+                        fileNext = secure;
+                    } else if (message.rid !== undefined && !secure) {
+                        files.handle(message);
+                    } else if (
+                        message.t === 'status' &&
+                        message.state === 'ready'
+                    ) {
                         if (!secure) {
+                            persistentRef.current = Boolean(message.persistent);
+                            onInfoRef.current?.({
+                                persistent: Boolean(message.persistent),
+                                files: Boolean(message.files),
+                            });
                             onStateRef.current('ready');
                             terminal.focus();
 
                             return;
                         }
+
+                        agentFiles = Boolean(message.files);
 
                         void beginHandshake().then((started) => {
                             handshake = started;
@@ -402,6 +702,7 @@ export default function TerminalView({
                     finish('error', 'The terminal server is not reachable.');
                 socket.onclose = () => {
                     setPrompt(null);
+                    files.close();
 
                     if (!disposed) {
                         terminal.write(
@@ -419,6 +720,8 @@ export default function TerminalView({
             disposed = true;
             clearTimeout(handshakeTimer);
             observer.disconnect();
+            files.close();
+            filesRef.current = null;
             socket?.close();
             terminal.dispose();
             term.current = null;
@@ -426,7 +729,7 @@ export default function TerminalView({
         };
         // The terminal is created once per mount: a new connection mounts a new one.
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [serverId]);
+    }, [serverId, sessionKey]);
 
     useEffect(() => {
         if (term.current) {
@@ -452,6 +755,75 @@ export default function TerminalView({
     return (
         <div className="relative flex h-full w-full flex-col">
             <div ref={host} className="min-h-0 w-full flex-1" />
+
+            {searchOpen && (
+                <div
+                    role="search"
+                    className="absolute top-2 right-4 z-10 flex items-center gap-1 rounded-lg border border-white/10 bg-[#12151b]/95 p-1 text-slate-200 shadow-lg backdrop-blur"
+                >
+                    <input
+                        ref={searchInput}
+                        value={query}
+                        onChange={(event) => setQuery(event.target.value)}
+                        onKeyDown={(event) => {
+                            if (event.key === 'Enter') {
+                                event.preventDefault();
+                                goToMatch(event.shiftKey ? -1 : 1);
+                            } else if (event.key === 'Escape') {
+                                event.preventDefault();
+                                event.stopPropagation();
+                                closeSearch();
+                            }
+                        }}
+                        placeholder={t('Find in output…')}
+                        aria-label={t('Find in output…')}
+                        className="h-7 w-44 rounded-md bg-black/40 px-2 text-sm outline-none placeholder:text-slate-500 focus:ring-1 focus:ring-emerald-400"
+                    />
+                    <span className="min-w-12 px-1 text-center text-xs text-slate-400 tabular-nums">
+                        {query === ''
+                            ? ''
+                            : position.total === 0
+                              ? t('No matches')
+                              : `${position.current}/${position.total}`}
+                    </span>
+                    <button
+                        type="button"
+                        aria-label={t('Match case')}
+                        aria-pressed={matchCase}
+                        title={t('Match case')}
+                        onClick={() => setMatchCase(!matchCase)}
+                        className={`rounded p-1 hover:bg-white/10 ${matchCase ? 'bg-emerald-500/30 text-emerald-300' : ''}`}
+                    >
+                        <CaseSensitive className="size-4" />
+                    </button>
+                    <button
+                        type="button"
+                        aria-label={t('Older match')}
+                        title={t('Older match (Enter)')}
+                        onClick={() => goToMatch(1)}
+                        className="rounded p-1 hover:bg-white/10"
+                    >
+                        <ChevronUp className="size-4" />
+                    </button>
+                    <button
+                        type="button"
+                        aria-label={t('Newer match')}
+                        title={t('Newer match (Shift+Enter)')}
+                        onClick={() => goToMatch(-1)}
+                        className="rounded p-1 hover:bg-white/10"
+                    >
+                        <ChevronDown className="size-4" />
+                    </button>
+                    <button
+                        type="button"
+                        aria-label={t('Close')}
+                        onClick={closeSearch}
+                        className="rounded p-1 hover:bg-white/10"
+                    >
+                        <X className="size-4" />
+                    </button>
+                </div>
+            )}
 
             {keyBar && (
                 <div

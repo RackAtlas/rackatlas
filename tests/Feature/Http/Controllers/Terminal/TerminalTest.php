@@ -5,6 +5,7 @@ namespace Tests\Feature\Http\Controllers\Terminal;
 use App\Enums\ServerAuthType;
 use App\Models\Server;
 use App\Models\Team;
+use App\Models\TerminalSnippet;
 use App\Models\User;
 use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
 use Tests\TestCase;
@@ -251,6 +252,93 @@ class TerminalTest extends TestCase
         ])->assertOk();
 
         $this->assertDatabaseHas('activity_log', ['event' => 'terminal-closed', 'causer_id' => $team->owner->id]);
+    }
+
+    public function test_page_passes_the_snippets_of_the_team(): void
+    {
+        $team = Team::factory()->create();
+        TerminalSnippet::factory()->for($team)->create(['name' => 'Disk']);
+        TerminalSnippet::factory()->create(['name' => 'Other team']);
+
+        $this->actingAs($team->owner)->get(route('terminal'))
+            ->assertInertia(fn ($page) => $page
+                ->has('snippets', 1)
+                ->where('snippets.0.name', 'Disk'));
+    }
+
+    public function test_snippets_can_be_created_updated_and_deleted(): void
+    {
+        $team = Team::factory()->create();
+        $owner = $team->owner;
+
+        $this->actingAs($owner)->post(route('terminal.snippets.store'), ['name' => 'Disk', 'command' => 'df -h'])->assertRedirect();
+        $snippet = $team->terminalSnippets()->firstOrFail();
+        $this->assertSame($owner->id, $snippet->created_by);
+
+        $this->actingAs($owner)->put(route('terminal.snippets.update', $snippet), ['name' => 'Space', 'command' => 'du -sh *'])->assertRedirect();
+        $this->assertDatabaseHas('terminal_snippets', ['id' => $snippet->id, 'name' => 'Space', 'command' => 'du -sh *']);
+
+        $this->actingAs($owner)->delete(route('terminal.snippets.destroy', $snippet))->assertRedirect();
+        $this->assertDatabaseMissing('terminal_snippets', ['id' => $snippet->id]);
+    }
+
+    public function test_snippet_needs_a_name_and_a_command(): void
+    {
+        $team = Team::factory()->create();
+
+        $this->actingAs($team->owner)->post(route('terminal.snippets.store'), ['name' => '', 'command' => ''])
+            ->assertSessionHasErrors(['name', 'command']);
+    }
+
+    public function test_snippet_of_another_team_cannot_be_changed(): void
+    {
+        $team = Team::factory()->create();
+        $foreign = TerminalSnippet::factory()->create();
+
+        $this->actingAs($team->owner)->put(route('terminal.snippets.update', $foreign), ['name' => 'x', 'command' => 'y'])->assertNotFound();
+        $this->actingAs($team->owner)->delete(route('terminal.snippets.destroy', $foreign))->assertNotFound();
+        $this->assertDatabaseHas('terminal_snippets', ['id' => $foreign->id]);
+    }
+
+    public function test_ticket_keeps_the_session_key_only_when_the_shell_should_persist(): void
+    {
+        $team = Team::factory()->create();
+        $server = $this->sshServer($team);
+        $key = 'abcdefghij0123456789';
+
+        $kept = $this->actingAs($team->owner)
+            ->postJson(route('terminal.sessions.store'), ['server_id' => $server->id, 'session' => $key, 'persist' => true])
+            ->assertOk()->json('token');
+        $this->withToken('bridge-secret')->postJson(route('terminal.exchange'), ['token' => $kept])
+            ->assertOk()->assertJsonPath('session', $key);
+
+        $plain = $this->actingAs($team->owner)
+            ->postJson(route('terminal.sessions.store'), ['server_id' => $server->id, 'session' => $key, 'persist' => false])
+            ->assertOk()->json('token');
+        $this->withToken('bridge-secret')->postJson(route('terminal.exchange'), ['token' => $plain])
+            ->assertOk()->assertJsonPath('session', null);
+    }
+
+    public function test_ticket_refuses_a_malformed_session_key(): void
+    {
+        $team = Team::factory()->create();
+
+        $this->actingAs($team->owner)
+            ->postJson(route('terminal.sessions.store'), ['server_id' => $this->sshServer($team)->id, 'session' => 'bad key;rm', 'persist' => true])
+            ->assertUnprocessable();
+    }
+
+    public function test_bridge_reports_a_file_transfer_to_the_activity_log(): void
+    {
+        $team = Team::factory()->create();
+        $server = $this->sshServer($team);
+
+        $this->withToken('bridge-secret')->postJson(route('terminal.file'), [
+            'server_id' => $server->id, 'user_id' => $team->owner->id, 'direction' => 'upload', 'path' => '/tmp/a.txt', 'bytes' => 12,
+        ])->assertOk();
+
+        $this->assertDatabaseHas('activity_log', ['event' => 'terminal-file', 'causer_id' => $team->owner->id]);
+        $this->withoutHeader('Authorization')->postJson(route('terminal.file'), [])->assertUnauthorized();
     }
 
     public function test_saving_a_server_keeps_the_terminal_flag_only_with_the_agent(): void

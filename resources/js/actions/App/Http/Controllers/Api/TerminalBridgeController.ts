@@ -57,7 +57,7 @@ exchange.form = exchangeForm
 
 /**
 * @see \App\Http\Controllers\Api\TerminalBridgeController::agentAuth
-* @see app/Http/Controllers/Api/TerminalBridgeController.php:79
+* @see app/Http/Controllers/Api/TerminalBridgeController.php:80
 * @route '/api/terminal/agent-auth'
 */
 export const agentAuth = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -72,7 +72,7 @@ agentAuth.definition = {
 
 /**
 * @see \App\Http\Controllers\Api\TerminalBridgeController::agentAuth
-* @see app/Http/Controllers/Api/TerminalBridgeController.php:79
+* @see app/Http/Controllers/Api/TerminalBridgeController.php:80
 * @route '/api/terminal/agent-auth'
 */
 agentAuth.url = (options?: RouteQueryOptions) => {
@@ -81,7 +81,7 @@ agentAuth.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Api\TerminalBridgeController::agentAuth
-* @see app/Http/Controllers/Api/TerminalBridgeController.php:79
+* @see app/Http/Controllers/Api/TerminalBridgeController.php:80
 * @route '/api/terminal/agent-auth'
 */
 agentAuth.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -91,7 +91,7 @@ agentAuth.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\Api\TerminalBridgeController::agentAuth
-* @see app/Http/Controllers/Api/TerminalBridgeController.php:79
+* @see app/Http/Controllers/Api/TerminalBridgeController.php:80
 * @route '/api/terminal/agent-auth'
 */
 const agentAuthForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -101,7 +101,7 @@ const agentAuthForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'>
 
 /**
 * @see \App\Http\Controllers\Api\TerminalBridgeController::agentAuth
-* @see app/Http/Controllers/Api/TerminalBridgeController.php:79
+* @see app/Http/Controllers/Api/TerminalBridgeController.php:80
 * @route '/api/terminal/agent-auth'
 */
 agentAuthForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -113,7 +113,7 @@ agentAuth.form = agentAuthForm
 
 /**
 * @see \App\Http\Controllers\Api\TerminalBridgeController::sessionEnded
-* @see app/Http/Controllers/Api/TerminalBridgeController.php:95
+* @see app/Http/Controllers/Api/TerminalBridgeController.php:96
 * @route '/api/terminal/session-ended'
 */
 export const sessionEnded = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -128,7 +128,7 @@ sessionEnded.definition = {
 
 /**
 * @see \App\Http\Controllers\Api\TerminalBridgeController::sessionEnded
-* @see app/Http/Controllers/Api/TerminalBridgeController.php:95
+* @see app/Http/Controllers/Api/TerminalBridgeController.php:96
 * @route '/api/terminal/session-ended'
 */
 sessionEnded.url = (options?: RouteQueryOptions) => {
@@ -137,7 +137,7 @@ sessionEnded.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Api\TerminalBridgeController::sessionEnded
-* @see app/Http/Controllers/Api/TerminalBridgeController.php:95
+* @see app/Http/Controllers/Api/TerminalBridgeController.php:96
 * @route '/api/terminal/session-ended'
 */
 sessionEnded.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -147,7 +147,7 @@ sessionEnded.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\Api\TerminalBridgeController::sessionEnded
-* @see app/Http/Controllers/Api/TerminalBridgeController.php:95
+* @see app/Http/Controllers/Api/TerminalBridgeController.php:96
 * @route '/api/terminal/session-ended'
 */
 const sessionEndedForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -157,7 +157,7 @@ const sessionEndedForm = (options?: RouteQueryOptions): RouteFormDefinition<'pos
 
 /**
 * @see \App\Http\Controllers\Api\TerminalBridgeController::sessionEnded
-* @see app/Http/Controllers/Api/TerminalBridgeController.php:95
+* @see app/Http/Controllers/Api/TerminalBridgeController.php:96
 * @route '/api/terminal/session-ended'
 */
 sessionEndedForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -168,8 +168,64 @@ sessionEndedForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post
 sessionEnded.form = sessionEndedForm
 
 /**
+* @see \App\Http\Controllers\Api\TerminalBridgeController::fileTransferred
+* @see app/Http/Controllers/Api/TerminalBridgeController.php:119
+* @route '/api/terminal/file'
+*/
+export const fileTransferred = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: fileTransferred.url(options),
+    method: 'post',
+})
+
+fileTransferred.definition = {
+    methods: ["post"],
+    url: '/api/terminal/file',
+} satisfies RouteDefinition<["post"]>
+
+/**
+* @see \App\Http\Controllers\Api\TerminalBridgeController::fileTransferred
+* @see app/Http/Controllers/Api/TerminalBridgeController.php:119
+* @route '/api/terminal/file'
+*/
+fileTransferred.url = (options?: RouteQueryOptions) => {
+    return fileTransferred.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\Api\TerminalBridgeController::fileTransferred
+* @see app/Http/Controllers/Api/TerminalBridgeController.php:119
+* @route '/api/terminal/file'
+*/
+fileTransferred.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: fileTransferred.url(options),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\Api\TerminalBridgeController::fileTransferred
+* @see app/Http/Controllers/Api/TerminalBridgeController.php:119
+* @route '/api/terminal/file'
+*/
+const fileTransferredForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: fileTransferred.url(options),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\Api\TerminalBridgeController::fileTransferred
+* @see app/Http/Controllers/Api/TerminalBridgeController.php:119
+* @route '/api/terminal/file'
+*/
+fileTransferredForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: fileTransferred.url(options),
+    method: 'post',
+})
+
+fileTransferred.form = fileTransferredForm
+
+/**
 * @see \App\Http\Controllers\Api\TerminalBridgeController::pinHostKey
-* @see app/Http/Controllers/Api/TerminalBridgeController.php:118
+* @see app/Http/Controllers/Api/TerminalBridgeController.php:143
 * @route '/api/terminal/host-key'
 */
 export const pinHostKey = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -184,7 +240,7 @@ pinHostKey.definition = {
 
 /**
 * @see \App\Http\Controllers\Api\TerminalBridgeController::pinHostKey
-* @see app/Http/Controllers/Api/TerminalBridgeController.php:118
+* @see app/Http/Controllers/Api/TerminalBridgeController.php:143
 * @route '/api/terminal/host-key'
 */
 pinHostKey.url = (options?: RouteQueryOptions) => {
@@ -193,7 +249,7 @@ pinHostKey.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Api\TerminalBridgeController::pinHostKey
-* @see app/Http/Controllers/Api/TerminalBridgeController.php:118
+* @see app/Http/Controllers/Api/TerminalBridgeController.php:143
 * @route '/api/terminal/host-key'
 */
 pinHostKey.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -203,7 +259,7 @@ pinHostKey.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\Api\TerminalBridgeController::pinHostKey
-* @see app/Http/Controllers/Api/TerminalBridgeController.php:118
+* @see app/Http/Controllers/Api/TerminalBridgeController.php:143
 * @route '/api/terminal/host-key'
 */
 const pinHostKeyForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -213,7 +269,7 @@ const pinHostKeyForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'
 
 /**
 * @see \App\Http\Controllers\Api\TerminalBridgeController::pinHostKey
-* @see app/Http/Controllers/Api/TerminalBridgeController.php:118
+* @see app/Http/Controllers/Api/TerminalBridgeController.php:143
 * @route '/api/terminal/host-key'
 */
 pinHostKeyForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -223,6 +279,6 @@ pinHostKeyForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'>
 
 pinHostKey.form = pinHostKeyForm
 
-const TerminalBridgeController = { exchange, agentAuth, sessionEnded, pinHostKey }
+const TerminalBridgeController = { exchange, agentAuth, sessionEnded, fileTransferred, pinHostKey }
 
 export default TerminalBridgeController

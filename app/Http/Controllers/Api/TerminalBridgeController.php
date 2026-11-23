@@ -70,6 +70,7 @@ class TerminalBridgeController extends Controller
             'private_key' => $server->auth_type === ServerAuthType::Key ? $server->sshKey?->private_key : null,
             'passphrase' => $server->auth_type === ServerAuthType::Key ? $server->sshKey?->passphrase : null,
             'fingerprint' => $server->ssh_host_fingerprint,
+            'session' => $ticket['session'] ?? null,
         ]);
     }
 
@@ -107,6 +108,30 @@ class TerminalBridgeController extends Controller
             activity('auth')->event('terminal-closed')->causedBy(User::find($data['user_id']))->performedOn($server)
                 ->withProperties(['server' => $server->name, 'seconds' => $data['seconds'], 'via' => $data['via']])
                 ->log('terminal-closed');
+        }
+
+        return response()->json(['ok' => true]);
+    }
+
+    /**
+     * Record a file that was uploaded to or downloaded from a server through the terminal.
+     */
+    public function fileTransferred(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'server_id' => ['required', 'integer'],
+            'user_id' => ['required', 'integer'],
+            'direction' => ['required', 'in:upload,download'],
+            'path' => ['required', 'string', 'max:1000'],
+            'bytes' => ['required', 'integer', 'min:0'],
+        ]);
+
+        $server = Server::find($data['server_id']);
+
+        if ($server !== null) {
+            activity('auth')->event('terminal-file')->causedBy(User::find($data['user_id']))->performedOn($server)
+                ->withProperties(['server' => $server->name, 'direction' => $data['direction'], 'path' => $data['path'], 'bytes' => $data['bytes']])
+                ->log('terminal-file');
         }
 
         return response()->json(['ok' => true]);

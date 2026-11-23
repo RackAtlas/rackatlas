@@ -18,7 +18,11 @@ class TerminalSessionController extends Controller
      */
     public function store(Request $request): JsonResponse
     {
-        $data = $request->validate(['server_id' => ['required', 'integer']]);
+        $data = $request->validate([
+            'server_id' => ['required', 'integer'],
+            'session' => ['nullable', 'string', 'regex:/^[A-Za-z0-9]{16,32}$/'],
+            'persist' => ['nullable', 'boolean'],
+        ]);
 
         if (blank(config('terminal.secret'))) {
             return response()->json(['message' => __('The terminal is not set up on this installation.')], 503);
@@ -39,6 +43,8 @@ class TerminalSessionController extends Controller
         Cache::put(self::TICKET_PREFIX.hash('sha256', $token), [
             'server_id' => $server->id,
             'user_id' => $request->user()->id,
+            // A shell the bridge keeps running (tmux) under this name, so a reconnect finds it again.
+            'session' => ($data['persist'] ?? false) ? ($data['session'] ?? null) : null,
         ], now()->addSeconds((int) config('terminal.ticket_ttl')));
 
         return response()->json([

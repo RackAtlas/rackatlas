@@ -8,6 +8,12 @@
 // Binary frames carry 4 bytes of session id followed by encrypted keystrokes. Frames to the bridge:
 // ready, key, exit and error as JSON text, encrypted shell output as binary with the same 4 byte
 // prefix. The shell output only starts after the browser sent its key. See e2e.go for the encryption.
+//
+// Files travel through the same connection on a second encrypted channel of the same shell: binary frames
+// whose session id has the top bit set (id | 0x80000000) carry one encrypted JSON frame each. A helper
+// process started as the terminal user does the work, see files.go. "ready" says {"files":true} so the
+// browser knows the agent can do it. After a transfer the service tells the bridge, in clear text and
+// without the content, {"t":"file","id":N,"direction":"upload|download","path":"..","bytes":N} for the activity log.
 package main
 
 import (
@@ -46,6 +52,12 @@ const (
 	maxShells      = 5
 	readBufferSize = 32 * 1024
 
+	// Frames of the file channel carry the id of the shell with this bit set.
+	fileFlag = 1 << 31
+
+	// A frame from the bridge is a keystroke, a control message or a chunk of a file.
+	maxFrameBytes = 2 << 20
+
 	// A browser has to send its key within this time after the shell was opened.
 	handshakeTimeout = 20 * time.Second
 )
@@ -66,6 +78,11 @@ type shell struct {
 
 	mu      sync.Mutex
 	session *secureSession
+	files   *secureSession
+	helper  *fileHelper
+
+	// Sealing and sending have to stay in one order for the counters of the file channel.
+	fileMu sync.Mutex
 }
 
 func (s *shell) secure() *secureSession {
@@ -86,6 +103,12 @@ type connection struct {
 func main() {
 	if len(os.Args) > 1 && os.Args[1] == "--version" {
 		fmt.Println("rackatlas-terminal", version)
+		return
+	}
+
+	// The file helper runs as the terminal user, so it must not touch the identity key.
+	if len(os.Args) > 1 && os.Args[1] == "--files" {
+		runFileHelper(os.Stdin, os.Stdout)
 		return
 	}
 
@@ -263,6 +286,8 @@ func serve(ctx context.Context, cfg config, bridge string) error {
 	defer c.closeAll()
 	defer ws.Close()
 
+	ws.SetReadLimit(maxFrameBytes)
+
 	// The bridge pings every 30 seconds, so silence for longer means the connection is dead.
 	ws.SetReadDeadline(time.Now().Add(90 * time.Second))
 	ws.SetPingHandler(func(data string) error {
@@ -320,8 +345,14 @@ func (c *connection) input(data []byte) {
 		return
 	}
 
-	c.shMu.Lock()
 	id := binary.BigEndian.Uint32(data)
+
+	if id&fileFlag != 0 {
+		c.fileInput(id&^fileFlag, data[4:])
+		return
+	}
+
+	c.shMu.Lock()
 	s := c.shells[id]
 	c.shMu.Unlock()
 
@@ -355,7 +386,7 @@ func (c *connection) key(id uint32, pub string) {
 		return
 	}
 
-	reply, session, err := ident.accept(id, pub)
+	reply, session, files, err := ident.accept(id, pub)
 	if err != nil {
 		c.status("error", id, "The encrypted handshake failed.")
 		s.stop()
@@ -366,6 +397,7 @@ func (c *connection) key(id uint32, pub string) {
 
 	s.mu.Lock()
 	s.session = session
+	s.files = files
 	s.mu.Unlock()
 	close(s.keyed)
 }
@@ -408,6 +440,7 @@ func (c *connection) control(data []byte) {
 }
 
 func (s *shell) stop() {
+	s.closeFiles()
 	s.ptmx.Close()
 	if s.cmd.Process != nil {
 		// Hang up the session like a closed terminal window does.
@@ -430,8 +463,6 @@ func (c *connection) open(id uint32, cols, rows uint16) {
 		return
 	}
 
-	uid, _ := strconv.ParseUint(account.Uid, 10, 32)
-	gid, _ := strconv.ParseUint(account.Gid, 10, 32)
 	shellPath := loginShell(account.Username)
 
 	// -l makes a login shell, so the profile of the user is read like after an SSH login.
@@ -447,18 +478,7 @@ func (c *connection) open(id uint32, cols, rows uint16) {
 		"PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
 	}
 
-	if os.Geteuid() == 0 && uint32(uid) != 0 {
-		groups := []uint32{uint32(gid)}
-		if ids, err := account.GroupIds(); err == nil {
-			groups = groups[:0]
-			for _, g := range ids {
-				if n, err := strconv.ParseUint(g, 10, 32); err == nil {
-					groups = append(groups, uint32(n))
-				}
-			}
-		}
-		cmd.SysProcAttr = &syscall.SysProcAttr{Credential: &syscall.Credential{Uid: uint32(uid), Gid: uint32(gid), Groups: groups}}
-	}
+	cmd.SysProcAttr = credentialFor(account)
 
 	if cols == 0 {
 		cols = 80
@@ -479,7 +499,9 @@ func (c *connection) open(id uint32, cols, rows uint16) {
 	c.shells[id] = s
 	c.shMu.Unlock()
 
-	c.status("ready", id, "")
+	// "files" tells the browser that this service can move files too (an older one does not say it).
+	ready, _ := json.Marshal(map[string]any{"t": "ready", "id": id, "files": true})
+	c.send(websocket.TextMessage, ready)
 
 	// Nothing is printed before the browser has set up the encryption. The output waits in the pty.
 	select {
@@ -542,4 +564,26 @@ func loginShell(name string) string {
 	}
 
 	return "/bin/sh"
+}
+
+// credentialFor makes a child process run as the account. It is nil when the service already runs as that user.
+func credentialFor(account *user.User) *syscall.SysProcAttr {
+	uid, _ := strconv.ParseUint(account.Uid, 10, 32)
+	gid, _ := strconv.ParseUint(account.Gid, 10, 32)
+
+	if os.Geteuid() != 0 || uint32(uid) == 0 {
+		return nil
+	}
+
+	groups := []uint32{uint32(gid)}
+	if ids, err := account.GroupIds(); err == nil {
+		groups = groups[:0]
+		for _, g := range ids {
+			if n, err := strconv.ParseUint(g, 10, 32); err == nil {
+				groups = append(groups, uint32(n))
+			}
+		}
+	}
+
+	return &syscall.SysProcAttr{Credential: &syscall.Credential{Uid: uint32(uid), Gid: uint32(gid), Groups: groups}}
 }

@@ -31,10 +31,14 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"strings"
 	"sync"
 )
 
 const e2eLabel = "rackatlas-terminal-e2e-v1"
+
+// filesScope is added to the label of the keys of the file channel.
+const filesScope = " files"
 
 type identity struct {
 	key *ecdsa.PrivateKey
@@ -124,27 +128,30 @@ type keyReply struct {
 }
 
 // accept answers the key of the browser and returns the encrypted channel for that shell.
-func (i *identity) accept(id uint32, browserPubB64 string) ([]byte, *secureSession, error) {
+//
+// The second channel carries the file transfer of the same shell. It has its own keys and counters, so
+// files and keystrokes never share a nonce.
+func (i *identity) accept(id uint32, browserPubB64 string) ([]byte, *secureSession, *secureSession, error) {
 	browserPub, err := base64.StdEncoding.DecodeString(browserPubB64)
 	if err != nil || len(browserPub) != 65 {
-		return nil, nil, errors.New("invalid browser key")
+		return nil, nil, nil, errors.New("invalid browser key")
 	}
 
 	curve := ecdh.P256()
 
 	remote, err := curve.NewPublicKey(browserPub)
 	if err != nil {
-		return nil, nil, errors.New("invalid browser key")
+		return nil, nil, nil, errors.New("invalid browser key")
 	}
 
 	ephemeral, err := curve.GenerateKey(rand.Reader)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, nil, err
 	}
 
 	secret, err := ephemeral.ECDH(remote)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, nil, err
 	}
 
 	servicePub := ephemeral.PublicKey().Bytes()
@@ -154,7 +161,7 @@ func (i *identity) accept(id uint32, browserPubB64 string) ([]byte, *secureSessi
 
 	r, s, err := ecdsa.Sign(rand.Reader, i.key, digest[:])
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, nil, err
 	}
 
 	sig := make([]byte, 64)
@@ -163,7 +170,12 @@ func (i *identity) accept(id uint32, browserPubB64 string) ([]byte, *secureSessi
 
 	session, err := newSession(secret, digest[:], false)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, nil, err
+	}
+
+	files, err := newSession(secret, digest[:], false, filesScope)
+	if err != nil {
+		return nil, nil, nil, err
 	}
 
 	reply, err := json.Marshal(keyReply{
@@ -174,10 +186,10 @@ func (i *identity) accept(id uint32, browserPubB64 string) ([]byte, *secureSessi
 		Sig:   base64.StdEncoding.EncodeToString(sig),
 	})
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, nil, err
 	}
 
-	return reply, session, nil
+	return reply, session, files, nil
 }
 
 // hkdf32 is HKDF-SHA256 (RFC 5869) for exactly one block of output.
@@ -204,13 +216,15 @@ type secureSession struct {
 
 // newSession derives both directions. The service seals with s2c and opens with c2s;
 // browserSide flips that, which the tests use to play the browser.
-func newSession(secret, salt []byte, browserSide bool) (*secureSession, error) {
-	c2s, err := newGCM(hkdf32(secret, salt, e2eLabel+" c2s"))
+func newSession(secret, salt []byte, browserSide bool, scope ...string) (*secureSession, error) {
+	label := e2eLabel + strings.Join(scope, "")
+
+	c2s, err := newGCM(hkdf32(secret, salt, label+" c2s"))
 	if err != nil {
 		return nil, err
 	}
 
-	s2c, err := newGCM(hkdf32(secret, salt, e2eLabel+" s2c"))
+	s2c, err := newGCM(hkdf32(secret, salt, label+" s2c"))
 	if err != nil {
 		return nil, err
 	}

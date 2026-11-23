@@ -43,6 +43,15 @@ separate service in the same package. The metrics agent above is unchanged and k
   plain keystrokes or shell output: the service ignores unencrypted input and prints nothing before the handshake.
   Changing the handshake, the key derivation or the framing needs the Go side, the TypeScript side and `server.mjs`
   to change together (and a new agent version), the Go tests cover the Go side.
+- **Files** (list, download, upload from the web terminal) travel on a second encrypted channel of the same shell: binary
+  frames whose session id has the top bit set, keys derived from the same ECDH secret with the label suffix ` files`
+  (own counters). The service does not touch files itself: it starts a helper, `rackatlas-terminal --files`, as the
+  terminal user (so files are read and written with the rights of that user, never root's) and relays encrypted lines to
+  it (`files_relay.go`; the protocol and the work are in `files.go`, same JSON frames as the SFTP part of `server.mjs`).
+  Uploads are written to a temporary file next to the target and renamed at the end. Downloads are flow controlled by
+  the browser (`more`). `ready` carries `"files":true`; an older service does not, and the browser then says it cannot
+  transfer files. After a transfer the service tells the bridge, in clear text, the direction, path and size (no content)
+  for the activity log. The helper must never read `terminal.key`: `--files` is handled before the identity is loaded.
 - It runs as root on purpose and has no sandbox, because the shell inherits it. It is **off by default**: the
   package never enables it. Two switches must both be on: the service (`--terminal` of the installer or
   `systemctl enable --now rackatlas-terminal`) and `servers.agent_terminal` in the app.

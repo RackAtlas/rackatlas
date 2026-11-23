@@ -33,6 +33,7 @@ Route::middleware(AuthenticateTerminalBridge::class)->prefix('terminal')->group(
     Route::post('exchange', [TerminalBridgeController::class, 'exchange'])->name('terminal.exchange');
     Route::post('agent-auth', [TerminalBridgeController::class, 'agentAuth'])->name('terminal.agent-auth');
     Route::post('session-ended', [TerminalBridgeController::class, 'sessionEnded'])->name('terminal.session-ended');
+    Route::post('file', [TerminalBridgeController::class, 'fileTransferred'])->name('terminal.file');
     Route::post('host-key', [TerminalBridgeController::class, 'pinHostKey'])->name('terminal.host-key');
 });
 

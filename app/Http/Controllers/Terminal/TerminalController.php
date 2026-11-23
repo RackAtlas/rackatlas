@@ -22,6 +22,9 @@ class TerminalController extends Controller
             'canManage' => $team !== null && $request->user()->can('permit', [$team, 'terminal.edit']),
             'enabled' => filled(config('terminal.secret')),
             'idleMinutes' => config('terminal.idle_minutes'),
+            'snippets' => $team
+                ? $team->terminalSnippets()->orderBy('name')->get(['id', 'name', 'command'])
+                : [],
             'servers' => $team
                 ? $team->machines()->with('category')->orderBy('name')->get()
                     ->map(fn (Server $server) => [

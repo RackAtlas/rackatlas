@@ -31,6 +31,7 @@ use App\Http\Controllers\Settings\LanguageController;
 use App\Http\Controllers\Settings\WidgetTokenController;
 use App\Http\Controllers\Terminal\TerminalController;
 use App\Http\Controllers\Terminal\TerminalSessionController;
+use App\Http\Controllers\Terminal\TerminalSnippetController;
 use Illuminate\Routing\RedirectController;
 use Illuminate\Support\Facades\Route;
 
@@ -95,6 +96,11 @@ Route::prefix('app')->middleware(['auth', 'verified'])->group(function () {
     Route::post('terminal/sessions', [TerminalSessionController::class, 'store'])
         ->middleware('throttle:30,1')
         ->name('terminal.sessions.store');
+    Route::middleware('permission:terminal.edit')->prefix('terminal/snippets')->name('terminal.snippets.')->group(function () {
+        Route::post('/', [TerminalSnippetController::class, 'store'])->name('store');
+        Route::put('{snippet}', [TerminalSnippetController::class, 'update'])->name('update')->whereNumber('snippet');
+        Route::delete('{snippet}', [TerminalSnippetController::class, 'destroy'])->name('destroy')->whereNumber('snippet');
+    });
     Route::get('applications', [ApplicationController::class, 'index'])->middleware('permission:applications.view')->name('applications.index');
     Route::get('applications/{service}/journal', [ApplicationController::class, 'journal'])
         ->whereNumber('service')

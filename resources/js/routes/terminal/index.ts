@@ -1,5 +1,6 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../wayfinder'
 import sessions from './sessions'
+import snippets from './snippets'
 /**
 * @see \App\Http\Controllers\Api\TerminalBridgeController::exchange
 * @see app/Http/Controllers/Api/TerminalBridgeController.php:24
@@ -58,7 +59,7 @@ exchange.form = exchangeForm
 
 /**
 * @see \App\Http\Controllers\Api\TerminalBridgeController::agentAuth
-* @see app/Http/Controllers/Api/TerminalBridgeController.php:79
+* @see app/Http/Controllers/Api/TerminalBridgeController.php:80
 * @route '/api/terminal/agent-auth'
 */
 export const agentAuth = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -73,7 +74,7 @@ agentAuth.definition = {
 
 /**
 * @see \App\Http\Controllers\Api\TerminalBridgeController::agentAuth
-* @see app/Http/Controllers/Api/TerminalBridgeController.php:79
+* @see app/Http/Controllers/Api/TerminalBridgeController.php:80
 * @route '/api/terminal/agent-auth'
 */
 agentAuth.url = (options?: RouteQueryOptions) => {
@@ -82,7 +83,7 @@ agentAuth.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Api\TerminalBridgeController::agentAuth
-* @see app/Http/Controllers/Api/TerminalBridgeController.php:79
+* @see app/Http/Controllers/Api/TerminalBridgeController.php:80
 * @route '/api/terminal/agent-auth'
 */
 agentAuth.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -92,7 +93,7 @@ agentAuth.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\Api\TerminalBridgeController::agentAuth
-* @see app/Http/Controllers/Api/TerminalBridgeController.php:79
+* @see app/Http/Controllers/Api/TerminalBridgeController.php:80
 * @route '/api/terminal/agent-auth'
 */
 const agentAuthForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -102,7 +103,7 @@ const agentAuthForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'>
 
 /**
 * @see \App\Http\Controllers\Api\TerminalBridgeController::agentAuth
-* @see app/Http/Controllers/Api/TerminalBridgeController.php:79
+* @see app/Http/Controllers/Api/TerminalBridgeController.php:80
 * @route '/api/terminal/agent-auth'
 */
 agentAuthForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -114,7 +115,7 @@ agentAuth.form = agentAuthForm
 
 /**
 * @see \App\Http\Controllers\Api\TerminalBridgeController::sessionEnded
-* @see app/Http/Controllers/Api/TerminalBridgeController.php:95
+* @see app/Http/Controllers/Api/TerminalBridgeController.php:96
 * @route '/api/terminal/session-ended'
 */
 export const sessionEnded = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -129,7 +130,7 @@ sessionEnded.definition = {
 
 /**
 * @see \App\Http\Controllers\Api\TerminalBridgeController::sessionEnded
-* @see app/Http/Controllers/Api/TerminalBridgeController.php:95
+* @see app/Http/Controllers/Api/TerminalBridgeController.php:96
 * @route '/api/terminal/session-ended'
 */
 sessionEnded.url = (options?: RouteQueryOptions) => {
@@ -138,7 +139,7 @@ sessionEnded.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Api\TerminalBridgeController::sessionEnded
-* @see app/Http/Controllers/Api/TerminalBridgeController.php:95
+* @see app/Http/Controllers/Api/TerminalBridgeController.php:96
 * @route '/api/terminal/session-ended'
 */
 sessionEnded.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -148,7 +149,7 @@ sessionEnded.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\Api\TerminalBridgeController::sessionEnded
-* @see app/Http/Controllers/Api/TerminalBridgeController.php:95
+* @see app/Http/Controllers/Api/TerminalBridgeController.php:96
 * @route '/api/terminal/session-ended'
 */
 const sessionEndedForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -158,7 +159,7 @@ const sessionEndedForm = (options?: RouteQueryOptions): RouteFormDefinition<'pos
 
 /**
 * @see \App\Http\Controllers\Api\TerminalBridgeController::sessionEnded
-* @see app/Http/Controllers/Api/TerminalBridgeController.php:95
+* @see app/Http/Controllers/Api/TerminalBridgeController.php:96
 * @route '/api/terminal/session-ended'
 */
 sessionEndedForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -169,8 +170,64 @@ sessionEndedForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post
 sessionEnded.form = sessionEndedForm
 
 /**
+* @see \App\Http\Controllers\Api\TerminalBridgeController::file
+* @see app/Http/Controllers/Api/TerminalBridgeController.php:119
+* @route '/api/terminal/file'
+*/
+export const file = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: file.url(options),
+    method: 'post',
+})
+
+file.definition = {
+    methods: ["post"],
+    url: '/api/terminal/file',
+} satisfies RouteDefinition<["post"]>
+
+/**
+* @see \App\Http\Controllers\Api\TerminalBridgeController::file
+* @see app/Http/Controllers/Api/TerminalBridgeController.php:119
+* @route '/api/terminal/file'
+*/
+file.url = (options?: RouteQueryOptions) => {
+    return file.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\Api\TerminalBridgeController::file
+* @see app/Http/Controllers/Api/TerminalBridgeController.php:119
+* @route '/api/terminal/file'
+*/
+file.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: file.url(options),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\Api\TerminalBridgeController::file
+* @see app/Http/Controllers/Api/TerminalBridgeController.php:119
+* @route '/api/terminal/file'
+*/
+const fileForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: file.url(options),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\Api\TerminalBridgeController::file
+* @see app/Http/Controllers/Api/TerminalBridgeController.php:119
+* @route '/api/terminal/file'
+*/
+fileForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: file.url(options),
+    method: 'post',
+})
+
+file.form = fileForm
+
+/**
 * @see \App\Http\Controllers\Api\TerminalBridgeController::hostKey
-* @see app/Http/Controllers/Api/TerminalBridgeController.php:118
+* @see app/Http/Controllers/Api/TerminalBridgeController.php:143
 * @route '/api/terminal/host-key'
 */
 export const hostKey = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -185,7 +242,7 @@ hostKey.definition = {
 
 /**
 * @see \App\Http\Controllers\Api\TerminalBridgeController::hostKey
-* @see app/Http/Controllers/Api/TerminalBridgeController.php:118
+* @see app/Http/Controllers/Api/TerminalBridgeController.php:143
 * @route '/api/terminal/host-key'
 */
 hostKey.url = (options?: RouteQueryOptions) => {
@@ -194,7 +251,7 @@ hostKey.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Api\TerminalBridgeController::hostKey
-* @see app/Http/Controllers/Api/TerminalBridgeController.php:118
+* @see app/Http/Controllers/Api/TerminalBridgeController.php:143
 * @route '/api/terminal/host-key'
 */
 hostKey.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -204,7 +261,7 @@ hostKey.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\Api\TerminalBridgeController::hostKey
-* @see app/Http/Controllers/Api/TerminalBridgeController.php:118
+* @see app/Http/Controllers/Api/TerminalBridgeController.php:143
 * @route '/api/terminal/host-key'
 */
 const hostKeyForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -214,7 +271,7 @@ const hostKeyForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> =
 
 /**
 * @see \App\Http\Controllers\Api\TerminalBridgeController::hostKey
-* @see app/Http/Controllers/Api/TerminalBridgeController.php:118
+* @see app/Http/Controllers/Api/TerminalBridgeController.php:143
 * @route '/api/terminal/host-key'
 */
 hostKeyForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -226,6 +283,7 @@ hostKey.form = hostKeyForm
 
 const terminal = {
     sessions: Object.assign(sessions, sessions),
+    snippets: Object.assign(snippets, snippets),
 }
 
 export default terminal

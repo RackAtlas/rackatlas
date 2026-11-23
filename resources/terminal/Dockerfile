@@ -30,12 +30,29 @@ COPY <<'EOF_SERVER' /app/server.mjs
  * Frames to the browser: binary shell output (ciphertext via the agent), and
  * {"t":"status"|"error"|"key",...} control messages.
  *
+ * Only for ssh servers (the bridge holds the SSH connection, so it can do more than relay a shell):
+ *  - Persistent shells: when the ticket carries a session key and tmux exists on the server, the shell is
+ *    `tmux new-session -A -s ra-<key>`, so a reconnect finds the same shell. {"t":"end"} ends it for good.
+ *    {"t":"cap","rid":1} answers with the whole scrollback as {"t":"cap","rid":1,"text":".."}.
+ *  - Files over SFTP, all JSON with a request id `rid`: {"t":"ls","rid","path"} -> {"t":"ls","rid","path","entries"};
+ *    {"t":"get","rid","path"} -> {"t":"file","rid","name","size","data"(base64)} ... {"t":"file","rid","last":true};
+ *    {"t":"put","rid","path"(dir),"name","size","overwrite"} -> {"t":"put","rid","state":"ready"}, then
+ *    {"t":"chunk","rid","data"} (each answered with {"t":"ack","rid"}) and {"t":"done","rid"} -> {"t":"put","rid","state":"done"};
+ *    {"t":"cancel","rid"}. Failures are {"t":"fs-error","rid","code","message"}.
+ *
+ * Files via the agent are end-to-end encrypted like the shell, on a second channel: the browser sends the text frame
+ * {"t":"f"} and right after it one binary frame with the ciphertext of one JSON file frame (the same frames as above,
+ * plus {"t":"more","rid"} that lets the next chunk of a download out). The answers come back the same way. This process
+ * does not read them: toward the service it adds the session id with the top bit set (id | 0x80000000).
+ *
  * Frames to the terminal service (many shells share one connection, a session id tells them apart):
  *   text:   {"t":"open","id":1,"cols":80,"rows":24} {"t":"key","id":1,"pub":".."}
  *           {"t":"r","id":1,"c":..,"r":..} {"t":"close","id":1}
  *   binary: 4 bytes session id (big endian) + encrypted keystrokes
  * Frames from the terminal service:
  *   text:   {"t":"ready"|"exit","id":1} {"t":"error","id":1,"message":"..."}
+ *           {"t":"ready","id":1,"files":true} when the service can move files
+ *           {"t":"file","id":1,"direction":"upload|download","path":"..","bytes":N} after a transfer (for the activity log)
  *           {"t":"key","id":1,"pub":"..","ident":"..","sig":".."}
  *   binary: 4 bytes session id + encrypted shell output
  *
@@ -52,6 +69,12 @@ const port = Number(process.env.TERMINAL_PORT || 8787);
 const idleMs = Number(process.env.TERMINAL_IDLE_MINUTES || 30) * 60_000;
 const maxSessions = Number(process.env.TERMINAL_MAX_SESSIONS || 50);
 const maxPerAgent = Number(process.env.TERMINAL_MAX_PER_SERVER || 5);
+const maxFileBytes = Number(process.env.TERMINAL_MAX_FILE_MB || 100) * 1024 * 1024;
+const maxTransfers = 3;
+const chunkBytes = 96 * 1024;
+const FILE_FRAMES = new Set(['ls', 'get', 'put', 'chunk', 'done', 'cancel', 'cap', 'end']);
+const fileFlag = 0x80000000;
+const sessionKeyPattern = /^[A-Za-z0-9]{16,32}$/;
 const allowedOrigin = process.env.TERMINAL_ALLOWED_ORIGIN || (appUrl ? new URL(appUrl).origin : '');
 
 if (!appUrl || !secret) {
@@ -153,7 +176,13 @@ agentWss.on('connection', (ws, request) => {
 
         if (isBinary) {
             if (raw.length > 4) {
-                entry.shells.get(raw.readUInt32BE(0))?.onData(raw.subarray(4));
+                const id = raw.readUInt32BE(0);
+
+                if (id >= fileFlag) {
+                    entry.shells.get(id - fileFlag)?.onFile?.(raw.subarray(4));
+                } else {
+                    entry.shells.get(id)?.onData(raw.subarray(4));
+                }
             }
 
             return;
@@ -170,7 +199,9 @@ agentWss.on('connection', (ws, request) => {
         const shell = entry.shells.get(message.id);
 
         if (message.t === 'ready') {
-            shell?.onReady();
+            shell?.onReady(message);
+        } else if (message.t === 'file') {
+            shell?.onAudit?.(message);
         } else if (message.t === 'key') {
             shell?.onKey?.(message);
         } else if (message.t === 'exit') {
@@ -242,6 +273,11 @@ wss.on('connection', (ws, request) => {
     let idle = null;
     let closed = false;
     let granted = null;
+    let fileNext = false;
+    let tmuxName = null;
+    let ending = null;
+    let sftpPromise = null;
+    const transfers = new Map();
 
     const touch = () => {
         clearTimeout(idle);
@@ -256,8 +292,22 @@ wss.on('connection', (ws, request) => {
         closed = true;
         sessions--;
         clearTimeout(idle);
-        shell?.end();
-        ssh?.end();
+
+        for (const transfer of transfers.values()) {
+            transfer.abort();
+        }
+
+        // A tab that was closed for good first takes its tmux session down, over the same connection.
+        const hangUp = () => {
+            shell?.end();
+            ssh?.end();
+        };
+
+        if (ending !== null) {
+            ending.then(hangUp);
+        } else {
+            hangUp();
+        }
 
         if (granted !== null) {
             api('session-ended', {
@@ -274,10 +324,20 @@ wss.on('connection', (ws, request) => {
 
     ws.on('message', (raw, isBinary) => {
         if (isBinary) {
-            // Ciphertext for the shell on the server. Only shells that are end-to-end encrypted take it.
+            // Ciphertext for the shell on the server (or, after {"t":"f"}, for its file channel).
+            // Only shells that are end-to-end encrypted take it.
+            const forFiles = fileNext;
+
+            fileNext = false;
+
             if (shell?.secure) {
                 touch();
-                shell.write(raw);
+
+                if (forFiles) {
+                    shell.file?.(raw);
+                } else {
+                    shell.write(raw);
+                }
             }
 
             return;
@@ -291,7 +351,9 @@ wss.on('connection', (ws, request) => {
             return;
         }
 
-        if (message.t === 'k') {
+        if (message.t === 'f') {
+            fileNext = shell?.secure === true && typeof shell.file === 'function';
+        } else if (message.t === 'k') {
             if (shell?.secure && typeof message.pub === 'string' && message.pub.length <= 200) {
                 shell.key(message.pub);
             }
@@ -309,8 +371,243 @@ wss.on('connection', (ws, request) => {
         } else if (message.t === 'i' && shell && !shell.secure && typeof message.d === 'string') {
             touch();
             shell.write(message.d);
+        } else if (FILE_FRAMES.has(message.t)) {
+            touch();
+            files(message).catch((error) => reply({ t: 'fs-error', rid: message.rid, code: 'failed', message: String(error?.message || error) }));
         }
     });
+
+    const reply = (message) => ws.readyState === ws.OPEN && ws.send(JSON.stringify(message));
+
+    /** Runs a command on the server over the existing SSH connection, resolves with its output and exit code. */
+    const run = (command, limit = 1024 * 1024) =>
+        new Promise((resolve, reject) => {
+            if (ssh === null) {
+                return reject(new Error('Not available for this server.'));
+            }
+
+            ssh.exec(command, (error, stream) => {
+                if (error) {
+                    return reject(error);
+                }
+
+                const out = [];
+                let size = 0;
+
+                stream.on('data', (data) => {
+                    if (size < limit) {
+                        out.push(data);
+                        size += data.length;
+                    }
+                });
+                stream.stderr.on('data', () => {});
+                stream.on('close', (code) => resolve({ code, text: Buffer.concat(out).toString('utf8') }));
+            });
+        });
+
+    const sftp = () => {
+        if (ssh === null) {
+            return Promise.reject(new Error('Files are not available for this server.'));
+        }
+
+        sftpPromise ??= new Promise((resolve, reject) => ssh.sftp((error, session) => (error ? reject(error) : resolve(session))));
+
+        return sftpPromise;
+    };
+
+    const callback = (fn) => new Promise((resolve, reject) => fn((error, value) => (error ? reject(error) : resolve(value))));
+
+    const audit = (direction, path, bytes) => {
+        if (granted !== null) {
+            api('file', { server_id: granted.server_id, user_id: granted.user_id, direction, path, bytes }).catch(() => {});
+        }
+    };
+
+    const joinPath = (dir, name) => `${dir.replace(/\/+$/, '')}/${name}`;
+
+    const files = async (message) => {
+        const rid = message.rid;
+
+        if (message.t === 'end') {
+            // The tab was closed for good: the persistent shell goes with it.
+            if (tmuxName !== null) {
+                ending = run(`tmux kill-session -t ${tmuxName}`).catch(() => {});
+                await ending;
+            }
+
+            return ws.close();
+        }
+
+        if (message.t === 'cap') {
+            if (tmuxName === null) {
+                return reply({ t: 'fs-error', rid, code: 'unsupported', message: 'This session is not kept on the server.' });
+            }
+
+            const result = await run(`tmux capture-pane -p -J -S - -t ${tmuxName}`, 10 * 1024 * 1024);
+
+            return reply({ t: 'cap', rid, text: result.text.replace(/\s+$/, '') });
+        }
+
+        if (message.t === 'cancel') {
+            return transfers.get(rid)?.abort();
+        }
+
+        if (message.t === 'chunk' || message.t === 'done') {
+            return transfers.get(rid)?.[message.t](message);
+        }
+
+        const client = await sftp();
+
+        if (message.t === 'ls') {
+            const dir = await callback((done) => client.realpath(typeof message.path === 'string' && message.path !== '' ? message.path : '.', done));
+            const list = await callback((done) => client.readdir(dir, done));
+            const entries = [];
+
+            for (const item of list.slice(0, 2000)) {
+                let attrs = item.attrs;
+
+                if (attrs.isSymbolicLink()) {
+                    attrs = await callback((done) => client.stat(joinPath(dir, item.filename), done)).catch(() => attrs);
+                }
+
+                entries.push({ name: item.filename, dir: attrs.isDirectory(), size: attrs.size ?? 0, mtime: attrs.mtime ?? 0 });
+            }
+
+            return reply({ t: 'ls', rid, path: dir, entries, truncated: list.length > 2000 });
+        }
+
+        if (transfers.size >= maxTransfers) {
+            return reply({ t: 'fs-error', rid, code: 'busy', message: 'Too many transfers at once.' });
+        }
+
+        if (message.t === 'get') {
+            const path = String(message.path || '');
+            const stat = await callback((done) => client.stat(path, done));
+
+            if (stat.isDirectory()) {
+                return reply({ t: 'fs-error', rid, code: 'directory', message: 'A folder cannot be downloaded.' });
+            }
+
+            if (stat.size > maxFileBytes) {
+                return reply({ t: 'fs-error', rid, code: 'too-large', message: 'The file is too large.' });
+            }
+
+            const stream = client.createReadStream(path, { highWaterMark: chunkBytes });
+            const name = path.split('/').pop();
+            let sent = 0;
+            let timer = null;
+
+            transfers.set(rid, {
+                abort: () => {
+                    clearTimeout(timer);
+                    stream.destroy();
+                    transfers.delete(rid);
+                },
+            });
+
+            stream.on('data', (data) => {
+                sent += data.length;
+                reply({ t: 'file', rid, name, size: stat.size, data: data.toString('base64') });
+
+                if (ws.bufferedAmount > 1024 * 1024) {
+                    stream.pause();
+
+                    const wait = () => {
+                        if (ws.readyState !== ws.OPEN) {
+                            return;
+                        }
+
+                        if (ws.bufferedAmount > 256 * 1024) {
+                            timer = setTimeout(wait, 40);
+                        } else {
+                            stream.resume();
+                        }
+                    };
+
+                    wait();
+                }
+            });
+            stream.on('end', () => {
+                transfers.delete(rid);
+                reply({ t: 'file', rid, last: true });
+                audit('download', path, sent);
+            });
+            stream.on('error', (error) => {
+                transfers.delete(rid);
+                reply({ t: 'fs-error', rid, code: 'failed', message: String(error.message || error) });
+            });
+
+            return;
+        }
+
+        if (message.t === 'put') {
+            const name = String(message.name || '');
+            const size = Number(message.size) || 0;
+
+            if (name === '' || name === '.' || name === '..' || name.includes('/') || name.includes('\0') || name.length > 255) {
+                return reply({ t: 'fs-error', rid, code: 'name', message: 'The file name is not allowed.' });
+            }
+
+            if (size > maxFileBytes) {
+                return reply({ t: 'fs-error', rid, code: 'too-large', message: 'The file is too large.' });
+            }
+
+            const dir = await callback((done) => client.realpath(typeof message.path === 'string' && message.path !== '' ? message.path : '.', done));
+            const target = joinPath(dir, name);
+            const existing = await callback((done) => client.stat(target, done)).catch(() => null);
+
+            if (existing !== null && !message.overwrite) {
+                return reply({ t: 'fs-error', rid, code: 'exists', message: 'A file with this name already exists.' });
+            }
+
+            if (existing !== null && existing.isDirectory()) {
+                return reply({ t: 'fs-error', rid, code: 'directory', message: 'A folder with this name exists.' });
+            }
+
+            const stream = client.createWriteStream(target, { flags: 'w', mode: 0o644 });
+            let written = 0;
+            let failed = false;
+
+            const fail = (error) => {
+                if (!failed) {
+                    failed = true;
+                    transfers.delete(rid);
+                    reply({ t: 'fs-error', rid, code: 'failed', message: String(error.message || error) });
+                }
+            };
+
+            stream.on('error', fail);
+            transfers.set(rid, {
+                abort: () => {
+                    failed = true;
+                    transfers.delete(rid);
+                    stream.destroy();
+                },
+                chunk: (frame) => {
+                    const data = Buffer.from(String(frame.data || ''), 'base64');
+
+                    written += data.length;
+
+                    if (written > maxFileBytes) {
+                        return fail(new Error('The file is too large.'));
+                    }
+
+                    stream.write(data, () => !failed && reply({ t: 'ack', rid }));
+                },
+                done: () => {
+                    stream.end(() => {
+                        if (!failed) {
+                            transfers.delete(rid);
+                            reply({ t: 'put', rid, state: 'done' });
+                            audit('upload', target, written);
+                        }
+                    });
+                },
+            });
+
+            return reply({ t: 'put', rid, state: 'ready', path: target });
+        }
+    };
 
     const output = (data) => ws.readyState === ws.OPEN && ws.send(data, { binary: true });
 
@@ -331,9 +628,21 @@ wss.on('connection', (ws, request) => {
 
         entry.shells.set(id, {
             onData: output,
-            onReady: () => {
+            onReady: (message) => {
                 clearTimeout(startTimeout);
-                control({ t: 'status', state: 'ready' });
+                control({ t: 'status', state: 'ready', files: message?.files === true });
+            },
+            // Ciphertext of the file channel: told apart from keystrokes by the text frame {"t":"f"} before it.
+            onFile: (data) => {
+                if (ws.readyState === ws.OPEN) {
+                    ws.send(JSON.stringify({ t: 'f' }));
+                    ws.send(data, { binary: true });
+                }
+            },
+            onAudit: (message) => {
+                const direction = message.direction === 'upload' ? 'upload' : 'download';
+
+                audit(direction, String(message.path || '').slice(0, 1000), Math.max(0, Number(message.bytes) || 0));
             },
             onKey: (message) => {
                 const text = (value) => (typeof value === 'string' && value.length <= 400 ? value : '');
@@ -351,6 +660,7 @@ wss.on('connection', (ws, request) => {
             secure: true,
             key: (pub) => entry.ws.readyState === entry.ws.OPEN && entry.ws.send(JSON.stringify({ t: 'key', id, pub })),
             write: (data) => entry.ws.readyState === entry.ws.OPEN && entry.ws.send(frame(id, data), { binary: true }),
+            file: (data) => entry.ws.readyState === entry.ws.OPEN && entry.ws.send(frame(id + fileFlag, data), { binary: true }),
             resize: (cols, rows) => entry.ws.readyState === entry.ws.OPEN && entry.ws.send(JSON.stringify({ t: 'r', id, c: cols, r: rows })),
             end: () => {
                 clearTimeout(startTimeout);
@@ -376,8 +686,20 @@ wss.on('connection', (ws, request) => {
         });
         ssh.on('close', () => ws.close());
 
-        ssh.on('ready', () => {
-            ssh.shell({ term: 'xterm-256color', cols: size.cols, rows: size.rows }, (error, stream) => {
+        ssh.on('ready', async () => {
+            // A shell that survives a lost connection: tmux, when the server has it and the tab asked for it.
+            let persistent = false;
+
+            if (typeof login.session === 'string' && sessionKeyPattern.test(login.session)) {
+                persistent = (await run('command -v tmux >/dev/null 2>&1 && echo yes').catch(() => ({ text: '' }))).text.trim() === 'yes';
+            }
+
+            if (closed) {
+                return;
+            }
+
+            const options = { term: 'xterm-256color', cols: size.cols, rows: size.rows };
+            const onShell = (error, stream) => {
                 if (error) {
                     return fail('The shell could not be opened.');
                 }
@@ -387,12 +709,22 @@ wss.on('connection', (ws, request) => {
                     resize: (cols, rows) => stream.setWindow(rows, cols, 0, 0),
                     end: () => {},
                 };
-                control({ t: 'status', state: 'ready' });
+                control({ t: 'status', state: 'ready', persistent, files: true });
 
                 stream.on('data', output);
                 stream.stderr.on('data', output);
                 stream.on('close', () => ws.close());
-            });
+            };
+
+            if (persistent) {
+                tmuxName = `ra-${login.session}`;
+                // No alternate screen, so the output stays in the scrollback of the browser (search, export, mouse wheel).
+                const create = `tmux -u start-server \\; set -g history-limit 50000 \\; set -ga terminal-overrides ',*:smcup@:rmcup@' \\; new-session -d -s ${tmuxName} \\; set status off`;
+
+                ssh.exec(`tmux -u has-session -t =${tmuxName} 2>/dev/null || ${create}; exec tmux -u attach-session -t ${tmuxName}`, { pty: options }, onShell);
+            } else {
+                ssh.shell(options, onShell);
+            }
         });
 
         let presented = null;
@@ -443,6 +775,8 @@ wss.on('connection', (ws, request) => {
         }
 
         if (!exchanged.ok) {
+            console.warn(`exchange failed: status=${exchanged.status} token=${token.slice(0, 6)}… length=${token.length} ip=${ip}`);
+
             return fail(exchanged.data.message || 'The ticket is invalid or expired.');
         }
 

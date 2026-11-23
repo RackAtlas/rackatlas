@@ -69,6 +69,9 @@ export class SecureChannel {
     private sendChain: Promise<unknown> = Promise.resolve();
     private receiveChain: Promise<unknown> = Promise.resolve();
 
+    /** The second channel of the same shell, for files. It has its own keys and counters. */
+    files!: SecureChannel;
+
     constructor(
         private readonly sendKey: CryptoKey,
         private readonly receiveKey: CryptoKey,
@@ -199,13 +202,15 @@ export async function beginHandshake(): Promise<Handshake> {
                         false,
                         ['deriveKey'],
                     );
-                    const derive = (direction: string) =>
+                    const derive = (direction: string, scope = '') =>
                         crypto.subtle.deriveKey(
                             {
                                 name: 'HKDF',
                                 hash: 'SHA-256',
                                 salt,
-                                info: encoder.encode(`${LABEL} ${direction}`),
+                                info: encoder.encode(
+                                    `${LABEL}${scope} ${direction}`,
+                                ),
                             },
                             material,
                             { name: 'AES-GCM', length: 256 },
@@ -213,10 +218,17 @@ export async function beginHandshake(): Promise<Handshake> {
                             ['encrypt', 'decrypt'],
                         );
 
-                    return new SecureChannel(
+                    const channel = new SecureChannel(
                         await derive('c2s'),
                         await derive('s2c'),
                     );
+
+                    channel.files = new SecureChannel(
+                        await derive('c2s', ' files'),
+                        await derive('s2c', ' files'),
+                    );
+
+                    return channel;
                 },
             };
         },

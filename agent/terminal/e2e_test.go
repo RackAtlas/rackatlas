@@ -26,7 +26,7 @@ func handshakeAsBrowser(t *testing.T, id *identity) (*secureSession, *secureSess
 	}
 
 	browserPub := priv.PublicKey().Bytes()
-	replyJSON, service, err := id.accept(7, base64.StdEncoding.EncodeToString(browserPub))
+	replyJSON, service, _, err := id.accept(7, base64.StdEncoding.EncodeToString(browserPub))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -157,7 +157,7 @@ func TestRejectsBadBrowserKeys(t *testing.T) {
 	id := newTestIdentity(t)
 
 	for _, input := range []string{"", "not base64!", base64.StdEncoding.EncodeToString([]byte("short")), base64.StdEncoding.EncodeToString(make([]byte, 65))} {
-		if _, _, err := id.accept(1, input); err == nil {
+		if _, _, _, err := id.accept(1, input); err == nil {
 			t.Fatalf("%q should be rejected", input)
 		}
 	}

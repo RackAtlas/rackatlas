@@ -76,6 +76,11 @@ class Team extends Model
         return $this->hasMany(Document::class);
     }
 
+    public function terminalSnippets(): HasMany
+    {
+        return $this->hasMany(TerminalSnippet::class);
+    }
+
     public function apiTokens(): HasMany
     {
         return $this->hasMany(ApiToken::class);
