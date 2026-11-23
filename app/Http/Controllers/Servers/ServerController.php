@@ -55,7 +55,6 @@ class ServerController extends Controller
                         'username' => $server->username,
                         'auth_type' => $server->auth_type->value,
                         'uses_agent' => $server->collectsViaAgent(),
-                        'agent_terminal' => $server->opensTerminalViaAgent(),
                         'ssh_key_name' => $server->sshKey?->name,
                         'agent_version' => $server->agent_version,
                         'server_category_id' => $server->server_category_id,
@@ -217,7 +216,6 @@ class ServerController extends Controller
                 'username' => $server->username,
                 'auth_type' => $server->auth_type->value,
                 'uses_agent' => $server->uses_agent,
-                'agent_terminal' => $server->agent_terminal,
                 'has_docker' => $server->has_docker,
                 'ssh_key_id' => $server->ssh_key_id,
                 'server_category_id' => $server->server_category_id,
@@ -325,7 +323,6 @@ class ServerController extends Controller
                 'server_category_id' => $categoryId,
                 'auth_type' => ServerAuthType::Password->value,
                 'uses_agent' => false,
-                'agent_terminal' => false,
                 'has_docker' => false,
                 'password' => $data['password'] ?? null,
                 'ssh_key_id' => null,
@@ -345,7 +342,6 @@ class ServerController extends Controller
                 'server_category_id' => $categoryId,
                 'auth_type' => ServerAuthType::Password->value,
                 'uses_agent' => false,
-                'agent_terminal' => false,
                 'has_docker' => false,
                 'password' => $data['password'] ?? null,
                 'ssh_key_id' => null,
@@ -353,7 +349,6 @@ class ServerController extends Controller
             ];
         }
 
-        $usesAgent = $data['auth_type'] === ServerAuthType::Agent->value || ($data['uses_agent'] ?? false);
         $usesPassword = $data['auth_type'] === ServerAuthType::Password->value;
         $usesKey = $data['auth_type'] === ServerAuthType::Key->value;
 
@@ -368,7 +363,6 @@ class ServerController extends Controller
             'server_category_id' => $categoryId,
             'auth_type' => $data['auth_type'],
             'uses_agent' => $data['auth_type'] !== ServerAuthType::Agent->value && ($data['uses_agent'] ?? false),
-            'agent_terminal' => $usesAgent && ($data['agent_terminal'] ?? false),
             'has_docker' => (bool) ($data['has_docker'] ?? false),
             'password' => $usesPassword ? ($data['password'] ?? null) : null,
             'ssh_key_id' => $usesKey ? $data['ssh_key_id'] : null,

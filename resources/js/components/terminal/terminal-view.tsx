@@ -1,30 +1,16 @@
-import { FitAddon } from '@xterm/addon-fit';
-import { WebLinksAddon } from '@xterm/addon-web-links';
-import { Terminal } from '@xterm/xterm';
-import '@xterm/xterm/css/xterm.css';
-import {
-    CaseSensitive,
-    ChevronDown,
-    ChevronUp,
-    ShieldCheck,
-    TriangleAlert,
-    X,
-} from 'lucide-react';
-import { useEffect, useImperativeHandle, useRef, useState } from 'react';
-import type { Ref } from 'react';
-import TerminalSessionController from '@/actions/App/Http/Controllers/Terminal/TerminalSessionController';
-import { Button } from '@/components/ui/button';
-import { useTranslation } from '@/hooks/use-translation';
-import {
-    beginHandshake,
-    pinFingerprint,
-    pinnedFingerprint,
-} from '@/lib/terminal-e2e';
-import type { Handshake, KeyReply, SecureChannel } from '@/lib/terminal-e2e';
-import { TransferError, createFileClient } from '@/lib/terminal-files';
-import type { FileClient } from '@/lib/terminal-files';
+import { FitAddon } from "@xterm/addon-fit";
+import { WebLinksAddon } from "@xterm/addon-web-links";
+import { Terminal } from "@xterm/xterm";
+import "@xterm/xterm/css/xterm.css";
+import { CaseSensitive, ChevronDown, ChevronUp, X } from "lucide-react";
+import { useEffect, useImperativeHandle, useRef, useState } from "react";
+import type { Ref } from "react";
+import TerminalSessionController from "@/actions/App/Http/Controllers/Terminal/TerminalSessionController";
+import { useTranslation } from "@/hooks/use-translation";
+import { TransferError, createFileClient } from "@/lib/terminal-files";
+import type { FileClient } from "@/lib/terminal-files";
 
-export type TerminalState = 'connecting' | 'ready' | 'closed' | 'error';
+export type TerminalState = "connecting" | "ready" | "closed" | "error";
 
 /** What the bridge reports once the shell is open. */
 export type TerminalInfo = {
@@ -66,62 +52,53 @@ type Props = {
 };
 
 const THEME = {
-    background: '#0c0e12',
-    foreground: '#d4d8e0',
-    cursor: '#e2e8f0',
-    cursorAccent: '#0c0e12',
-    selectionBackground: '#334155aa',
-    black: '#1e2229',
-    red: '#f87171',
-    green: '#4ade80',
-    yellow: '#fbbf24',
-    blue: '#60a5fa',
-    magenta: '#c084fc',
-    cyan: '#22d3ee',
-    white: '#d4d8e0',
-    brightBlack: '#64748b',
-    brightRed: '#fca5a5',
-    brightGreen: '#86efac',
-    brightYellow: '#fde68a',
-    brightBlue: '#93c5fd',
-    brightMagenta: '#d8b4fe',
-    brightCyan: '#67e8f9',
-    brightWhite: '#f8fafc',
+    background: "#0c0e12",
+    foreground: "#d4d8e0",
+    cursor: "#e2e8f0",
+    cursorAccent: "#0c0e12",
+    selectionBackground: "#334155aa",
+    black: "#1e2229",
+    red: "#f87171",
+    green: "#4ade80",
+    yellow: "#fbbf24",
+    blue: "#60a5fa",
+    magenta: "#c084fc",
+    cyan: "#22d3ee",
+    white: "#d4d8e0",
+    brightBlack: "#64748b",
+    brightRed: "#fca5a5",
+    brightGreen: "#86efac",
+    brightYellow: "#fde68a",
+    brightBlue: "#93c5fd",
+    brightMagenta: "#d8b4fe",
+    brightCyan: "#67e8f9",
+    brightWhite: "#f8fafc",
 };
-
-type IdentityPrompt = {
-    fingerprint: string;
-    previous: string | null;
-    answer: (trusted: boolean) => void;
-};
-
-const encoder = new TextEncoder();
-const decoder = new TextDecoder();
 
 function csrfToken(): string {
     const match = document.cookie.match(/(?:^|; )XSRF-TOKEN=([^;]+)/);
 
-    return match ? decodeURIComponent(match[1]) : '';
+    return match ? decodeURIComponent(match[1]) : "";
 }
 
 /** The keys a phone keyboard lacks. Sent to the shell as the escape sequences a real keyboard would produce. */
 const EXTRA_KEYS: { label: string; data: string; name: string }[] = [
-    { label: 'Esc', data: '\x1b', name: 'Escape' },
-    { label: 'Tab', data: '\t', name: 'Tab' },
-    { label: '↑', data: '\x1b[A', name: 'Arrow up' },
-    { label: '↓', data: '\x1b[B', name: 'Arrow down' },
-    { label: '←', data: '\x1b[D', name: 'Arrow left' },
-    { label: '→', data: '\x1b[C', name: 'Arrow right' },
-    { label: '|', data: '|', name: 'Pipe' },
-    { label: '~', data: '~', name: 'Tilde' },
-    { label: '/', data: '/', name: 'Slash' },
-    { label: '-', data: '-', name: 'Dash' },
+    { label: "Esc", data: "\x1b", name: "Escape" },
+    { label: "Tab", data: "\t", name: "Tab" },
+    { label: "↑", data: "\x1b[A", name: "Arrow up" },
+    { label: "↓", data: "\x1b[B", name: "Arrow down" },
+    { label: "←", data: "\x1b[D", name: "Arrow left" },
+    { label: "→", data: "\x1b[C", name: "Arrow right" },
+    { label: "|", data: "|", name: "Pipe" },
+    { label: "~", data: "~", name: "Tilde" },
+    { label: "/", data: "/", name: "Slash" },
+    { label: "-", data: "-", name: "Dash" },
 ];
 
 /** A phone or tablet: the keyboard is on the screen and has no Esc, Tab, Ctrl or arrows. */
 const hasTouchKeyboard = (): boolean =>
-    typeof window !== 'undefined' &&
-    window.matchMedia('(pointer: coarse)').matches;
+    typeof window !== "undefined" &&
+    window.matchMedia("(pointer: coarse)").matches;
 
 /** Ctrl plus a letter or one of @[\\]^_ as the control character the shell expects, or null. */
 function controlCharacter(data: string): string | null {
@@ -150,7 +127,6 @@ export default function TerminalView({
     ref,
 }: Props) {
     const { t } = useTranslation();
-    const [prompt, setPrompt] = useState<IdentityPrompt | null>(null);
     const [keyBar] = useState(hasTouchKeyboard);
     const [ctrl, setCtrl] = useState(false);
     const ctrlRef = useRef(false);
@@ -169,17 +145,17 @@ export default function TerminalView({
     const filesRef = useRef<FileClient | null>(null);
     const persistentRef = useRef(false);
     const [searchOpen, setSearchOpen] = useState(false);
-    const [query, setQuery] = useState('');
+    const [query, setQuery] = useState("");
     const [matchCase, setMatchCase] = useState(false);
     const [position, setPosition] = useState({ current: 0, total: 0 });
     const searchInput = useRef<HTMLInputElement>(null);
-    const searchState = useRef({ query: '', matchCase: false, cursor: -1 });
+    const searchState = useRef({ query: "", matchCase: false, cursor: -1 });
     const openSearchRef = useRef<() => void>(() => {});
 
     openSearchRef.current = () => {
-        const selected = term.current?.getSelection() ?? '';
+        const selected = term.current?.getSelection() ?? "";
 
-        if (selected !== '' && !selected.includes('\n')) {
+        if (selected !== "" && !selected.includes("\n")) {
             setQuery(selected);
         }
 
@@ -195,14 +171,14 @@ export default function TerminalView({
         const buffer = term.current?.buffer.active;
         const found: { row: number; col: number; length: number }[] = [];
 
-        if (!buffer || text === '') {
+        if (!buffer || text === "") {
             return found;
         }
 
         const needle = sensitive ? text : text.toLowerCase();
 
         for (let row = 0; row < buffer.length; row++) {
-            const raw = buffer.getLine(row)?.translateToString(true) ?? '';
+            const raw = buffer.getLine(row)?.translateToString(true) ?? "";
             const line = sensitive ? raw : raw.toLowerCase();
             let from = line.indexOf(needle);
 
@@ -282,12 +258,12 @@ export default function TerminalView({
             const lines: string[] = [];
 
             if (!buffer) {
-                return '';
+                return "";
             }
 
             for (let row = 0; row < buffer.length; row++) {
                 const line = buffer.getLine(row);
-                const text = line?.translateToString(true) ?? '';
+                const text = line?.translateToString(true) ?? "";
 
                 if (line?.isWrapped && lines.length > 0) {
                     lines[lines.length - 1] += text;
@@ -296,7 +272,7 @@ export default function TerminalView({
                 }
             }
 
-            return lines.join('\n').replace(/\s+$/, '');
+            return lines.join("\n").replace(/\s+$/, "");
         },
         getHistory: async () =>
             persistentRef.current && filesRef.current
@@ -307,9 +283,9 @@ export default function TerminalView({
         clear: () => term.current?.clear(),
         focus: () => term.current?.focus(),
         copySelection: async () => {
-            const text = term.current?.getSelection() ?? '';
+            const text = term.current?.getSelection() ?? "";
 
-            if (text === '') {
+            if (text === "") {
                 return false;
             }
 
@@ -348,59 +324,21 @@ export default function TerminalView({
         let socket: WebSocket | null = null;
         let disposed = false;
         let finished = false;
-        // Through the agent everything after the handshake is end-to-end encrypted.
-        let secure = false;
-        // Whether the next binary frame from the bridge belongs to the file channel (it announces itself with {"t":"f"}).
-        let fileNext = false;
-        let agentFiles = false;
         const files = createFileClient({
-            get flowControl() {
-                return secure;
-            },
             send: (frame) => {
                 if (socket?.readyState !== WebSocket.OPEN) {
                     throw new TransferError(
-                        'closed',
-                        'The connection is closed.',
+                        "closed",
+                        "The connection is closed.",
                     );
                 }
 
-                if (!secure) {
-                    socket.send(JSON.stringify(frame));
-
-                    return;
-                }
-
-                if (channel === null) {
-                    throw new TransferError(
-                        'closed',
-                        'The encrypted connection is not ready.',
-                    );
-                }
-
-                // Encrypting is asynchronous, but the frames come out of it in the order they went in.
-                channel.files
-                    .encrypt(encoder.encode(JSON.stringify(frame)))
-                    .then((encrypted) => {
-                        if (socket?.readyState === WebSocket.OPEN) {
-                            socket.send(JSON.stringify({ t: 'f' }));
-                            socket.send(encrypted);
-                        }
-                    })
-                    .catch(() => fail(t('The encrypted connection failed.')));
+                socket.send(JSON.stringify(frame));
             },
         });
 
         filesRef.current = files;
         persistentRef.current = false;
-        let handshake: Handshake | null = null;
-        let handshakeTimer: ReturnType<typeof setTimeout> | undefined;
-        let channel: SecureChannel | null = null;
-        let resolveChannel: (channel: SecureChannel) => void = () => {};
-        const channelReady = new Promise<SecureChannel>((resolve) => {
-            resolveChannel = resolve;
-        });
-
         const finish = (state: TerminalState, message?: string) => {
             if (finished) {
                 return;
@@ -414,7 +352,7 @@ export default function TerminalView({
             if (socket?.readyState === WebSocket.OPEN) {
                 socket.send(
                     JSON.stringify({
-                        t: 'r',
+                        t: "r",
                         c: terminal.cols,
                         r: terminal.rows,
                     }),
@@ -437,39 +375,19 @@ export default function TerminalView({
         const observer = new ResizeObserver(() => requestAnimationFrame(refit));
         observer.observe(element);
 
-        const fail = (message: string) => {
-            terminal.write(`\r\n\x1b[31m${message}\x1b[0m\r\n`);
-            finish('error', message);
-            socket?.close();
-        };
-
-        /** Sends keystrokes to the shell, encrypted when the terminal runs through the agent. */
+        /** Sends keystrokes to the shell. */
         const write = (data: string) => {
             if (socket?.readyState !== WebSocket.OPEN) {
                 return;
             }
 
-            if (!secure) {
-                socket.send(JSON.stringify({ t: 'i', d: data }));
-
-                return;
-            }
-
-            // Keystrokes typed before the encryption is ready are dropped on purpose.
-            channel
-                ?.encrypt(encoder.encode(data))
-                .then((encrypted) => {
-                    if (socket?.readyState === WebSocket.OPEN) {
-                        socket.send(encrypted);
-                    }
-                })
-                .catch(() => fail(t('The encrypted connection failed.')));
+            socket.send(JSON.stringify({ t: "i", d: data }));
         };
 
         inputRef.current = write;
         endRef.current = () => {
-            if (socket?.readyState === WebSocket.OPEN && !secure) {
-                socket.send(JSON.stringify({ t: 'end' }));
+            if (socket?.readyState === WebSocket.OPEN) {
+                socket.send(JSON.stringify({ t: "end" }));
             }
         };
 
@@ -493,9 +411,9 @@ export default function TerminalView({
                 : event.ctrlKey && event.shiftKey;
 
             if (
-                event.type === 'keydown' &&
+                event.type === "keydown" &&
                 wanted &&
-                event.key.toLowerCase() === 'f'
+                event.key.toLowerCase() === "f"
             ) {
                 event.preventDefault();
                 openSearchRef.current();
@@ -508,17 +426,17 @@ export default function TerminalView({
         terminal.onResize(sendSize);
 
         void (async () => {
-            onStateRef.current('connecting');
+            onStateRef.current("connecting");
 
             try {
                 const response = await fetch(
                     TerminalSessionController.store.url(),
                     {
-                        method: 'POST',
+                        method: "POST",
                         headers: {
-                            'Content-Type': 'application/json',
-                            Accept: 'application/json',
-                            'X-XSRF-TOKEN': csrfToken(),
+                            "Content-Type": "application/json",
+                            Accept: "application/json",
+                            "X-XSRF-TOKEN": csrfToken(),
                         },
                         body: JSON.stringify({
                             server_id: serverId,
@@ -535,190 +453,67 @@ export default function TerminalView({
 
                 if (!response.ok) {
                     finish(
-                        'error',
-                        data.message ?? 'The session could not be prepared.',
+                        "error",
+                        data.message ?? "The session could not be prepared.",
                     );
 
                     return;
                 }
 
-                secure = data.mode === 'agent';
-
                 socket = new WebSocket(
                     `${data.url}?token=${encodeURIComponent(data.token)}`,
                 );
-                socket.binaryType = 'arraybuffer';
+                socket.binaryType = "arraybuffer";
 
                 socket.onopen = sendSize;
-                const verifyIdentity = async (reply: KeyReply) => {
-                    if (handshake === null) {
-                        return;
-                    }
-
-                    clearTimeout(handshakeTimer);
-
-                    // Only the first answer counts.
-                    const started = handshake;
-                    handshake = null;
-
-                    const verified = await started.verify(reply);
-                    const pinned = pinnedFingerprint(serverId);
-
-                    if (pinned !== verified.fingerprint) {
-                        const trusted = await new Promise<boolean>((answer) =>
-                            setPrompt({
-                                fingerprint: verified.fingerprint,
-                                previous: pinned,
-                                answer,
-                            }),
-                        );
-
-                        setPrompt(null);
-
-                        if (!trusted) {
-                            finish('closed');
-                            socket?.close();
-
-                            return;
-                        }
-
-                        pinFingerprint(serverId, verified.fingerprint);
-                    }
-
-                    channel = await verified.open();
-                    resolveChannel(channel);
-                    onInfoRef.current?.({
-                        persistent: false,
-                        files: agentFiles,
-                    });
-                    onStateRef.current('ready');
-                    terminal.focus();
-                };
-
                 socket.onmessage = (event) => {
-                    if (typeof event.data !== 'string') {
-                        const bytes = new Uint8Array(event.data);
-
-                        if (!secure) {
-                            terminal.write(bytes);
-
-                            return;
-                        }
-
-                        if (fileNext) {
-                            fileNext = false;
-
-                            void channelReady
-                                .then((ready) => ready.files.decrypt(bytes))
-                                .then((plain) =>
-                                    files.handle(
-                                        JSON.parse(decoder.decode(plain)),
-                                    ),
-                                )
-                                .catch(() =>
-                                    fail(
-                                        t(
-                                            'The encrypted connection could not be verified.',
-                                        ),
-                                    ),
-                                );
-
-                            return;
-                        }
-
-                        // Output may arrive while the user is still checking the fingerprint.
-                        void channelReady
-                            .then((ready) => ready.decrypt(bytes))
-                            .then((plain) => terminal.write(plain))
-                            .catch(() =>
-                                fail(
-                                    t(
-                                        'The encrypted connection could not be verified.',
-                                    ),
-                                ),
-                            );
+                    if (typeof event.data !== "string") {
+                        terminal.write(new Uint8Array(event.data));
 
                         return;
                     }
 
                     const message = JSON.parse(event.data);
 
-                    if (message.t === 'f') {
-                        fileNext = secure;
-                    } else if (message.rid !== undefined && !secure) {
+                    if (message.rid !== undefined) {
                         files.handle(message);
                     } else if (
-                        message.t === 'status' &&
-                        message.state === 'ready'
+                        message.t === "status" &&
+                        message.state === "ready"
                     ) {
-                        if (!secure) {
-                            persistentRef.current = Boolean(message.persistent);
-                            onInfoRef.current?.({
-                                persistent: Boolean(message.persistent),
-                                files: Boolean(message.files),
-                            });
-                            onStateRef.current('ready');
-                            terminal.focus();
-
-                            return;
-                        }
-
-                        agentFiles = Boolean(message.files);
-
-                        void beginHandshake().then((started) => {
-                            handshake = started;
-                            handshakeTimer = setTimeout(
-                                () =>
-                                    fail(
-                                        t(
-                                            'The terminal service on the server does not support encryption. Update the agent.',
-                                        ),
-                                    ),
-                                10_000,
-                            );
-                            socket?.send(
-                                JSON.stringify({
-                                    t: 'k',
-                                    pub: started.publicKey,
-                                }),
-                            );
+                        persistentRef.current = Boolean(message.persistent);
+                        onInfoRef.current?.({
+                            persistent: Boolean(message.persistent),
+                            files: Boolean(message.files),
                         });
-                    } else if (message.t === 'key' && secure) {
-                        verifyIdentity(message).catch(() =>
-                            fail(
-                                t(
-                                    'The identity of the terminal service could not be verified.',
-                                ),
-                            ),
-                        );
-                    } else if (message.t === 'error') {
+                        onStateRef.current("ready");
+                        terminal.focus();
+                    } else if (message.t === "error") {
                         terminal.write(
                             `\r\n\x1b[31m${message.message}\x1b[0m\r\n`,
                         );
-                        finish('error', message.message);
+                        finish("error", message.message);
                     }
                 };
                 socket.onerror = () =>
-                    finish('error', 'The terminal server is not reachable.');
+                    finish("error", "The terminal server is not reachable.");
                 socket.onclose = () => {
-                    setPrompt(null);
                     files.close();
 
                     if (!disposed) {
                         terminal.write(
-                            '\r\n\x1b[90m[connection closed]\x1b[0m\r\n',
+                            "\r\n\x1b[90m[connection closed]\x1b[0m\r\n",
                         );
-                        finish('closed');
+                        finish("closed");
                     }
                 };
             } catch {
-                finish('error', 'The terminal server is not reachable.');
+                finish("error", "The terminal server is not reachable.");
             }
         })();
 
         return () => {
             disposed = true;
-            clearTimeout(handshakeTimer);
             observer.disconnect();
             files.close();
             filesRef.current = null;
@@ -766,40 +561,40 @@ export default function TerminalView({
                         value={query}
                         onChange={(event) => setQuery(event.target.value)}
                         onKeyDown={(event) => {
-                            if (event.key === 'Enter') {
+                            if (event.key === "Enter") {
                                 event.preventDefault();
                                 goToMatch(event.shiftKey ? -1 : 1);
-                            } else if (event.key === 'Escape') {
+                            } else if (event.key === "Escape") {
                                 event.preventDefault();
                                 event.stopPropagation();
                                 closeSearch();
                             }
                         }}
-                        placeholder={t('Find in output…')}
-                        aria-label={t('Find in output…')}
+                        placeholder={t("Find in output…")}
+                        aria-label={t("Find in output…")}
                         className="h-7 w-44 rounded-md bg-black/40 px-2 text-sm outline-none placeholder:text-slate-500 focus:ring-1 focus:ring-emerald-400"
                     />
                     <span className="min-w-12 px-1 text-center text-xs text-slate-400 tabular-nums">
-                        {query === ''
-                            ? ''
+                        {query === ""
+                            ? ""
                             : position.total === 0
-                              ? t('No matches')
+                              ? t("No matches")
                               : `${position.current}/${position.total}`}
                     </span>
                     <button
                         type="button"
-                        aria-label={t('Match case')}
+                        aria-label={t("Match case")}
                         aria-pressed={matchCase}
-                        title={t('Match case')}
+                        title={t("Match case")}
                         onClick={() => setMatchCase(!matchCase)}
-                        className={`rounded p-1 hover:bg-white/10 ${matchCase ? 'bg-emerald-500/30 text-emerald-300' : ''}`}
+                        className={`rounded p-1 hover:bg-white/10 ${matchCase ? "bg-emerald-500/30 text-emerald-300" : ""}`}
                     >
                         <CaseSensitive className="size-4" />
                     </button>
                     <button
                         type="button"
-                        aria-label={t('Older match')}
-                        title={t('Older match (Enter)')}
+                        aria-label={t("Older match")}
+                        title={t("Older match (Enter)")}
                         onClick={() => goToMatch(1)}
                         className="rounded p-1 hover:bg-white/10"
                     >
@@ -807,8 +602,8 @@ export default function TerminalView({
                     </button>
                     <button
                         type="button"
-                        aria-label={t('Newer match')}
-                        title={t('Newer match (Shift+Enter)')}
+                        aria-label={t("Newer match")}
+                        title={t("Newer match (Shift+Enter)")}
                         onClick={() => goToMatch(-1)}
                         className="rounded p-1 hover:bg-white/10"
                     >
@@ -816,7 +611,7 @@ export default function TerminalView({
                     </button>
                     <button
                         type="button"
-                        aria-label={t('Close')}
+                        aria-label={t("Close")}
                         onClick={closeSearch}
                         className="rounded p-1 hover:bg-white/10"
                     >
@@ -829,7 +624,7 @@ export default function TerminalView({
                 <div
                     className="flex shrink-0 gap-1 overflow-x-auto border-t border-white/10 bg-[#12151b] p-1.5"
                     role="toolbar"
-                    aria-label={t('Extra keys')}
+                    aria-label={t("Extra keys")}
                     data-test="terminal-key-bar"
                 >
                     <button
@@ -842,8 +637,8 @@ export default function TerminalView({
                         }}
                         className={`min-w-11 shrink-0 rounded-md px-3 py-2 font-mono text-sm ${
                             ctrl
-                                ? 'bg-emerald-500 text-black'
-                                : 'bg-white/10 text-slate-200'
+                                ? "bg-emerald-500 text-black"
+                                : "bg-white/10 text-slate-200"
                         }`}
                     >
                         Ctrl
@@ -863,72 +658,6 @@ export default function TerminalView({
                             {key.label}
                         </button>
                     ))}
-                </div>
-            )}
-
-            {prompt && (
-                <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/70 p-4">
-                    <div className="w-full max-w-lg space-y-4 rounded-xl border border-white/10 bg-[#12151b] p-5 text-sm text-slate-200 shadow-xl">
-                        <div className="flex items-center gap-2 font-medium text-slate-50">
-                            {prompt.previous ? (
-                                <TriangleAlert className="size-5 text-amber-400" />
-                            ) : (
-                                <ShieldCheck className="size-5 text-emerald-400" />
-                            )}
-                            {prompt.previous
-                                ? t(
-                                      'The identity of the terminal service has changed',
-                                  )
-                                : t('Verify the terminal service')}
-                        </div>
-
-                        <p className="text-slate-400">
-                            {prompt.previous
-                                ? t(
-                                      'The fingerprint differs from the one you trusted before. If you reinstalled the server or its agent, compare the new fingerprint with the one on the server. Otherwise someone may be impersonating it.',
-                                  )
-                                : t(
-                                      'The terminal is end-to-end encrypted: neither RackAtlas nor Cloudflare can read it. Compare the fingerprint below with the one printed on the server by this command, then trust it.',
-                                  )}
-                        </p>
-
-                        <code className="block rounded-md bg-black/40 px-3 py-2 font-mono text-xs text-slate-300">
-                            sudo rackatlas-terminal --fingerprint
-                        </code>
-
-                        {prompt.previous && (
-                            <div className="space-y-1">
-                                <p className="text-xs text-slate-500">
-                                    {t('Trusted before')}
-                                </p>
-                                <code className="block rounded-md bg-black/40 px-3 py-2 font-mono text-xs break-all text-slate-400">
-                                    {prompt.previous}
-                                </code>
-                            </div>
-                        )}
-
-                        <div className="space-y-1">
-                            <p className="text-xs text-slate-500">
-                                {t('Offered now')}
-                            </p>
-                            <code className="block rounded-md bg-black/40 px-3 py-2 font-mono text-xs break-all text-emerald-300">
-                                {prompt.fingerprint}
-                            </code>
-                        </div>
-
-                        <div className="flex justify-end gap-2">
-                            <Button
-                                variant="ghost"
-                                className="text-slate-300 hover:text-slate-50"
-                                onClick={() => prompt.answer(false)}
-                            >
-                                {t('Cancel')}
-                            </Button>
-                            <Button onClick={() => prompt.answer(true)}>
-                                {t('Trust and connect')}
-                            </Button>
-                        </div>
-                    </div>
                 </div>
             )}
         </div>

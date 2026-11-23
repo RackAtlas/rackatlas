@@ -90,7 +90,7 @@ class WindowsAgentTest extends TestCase
             ->post(route('servers.store'), [
                 'type' => 'server', 'name' => 'win', 'provider' => '', 'country' => '', 'host' => '', 'port' => '22',
                 'username' => 'root', 'server_category_id' => '', 'new_category' => '', 'auth_type' => 'agent',
-                'uses_agent' => false, 'agent_terminal' => false, 'password' => '', 'ssh_key_id' => '',
+                'uses_agent' => false, 'password' => '', 'ssh_key_id' => '',
                 'ignored_alerts' => [], 'in_maintenance' => false, 'watch_enabled' => false, 'has_docker' => false,
             ])
             ->assertSessionHasNoErrors()

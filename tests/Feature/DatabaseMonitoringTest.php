@@ -49,7 +49,7 @@ class DatabaseMonitoringTest extends TestCase
         $this->assertSame(ServerAuthType::Password, $server->auth_type);
         $this->assertSame('secret', $server->password);
         $this->assertFalse($server->collectsViaAgent());
-        $this->assertFalse($server->canOpenTerminal());
+        $this->assertFalse($server->hasSshAccess());
         $this->assertNull($server->agent_token_hash);
     }
 

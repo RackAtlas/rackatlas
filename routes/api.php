@@ -3,7 +3,6 @@
 use App\Http\Controllers\Api\AgentDockerLogsController;
 use App\Http\Controllers\Api\AgentIngestController;
 use App\Http\Controllers\Api\AgentJournalController;
-use App\Http\Controllers\Api\AgentTerminalController;
 use App\Http\Controllers\Api\BackupWebhookController;
 use App\Http\Controllers\Api\TerminalBridgeController;
 use App\Http\Controllers\Api\V1;
@@ -25,13 +24,8 @@ Route::post('agent/docker-logs', AgentDockerLogsController::class)
     ->middleware(['throttle:agent', AuthenticateAgent::class])
     ->name('agent.docker-logs');
 
-Route::get('agent/terminal', AgentTerminalController::class)
-    ->middleware(['throttle:agent', AuthenticateAgent::class])
-    ->name('agent.terminal');
-
 Route::middleware(AuthenticateTerminalBridge::class)->prefix('terminal')->group(function () {
     Route::post('exchange', [TerminalBridgeController::class, 'exchange'])->name('terminal.exchange');
-    Route::post('agent-auth', [TerminalBridgeController::class, 'agentAuth'])->name('terminal.agent-auth');
     Route::post('session-ended', [TerminalBridgeController::class, 'sessionEnded'])->name('terminal.session-ended');
     Route::post('file', [TerminalBridgeController::class, 'fileTransferred'])->name('terminal.file');
     Route::post('host-key', [TerminalBridgeController::class, 'pinHostKey'])->name('terminal.host-key');

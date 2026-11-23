@@ -47,7 +47,7 @@ class RedisMonitoringTest extends TestCase
         $this->assertNull($server->username);
         $this->assertNull($server->password);
         $this->assertFalse($server->collectsViaAgent());
-        $this->assertFalse($server->canOpenTerminal());
+        $this->assertFalse($server->hasSshAccess());
     }
 
     public function test_redis_server_keeps_its_password_when_the_field_is_left_empty(): void

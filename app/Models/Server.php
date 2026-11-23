@@ -32,7 +32,6 @@ use Spatie\Activitylog\Support\LogOptions;
  * @property string $username
  * @property ServerAuthType $auth_type How the app logs in over SSH. Agent means there is no SSH access at all.
  * @property bool $uses_agent Whether the data comes from the agent although the server also has SSH access
- * @property bool $agent_terminal Whether the terminal runs through the agent, which connects out, instead of over SSH
  * @property bool $has_docker Whether Docker runs on the machine, so its containers are collected and managed
  * @property string|null $docker_error Why the containers could not be read, until they can
  * @property Carbon|null $docker_checked_at
@@ -49,7 +48,7 @@ use Spatie\Activitylog\Support\LogOptions;
  * @property Carbon|null $last_checked_at
  * @property Carbon|null $last_seen_at
  */
-#[Fillable(['team_id', 'type', 'server_category_id', 'name', 'provider', 'country', 'host', 'port', 'username', 'auth_type', 'uses_agent', 'agent_terminal', 'has_docker', 'password', 'ssh_key_id', 'ignored_alerts', 'in_maintenance', 'watch_enabled'])]
+#[Fillable(['team_id', 'type', 'server_category_id', 'name', 'provider', 'country', 'host', 'port', 'username', 'auth_type', 'uses_agent', 'has_docker', 'password', 'ssh_key_id', 'ignored_alerts', 'in_maintenance', 'watch_enabled'])]
 #[Hidden(['password', 'agent_token_hash'])]
 class Server extends Model
 {
@@ -71,7 +70,6 @@ class Server extends Model
             'type' => ServerType::class,
             'auth_type' => ServerAuthType::class,
             'uses_agent' => 'boolean',
-            'agent_terminal' => 'boolean',
             'has_docker' => 'boolean',
             'docker_checked_at' => 'datetime',
             'password' => 'encrypted',
@@ -121,27 +119,12 @@ class Server extends Model
     }
 
     /**
-     * Whether a terminal can be opened, which needs SSH login details.
+     * Whether a terminal can be opened. The terminal always goes over SSH, so it needs SSH login details;
+     * a server that only reports through the agent has none.
      */
     public function hasSshAccess(): bool
     {
         return $this->isMachine() && $this->auth_type !== ServerAuthType::Agent;
-    }
-
-    /**
-     * Whether the terminal goes through the agent. It needs the agent, so the flag alone is not enough.
-     */
-    public function opensTerminalViaAgent(): bool
-    {
-        return $this->agent_terminal && $this->collectsViaAgent();
-    }
-
-    /**
-     * Whether a terminal can be opened at all, over SSH or through the agent.
-     */
-    public function canOpenTerminal(): bool
-    {
-        return $this->hasSshAccess() || $this->opensTerminalViaAgent();
     }
 
     /**
@@ -295,7 +278,7 @@ class Server extends Model
     {
         return LogOptions::defaults()
             ->useLogName('server')
-            ->logOnly(['type', 'name', 'provider', 'country', 'host', 'port', 'username', 'auth_type', 'uses_agent', 'agent_terminal', 'server_category_id', 'ssh_key_id', 'team_id', 'ignored_alerts', 'in_maintenance', 'watch_enabled'])
+            ->logOnly(['type', 'name', 'provider', 'country', 'host', 'port', 'username', 'auth_type', 'uses_agent', 'server_category_id', 'ssh_key_id', 'team_id', 'ignored_alerts', 'in_maintenance', 'watch_enabled'])
             ->logOnlyDirty()
             ->dontLogEmptyChanges();
     }

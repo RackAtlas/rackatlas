@@ -35,11 +35,14 @@ CONF
       if grep -q '^TOKEN=.' /etc/rackatlas-agent/agent.conf; then
         systemctl restart rackatlas-agent.timer || true
       fi
-      # The terminal service is never enabled here. If the admin enabled it, an upgrade starts it again
-      # with the new binary. prerm stops it during an upgrade, so try-restart would do nothing.
-      if systemctl is-enabled --quiet rackatlas-terminal.service 2>/dev/null; then
-        systemctl restart rackatlas-terminal.service >/dev/null 2>&1 || true
-      fi
+    fi
+
+    # Versions up to 1.10 shipped an optional terminal service. The terminal now only uses SSH, so an
+    # upgrade removes what that service left behind (the old prerm already stopped it).
+    rm -f /etc/systemd/system/multi-user.target.wants/rackatlas-terminal.service \
+      /etc/rackatlas-agent/terminal.key
+    if [ -d /run/systemd/system ]; then
+      systemctl daemon-reload || true
     fi
     ;;
 esac

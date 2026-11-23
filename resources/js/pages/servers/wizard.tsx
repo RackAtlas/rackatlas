@@ -83,7 +83,6 @@ const stepFields: Record<number, string[]> = {
     1: [
         'auth_type',
         'uses_agent',
-        'agent_terminal',
         'host',
         'port',
         'username',
@@ -128,7 +127,6 @@ export default function ServerWizard({
         new_category: '',
         auth_type: (server?.auth_type ?? 'agent') as ServerAuthType,
         uses_agent: server?.uses_agent ?? false,
-        agent_terminal: server?.agent_terminal ?? false,
         password: '',
         ssh_key_id: server?.ssh_key_id ? String(server.ssh_key_id) : '',
         ignored_alerts: server?.ignored_alerts ?? ([] as string[]),
@@ -150,29 +148,6 @@ export default function ServerWizard({
     const isDatabase = isMysql || isRedis;
     const isAgent = !isDatabase && form.data.auth_type === 'agent';
     const sendsViaAgent = isAgent || form.data.uses_agent;
-
-    const agentTerminalOption = (
-        <label className="flex cursor-pointer items-start gap-3 rounded-lg border bg-card p-4 text-sm">
-            <Checkbox
-                checked={form.data.agent_terminal}
-                onCheckedChange={(checked) =>
-                    form.setData('agent_terminal', checked === true)
-                }
-                className="mt-0.5"
-                data-test="agent-terminal-checkbox"
-            />
-            <span>
-                <span className="block font-medium">
-                    {t('Open the terminal through the agent')}
-                </span>
-                <span className="block text-muted-foreground">
-                    {t(
-                        'A second service on the server connects out to RackAtlas and starts the shell, so the SSH port can stay closed. It runs as root, so only enable it where you want a remote shell.',
-                    )}
-                </span>
-            </span>
-        </label>
-    );
 
     const selectedKey = keys.find(
         (key) => String(key.id) === form.data.ssh_key_id,
@@ -270,7 +245,6 @@ export default function ServerWizard({
             }[type],
             username: database ? '' : 'root',
             uses_agent: false,
-            agent_terminal: false,
             has_docker: false,
         }));
         form.clearErrors();
@@ -863,8 +837,6 @@ export default function ServerWizard({
                                 </div>
                             )}
 
-                            {isAgent && !windows && agentTerminalOption}
-
                             {isMysql && !editing && (
                                 <CreateUserCommand
                                     onUse={(username, password) =>
@@ -976,10 +948,6 @@ export default function ServerWizard({
                                     </span>
                                 </label>
                             )}
-
-                            {!isAgent &&
-                                form.data.uses_agent &&
-                                agentTerminalOption}
 
                             {form.data.auth_type === 'password' && (
                                 <div className="grid gap-2">
@@ -1157,10 +1125,7 @@ export default function ServerWizard({
                                     [
                                         t('Access'),
                                         isAgent
-                                            ? t('Agent') +
-                                              (form.data.agent_terminal
-                                                  ? ` · ${t('terminal through the agent')}`
-                                                  : '')
+                                            ? t('Agent')
                                             : (form.data.auth_type === 'key'
                                                   ? t('SSH key: :name', {
                                                         name:
@@ -1170,9 +1135,6 @@ export default function ServerWizard({
                                                   : t('Password')) +
                                               (form.data.uses_agent
                                                   ? ` · ${t('data from the agent')}`
-                                                  : '') +
-                                              (form.data.agent_terminal
-                                                  ? ` · ${t('terminal through the agent')}`
                                                   : ''),
                                     ],
                                 ].map(([label, value]) => (

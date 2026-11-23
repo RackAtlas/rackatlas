@@ -34,8 +34,8 @@ class TerminalSessionController extends Controller
         abort_if($server === null, 404);
         $this->authorize('permit', [$team, 'terminal.edit']);
 
-        if (! $server->canOpenTerminal()) {
-            return response()->json(['message' => __('This server reports through the agent and has no SSH access.')], 422);
+        if (! $server->hasSshAccess()) {
+            return response()->json(['message' => __('This server has no SSH login details. Fill them in to use the terminal.')], 422);
         }
 
         $token = Str::random(48);
@@ -50,8 +50,6 @@ class TerminalSessionController extends Controller
         return response()->json([
             'token' => $token,
             'url' => config('terminal.url'),
-            // Through the agent the traffic is end-to-end encrypted, so the browser has to do the handshake.
-            'mode' => $server->opensTerminalViaAgent() ? 'agent' : 'ssh',
         ]);
     }
 }

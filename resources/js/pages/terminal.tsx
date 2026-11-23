@@ -459,7 +459,7 @@ export default function TerminalPage({
         if (!active.files || active.state !== 'ready') {
             toast.info(
                 t(
-                    'This server cannot transfer files. If it uses the agent, update the agent.',
+                    'This server cannot transfer files.',
                 ),
             );
 
@@ -683,7 +683,7 @@ export default function TerminalPage({
                                                                     </TooltipTrigger>
                                                                     <TooltipContent>
                                                                         {t(
-                                                                            'Reports through the agent, no SSH access.',
+                                                                            'No SSH login details. Edit the server and fill them in to use the terminal.',
                                                                         )}
                                                                     </TooltipContent>
                                                                 </Tooltip>
@@ -1456,7 +1456,7 @@ export default function TerminalPage({
                                                   'Drop files to upload them to the server',
                                               )
                                             : t(
-                                                  'This server cannot transfer files. If it uses the agent, update the agent.',
+                                                  'This server cannot transfer files.',
                                               )}
                                     </div>
                                 )}
@@ -1508,7 +1508,7 @@ export default function TerminalPage({
                                             <p className="p-6 text-center text-sm text-muted-foreground">
                                                 {active.state === 'ready'
                                                     ? t(
-                                                          'This server cannot transfer files. If it uses the agent, update the agent.',
+                                                          'This server cannot transfer files.',
                                                       )
                                                     : t(
                                                           'Connect to a server first.',

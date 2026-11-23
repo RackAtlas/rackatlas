@@ -958,7 +958,7 @@ export default function Welcome({ canRegister, faq }: Props) {
                                     SquareTerminal,
                                     t('Terminal in the browser'),
                                     t(
-                                        'Open an end-to-end encrypted SSH terminal to your server without opening any port.',
+                                        'Open an SSH terminal to your server in the browser, with files and saved commands.',
                                     ),
                                 ],
                                 [

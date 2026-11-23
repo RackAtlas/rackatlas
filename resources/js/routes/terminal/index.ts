@@ -58,64 +58,8 @@ exchangeForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> =
 exchange.form = exchangeForm
 
 /**
-* @see \App\Http\Controllers\Api\TerminalBridgeController::agentAuth
-* @see app/Http/Controllers/Api/TerminalBridgeController.php:80
-* @route '/api/terminal/agent-auth'
-*/
-export const agentAuth = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
-    url: agentAuth.url(options),
-    method: 'post',
-})
-
-agentAuth.definition = {
-    methods: ["post"],
-    url: '/api/terminal/agent-auth',
-} satisfies RouteDefinition<["post"]>
-
-/**
-* @see \App\Http\Controllers\Api\TerminalBridgeController::agentAuth
-* @see app/Http/Controllers/Api/TerminalBridgeController.php:80
-* @route '/api/terminal/agent-auth'
-*/
-agentAuth.url = (options?: RouteQueryOptions) => {
-    return agentAuth.definition.url + queryParams(options)
-}
-
-/**
-* @see \App\Http\Controllers\Api\TerminalBridgeController::agentAuth
-* @see app/Http/Controllers/Api/TerminalBridgeController.php:80
-* @route '/api/terminal/agent-auth'
-*/
-agentAuth.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
-    url: agentAuth.url(options),
-    method: 'post',
-})
-
-/**
-* @see \App\Http\Controllers\Api\TerminalBridgeController::agentAuth
-* @see app/Http/Controllers/Api/TerminalBridgeController.php:80
-* @route '/api/terminal/agent-auth'
-*/
-const agentAuthForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
-    action: agentAuth.url(options),
-    method: 'post',
-})
-
-/**
-* @see \App\Http\Controllers\Api\TerminalBridgeController::agentAuth
-* @see app/Http/Controllers/Api/TerminalBridgeController.php:80
-* @route '/api/terminal/agent-auth'
-*/
-agentAuthForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
-    action: agentAuth.url(options),
-    method: 'post',
-})
-
-agentAuth.form = agentAuthForm
-
-/**
 * @see \App\Http\Controllers\Api\TerminalBridgeController::sessionEnded
-* @see app/Http/Controllers/Api/TerminalBridgeController.php:96
+* @see app/Http/Controllers/Api/TerminalBridgeController.php:71
 * @route '/api/terminal/session-ended'
 */
 export const sessionEnded = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -130,7 +74,7 @@ sessionEnded.definition = {
 
 /**
 * @see \App\Http\Controllers\Api\TerminalBridgeController::sessionEnded
-* @see app/Http/Controllers/Api/TerminalBridgeController.php:96
+* @see app/Http/Controllers/Api/TerminalBridgeController.php:71
 * @route '/api/terminal/session-ended'
 */
 sessionEnded.url = (options?: RouteQueryOptions) => {
@@ -139,7 +83,7 @@ sessionEnded.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Api\TerminalBridgeController::sessionEnded
-* @see app/Http/Controllers/Api/TerminalBridgeController.php:96
+* @see app/Http/Controllers/Api/TerminalBridgeController.php:71
 * @route '/api/terminal/session-ended'
 */
 sessionEnded.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -149,7 +93,7 @@ sessionEnded.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\Api\TerminalBridgeController::sessionEnded
-* @see app/Http/Controllers/Api/TerminalBridgeController.php:96
+* @see app/Http/Controllers/Api/TerminalBridgeController.php:71
 * @route '/api/terminal/session-ended'
 */
 const sessionEndedForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -159,7 +103,7 @@ const sessionEndedForm = (options?: RouteQueryOptions): RouteFormDefinition<'pos
 
 /**
 * @see \App\Http\Controllers\Api\TerminalBridgeController::sessionEnded
-* @see app/Http/Controllers/Api/TerminalBridgeController.php:96
+* @see app/Http/Controllers/Api/TerminalBridgeController.php:71
 * @route '/api/terminal/session-ended'
 */
 sessionEndedForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -171,7 +115,7 @@ sessionEnded.form = sessionEndedForm
 
 /**
 * @see \App\Http\Controllers\Api\TerminalBridgeController::file
-* @see app/Http/Controllers/Api/TerminalBridgeController.php:119
+* @see app/Http/Controllers/Api/TerminalBridgeController.php:93
 * @route '/api/terminal/file'
 */
 export const file = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -186,7 +130,7 @@ file.definition = {
 
 /**
 * @see \App\Http\Controllers\Api\TerminalBridgeController::file
-* @see app/Http/Controllers/Api/TerminalBridgeController.php:119
+* @see app/Http/Controllers/Api/TerminalBridgeController.php:93
 * @route '/api/terminal/file'
 */
 file.url = (options?: RouteQueryOptions) => {
@@ -195,7 +139,7 @@ file.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Api\TerminalBridgeController::file
-* @see app/Http/Controllers/Api/TerminalBridgeController.php:119
+* @see app/Http/Controllers/Api/TerminalBridgeController.php:93
 * @route '/api/terminal/file'
 */
 file.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -205,7 +149,7 @@ file.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\Api\TerminalBridgeController::file
-* @see app/Http/Controllers/Api/TerminalBridgeController.php:119
+* @see app/Http/Controllers/Api/TerminalBridgeController.php:93
 * @route '/api/terminal/file'
 */
 const fileForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -215,7 +159,7 @@ const fileForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => (
 
 /**
 * @see \App\Http\Controllers\Api\TerminalBridgeController::file
-* @see app/Http/Controllers/Api/TerminalBridgeController.php:119
+* @see app/Http/Controllers/Api/TerminalBridgeController.php:93
 * @route '/api/terminal/file'
 */
 fileForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -227,7 +171,7 @@ file.form = fileForm
 
 /**
 * @see \App\Http\Controllers\Api\TerminalBridgeController::hostKey
-* @see app/Http/Controllers/Api/TerminalBridgeController.php:143
+* @see app/Http/Controllers/Api/TerminalBridgeController.php:117
 * @route '/api/terminal/host-key'
 */
 export const hostKey = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -242,7 +186,7 @@ hostKey.definition = {
 
 /**
 * @see \App\Http\Controllers\Api\TerminalBridgeController::hostKey
-* @see app/Http/Controllers/Api/TerminalBridgeController.php:143
+* @see app/Http/Controllers/Api/TerminalBridgeController.php:117
 * @route '/api/terminal/host-key'
 */
 hostKey.url = (options?: RouteQueryOptions) => {
@@ -251,7 +195,7 @@ hostKey.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Api\TerminalBridgeController::hostKey
-* @see app/Http/Controllers/Api/TerminalBridgeController.php:143
+* @see app/Http/Controllers/Api/TerminalBridgeController.php:117
 * @route '/api/terminal/host-key'
 */
 hostKey.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -261,7 +205,7 @@ hostKey.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\Api\TerminalBridgeController::hostKey
-* @see app/Http/Controllers/Api/TerminalBridgeController.php:143
+* @see app/Http/Controllers/Api/TerminalBridgeController.php:117
 * @route '/api/terminal/host-key'
 */
 const hostKeyForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -271,7 +215,7 @@ const hostKeyForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> =
 
 /**
 * @see \App\Http\Controllers\Api\TerminalBridgeController::hostKey
-* @see app/Http/Controllers/Api/TerminalBridgeController.php:143
+* @see app/Http/Controllers/Api/TerminalBridgeController.php:117
 * @route '/api/terminal/host-key'
 */
 hostKeyForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({

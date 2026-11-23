@@ -37,16 +37,8 @@ class TerminalBridgeController extends Controller
         $user = User::find($ticket['user_id']);
         $server = Server::with(['team', 'sshKey'])->find($ticket['server_id']);
 
-        if ($user === null || $server === null || ! $user->can('permit', [$server->team, 'terminal.edit']) || ! $server->canOpenTerminal()) {
+        if ($user === null || $server === null || ! $user->can('permit', [$server->team, 'terminal.edit']) || ! $server->hasSshAccess()) {
             return response()->json(['message' => 'Not allowed.'], 403);
-        }
-
-        if ($server->opensTerminalViaAgent()) {
-            activity('auth')->event('terminal-opened')->causedBy($user)->performedOn($server)
-                ->withProperties(['server' => $server->name, 'ip' => $data['ip'] ?? null, 'via' => 'agent'])
-                ->log('terminal-opened');
-
-            return response()->json(['mode' => 'agent', 'server_id' => $server->id, 'user_id' => $user->id]);
         }
 
         try {
@@ -60,7 +52,6 @@ class TerminalBridgeController extends Controller
             ->log('terminal-opened');
 
         return response()->json([
-            'mode' => 'ssh',
             'server_id' => $server->id,
             'user_id' => $user->id,
             'host' => $host,
@@ -75,22 +66,6 @@ class TerminalBridgeController extends Controller
     }
 
     /**
-     * Check the token of a terminal service on a server that wants to connect to the bridge.
-     */
-    public function agentAuth(Request $request): JsonResponse
-    {
-        $data = $request->validate(['token' => ['required', 'string', 'max:100']]);
-
-        $server = Server::findByAgentToken($data['token']);
-
-        if ($server === null || ! $server->opensTerminalViaAgent()) {
-            return response()->json(['message' => 'Not allowed.'], 403);
-        }
-
-        return response()->json(['server_id' => $server->id]);
-    }
-
-    /**
      * Record that a session ended, so the activity log shows how long a shell was open.
      */
     public function sessionEnded(Request $request): JsonResponse
@@ -99,14 +74,13 @@ class TerminalBridgeController extends Controller
             'server_id' => ['required', 'integer'],
             'user_id' => ['required', 'integer'],
             'seconds' => ['required', 'integer', 'min:0'],
-            'via' => ['required', 'in:ssh,agent'],
         ]);
 
         $server = Server::find($data['server_id']);
 
         if ($server !== null) {
             activity('auth')->event('terminal-closed')->causedBy(User::find($data['user_id']))->performedOn($server)
-                ->withProperties(['server' => $server->name, 'seconds' => $data['seconds'], 'via' => $data['via']])
+                ->withProperties(['server' => $server->name, 'seconds' => $data['seconds']])
                 ->log('terminal-closed');
         }
 

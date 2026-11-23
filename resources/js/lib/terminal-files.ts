@@ -26,12 +26,10 @@ export class TransferError extends Error {
     }
 }
 
-/** How frames get to the bridge. Through the agent they are encrypted first, so sending is not instant. */
+/** How frames get to the bridge. */
 export type FileTransport = {
     /** Throws a TransferError('closed') when there is no connection. */
     send: (frame: Record<string, unknown>) => void;
-    /** The service wants a "more" for every chunk it sent (agent), the bridge does its own flow control (ssh). */
-    flowControl: boolean;
 };
 
 export type FileClient = {
@@ -62,7 +60,7 @@ const CHUNK = 96 * 1024;
 type Frame = Record<string, any>;
 
 function toBase64(bytes: Uint8Array): string {
-    let binary = '';
+    let binary = "";
     const step = 0x8000;
 
     for (let index = 0; index < bytes.length; index += step) {
@@ -85,7 +83,7 @@ function fromBase64(text: string): Uint8Array<ArrayBuffer> {
 
 function saveBlob(blob: Blob, name: string): void {
     const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
+    const link = document.createElement("a");
 
     link.href = url;
     link.download = name;
@@ -128,10 +126,10 @@ export function createFileClient(transport: FileTransport): FileClient {
                         waiting = resolve;
                     }));
 
-                if (frame.t === 'fs-error') {
+                if (frame.t === "fs-error") {
                     throw new TransferError(
-                        String(frame.code ?? 'failed'),
-                        String(frame.message ?? 'The transfer failed.'),
+                        String(frame.code ?? "failed"),
+                        String(frame.message ?? "The transfer failed."),
                     );
                 }
 
@@ -144,21 +142,21 @@ export function createFileClient(transport: FileTransport): FileClient {
     const onAbort = (rid: number, signal?: AbortSignal) => {
         const abort = () => {
             try {
-                send({ t: 'cancel', rid });
+                send({ t: "cancel", rid });
             } catch {
                 // The connection is gone anyway.
             }
 
             channels.get(rid)?.({
-                t: 'fs-error',
-                code: 'aborted',
-                message: 'Cancelled.',
+                t: "fs-error",
+                code: "aborted",
+                message: "Cancelled.",
             });
         };
 
-        signal?.addEventListener('abort', abort, { once: true });
+        signal?.addEventListener("abort", abort, { once: true });
 
-        return () => signal?.removeEventListener('abort', abort);
+        return () => signal?.removeEventListener("abort", abort);
     };
 
     return {
@@ -166,7 +164,7 @@ export function createFileClient(transport: FileTransport): FileClient {
             const request = channel();
 
             try {
-                send({ t: 'ls', rid: request.rid, path });
+                send({ t: "ls", rid: request.rid, path });
                 const frame = await request.next();
 
                 return {
@@ -183,9 +181,9 @@ export function createFileClient(transport: FileTransport): FileClient {
             const request = channel();
 
             try {
-                send({ t: 'cap', rid: request.rid });
+                send({ t: "cap", rid: request.rid });
 
-                return String((await request.next()).text ?? '');
+                return String((await request.next()).text ?? "");
             } finally {
                 request.release();
             }
@@ -196,10 +194,10 @@ export function createFileClient(transport: FileTransport): FileClient {
             const stopWatching = onAbort(request.rid, signal);
             const parts: Uint8Array<ArrayBuffer>[] = [];
             let done = 0;
-            let name = path.split('/').pop() || 'download';
+            let name = path.split("/").pop() || "download";
 
             try {
-                send({ t: 'get', rid: request.rid, path });
+                send({ t: "get", rid: request.rid, path });
 
                 for (;;) {
                     const frame = await request.next();
@@ -211,10 +209,6 @@ export function createFileClient(transport: FileTransport): FileClient {
                     name = frame.name ?? name;
 
                     const bytes = fromBase64(frame.data);
-
-                    if (transport.flowControl) {
-                        send({ t: 'more', rid: request.rid });
-                    }
 
                     parts.push(bytes);
                     done += bytes.length;
@@ -234,7 +228,7 @@ export function createFileClient(transport: FileTransport): FileClient {
 
             try {
                 send({
-                    t: 'put',
+                    t: "put",
                     rid: request.rid,
                     path: dir,
                     name: file.name,
@@ -250,7 +244,7 @@ export function createFileClient(transport: FileTransport): FileClient {
                     const bytes = new Uint8Array(await slice.arrayBuffer());
 
                     send({
-                        t: 'chunk',
+                        t: "chunk",
                         rid: request.rid,
                         data: toBase64(bytes),
                     });
@@ -259,7 +253,7 @@ export function createFileClient(transport: FileTransport): FileClient {
                     onProgress(sent, file.size);
                 }
 
-                send({ t: 'done', rid: request.rid });
+                send({ t: "done", rid: request.rid });
                 await request.next();
                 onProgress(file.size, file.size);
 
@@ -269,9 +263,9 @@ export function createFileClient(transport: FileTransport): FileClient {
                     throw error;
                 }
 
-                if (error.code !== 'aborted') {
+                if (error.code !== "aborted") {
                     try {
-                        send({ t: 'cancel', rid: request.rid });
+                        send({ t: "cancel", rid: request.rid });
                     } catch {
                         // Nothing to cancel.
                     }
@@ -295,9 +289,9 @@ export function createFileClient(transport: FileTransport): FileClient {
         close() {
             for (const deliver of channels.values()) {
                 deliver({
-                    t: 'fs-error',
-                    code: 'closed',
-                    message: 'The connection is closed.',
+                    t: "fs-error",
+                    code: "closed",
+                    message: "The connection is closed.",
                 });
             }
         },
