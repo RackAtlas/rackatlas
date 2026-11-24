@@ -103,21 +103,24 @@ Route::prefix('app')->middleware(['auth', 'verified'])->group(function () {
         Route::delete('{snippet}', [TerminalSnippetController::class, 'destroy'])->name('destroy')->whereNumber('snippet');
     });
     Route::get('applications', [ApplicationController::class, 'index'])->middleware('permission:applications.view')->name('applications.index');
-    Route::get('applications/{service}/journal', [ApplicationController::class, 'journal'])
+    Route::post('applications/{service}/status', [ApplicationController::class, 'status'])
         ->whereNumber('service')
+        ->middleware('throttle:60,1')
+        ->name('applications.status');
+    Route::post('applications/{service}/journal', [ApplicationController::class, 'journal'])
+        ->whereNumber('service')
+        ->middleware('throttle:60,1')
         ->name('applications.journal');
-    Route::post('applications/{service}/journal', [ApplicationController::class, 'requestJournal'])
+    Route::post('applications/{service}/{action}', [ApplicationController::class, 'act'])
         ->whereNumber('service')
-        ->middleware('throttle:10,1')
-        ->name('applications.journal.request');
+        ->whereIn('action', ['start', 'stop', 'restart'])
+        ->middleware('throttle:30,1')
+        ->name('applications.act');
 
     Route::get('docker', [DockerController::class, 'index'])->middleware('permission:docker.view')->name('docker.index');
-    Route::post('docker/containers/{container}/logs', [DockerController::class, 'requestLogs'])
+    Route::post('docker/containers/{container}/logs', [DockerController::class, 'logs'])
         ->whereNumber('container')
-        ->middleware('throttle:30,1')
-        ->name('docker.containers.logs.request');
-    Route::get('docker/containers/{container}/logs', [DockerController::class, 'logs'])
-        ->whereNumber('container')
+        ->middleware('throttle:60,1')
         ->name('docker.containers.logs');
     Route::post('docker/containers/{container}/{action}', [DockerController::class, 'act'])
         ->whereNumber('container')

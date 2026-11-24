@@ -1,32 +1,43 @@
-import { Head, router } from '@inertiajs/react';
+import { Head, router, useHttp } from "@inertiajs/react";
 import {
+    Activity,
     ChevronDown,
     Download,
     FileText,
     Layers,
+    Play,
     RefreshCw,
+    RotateCw,
     Search,
+    Square,
     X,
-} from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
-import ApplicationController from '@/actions/App/Http/Controllers/ApplicationController';
-import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Input } from '@/components/ui/input';
+} from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import ApplicationController from "@/actions/App/Http/Controllers/ApplicationController";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import {
     Select,
     SelectContent,
     SelectItem,
     SelectTrigger,
     SelectValue,
-} from '@/components/ui/select';
-import { Spinner } from '@/components/ui/spinner';
-import { useTranslation } from '@/hooks/use-translation';
-import { timeAgo } from '@/lib/dashboard';
-import { cn } from '@/lib/utils';
-import { index } from '@/routes/applications';
+} from "@/components/ui/select";
+import { Spinner } from "@/components/ui/spinner";
+import { useTranslation } from "@/hooks/use-translation";
+import { timeAgo } from "@/lib/dashboard";
+import { cn } from "@/lib/utils";
+import { index } from "@/routes/applications";
 
-type ServiceStatus = 'failed' | 'running' | 'stopped' | 'disabled';
+type ServiceStatus = "failed" | "running" | "stopped" | "disabled";
 
 type Service = {
     id: number;
@@ -36,38 +47,47 @@ type Service = {
     active_state: string;
     sub_state: string | null;
     unit_file_state: string | null;
-    journal_at: string | null;
-    journal_pending: boolean;
+};
+
+type ServiceAction = "start" | "stop" | "restart";
+
+type OutputKind = "status" | "journal";
+
+type Output = {
+    output: string;
+    fetched_at: string;
 };
 
 type ServerServices = {
     id: number;
     name: string;
     last_seen_at: string | null;
+    ssh: boolean;
     services: Service[];
 };
 
 type Props = {
     team: { id: number; name: string } | null;
+    canManage?: boolean;
     servers: ServerServices[];
     generated_at: string;
 };
 
-const STATUSES: ServiceStatus[] = ['failed', 'running', 'stopped', 'disabled'];
+const STATUSES: ServiceStatus[] = ["failed", "running", "stopped", "disabled"];
 
 const DOT: Record<ServiceStatus, string> = {
-    failed: 'bg-red-500',
-    running: 'bg-emerald-500',
-    stopped: 'bg-amber-500',
-    disabled: 'bg-muted-foreground/40',
+    failed: "bg-red-500",
+    running: "bg-emerald-500",
+    stopped: "bg-amber-500",
+    disabled: "bg-muted-foreground/40",
 };
 
-const ALL = 'all';
+const ALL = "all";
 
 /** How many services of one server are shown before "Show all". */
 const PAGE = 15;
 
-const STORAGE_KEY = 'applications.hide-system';
+const STORAGE_KEY = "applications.hide-system";
 
 /**
  * Units the admin set up (enabled, disabled, masked) are applications. The rest (static, generated,
@@ -75,16 +95,16 @@ const STORAGE_KEY = 'applications.hide-system';
  */
 function isSystemUnit(service: Service): boolean {
     return (
-        service.status !== 'failed' &&
-        !['enabled', 'disabled', 'masked'].includes(
-            service.unit_file_state ?? '',
+        service.status !== "failed" &&
+        !["enabled", "disabled", "masked"].includes(
+            service.unit_file_state ?? "",
         )
     );
 }
 
 function readHideSystem(): boolean {
     try {
-        return localStorage.getItem(STORAGE_KEY) !== '0';
+        return localStorage.getItem(STORAGE_KEY) !== "0";
     } catch {
         return true;
     }
@@ -94,45 +114,54 @@ function emptyCounts(): Record<ServiceStatus, number> {
     return { failed: 0, running: 0, stopped: 0, disabled: 0 };
 }
 
-export default function Applications({ team, servers, generated_at }: Props) {
+export default function Applications({
+    team,
+    canManage = false,
+    servers,
+    generated_at,
+}: Props) {
     const { t, locale } = useTranslation();
     const [status, setStatus] = useState<ServiceStatus | typeof ALL>(ALL);
     const [server, setServer] = useState<string>(ALL);
-    const [search, setSearch] = useState('');
+    const [search, setSearch] = useState("");
     const [hideSystem, setHideSystem] = useState(readHideSystem);
     const [collapsed, setCollapsed] = useState<Set<number>>(new Set());
     const [expanded, setExpanded] = useState<Set<number>>(new Set());
 
-    const waiting = servers.some((s) =>
-        s.services.some((service) => service.journal_pending),
-    );
+    const [acting, setActing] = useState<number | null>(null);
+    const [outputOf, setOutputOf] = useState<{
+        service: Service;
+        serverName: string;
+        kind: OutputKind;
+    } | null>(null);
 
-    // The agent answers with its next report, so look again until every request is fulfilled.
+    // The services change by themselves, so look again now and then.
     useEffect(() => {
-        if (!waiting) {
-            return;
-        }
-
         const timer = setInterval(
-            () => router.reload({ only: ['servers', 'generated_at'] }),
-            5000,
+            () => router.reload({ only: ["servers", "generated_at"] }),
+            30000,
         );
 
         return () => clearInterval(timer);
-    }, [waiting]);
+    }, []);
 
-    const requestJournal = (id: number) =>
+    const act = (service: Service, action: ServiceAction) =>
         router.post(
-            ApplicationController.requestJournal.url(id),
+            ApplicationController.act.url({ service: service.id, action }),
             {},
-            { preserveScroll: true, only: ['servers', 'generated_at'] },
+            {
+                preserveScroll: true,
+                only: ["servers", "generated_at"],
+                onStart: () => setActing(service.id),
+                onFinish: () => setActing(null),
+            },
         );
 
     const toggleHideSystem = (value: boolean) => {
         setHideSystem(value);
 
         try {
-            localStorage.setItem(STORAGE_KEY, value ? '1' : '0');
+            localStorage.setItem(STORAGE_KEY, value ? "1" : "0");
         } catch {
             // The choice then only lasts until the page is closed.
         }
@@ -153,14 +182,14 @@ export default function Applications({ team, servers, generated_at }: Props) {
     };
 
     const labels: Record<ServiceStatus, string> = {
-        failed: t('Crashed'),
-        running: t('Running'),
-        stopped: t('Stopped'),
-        disabled: t('Disabled'),
+        failed: t("Crashed"),
+        running: t("Running"),
+        stopped: t("Stopped"),
+        disabled: t("Disabled"),
     };
 
     const query = search.trim().toLowerCase();
-    const filtering = status !== ALL || query !== '';
+    const filtering = status !== ALL || query !== "";
     const dirty = filtering || server !== ALL;
 
     // Everything except the status chip, so the chips show what each one would give.
@@ -173,9 +202,9 @@ export default function Applications({ team, servers, generated_at }: Props) {
                     services: s.services.filter(
                         (service) =>
                             (!hideSystem || !isSystemUnit(service)) &&
-                            (query === '' ||
+                            (query === "" ||
                                 service.unit.toLowerCase().includes(query) ||
-                                (service.description ?? '')
+                                (service.description ?? "")
                                     .toLowerCase()
                                     .includes(query)),
                     ),
@@ -223,21 +252,21 @@ export default function Applications({ team, servers, generated_at }: Props) {
     const clearFilters = () => {
         setStatus(ALL);
         setServer(ALL);
-        setSearch('');
+        setSearch("");
     };
 
     return (
         <>
-            <Head title={t('Applications')} />
+            <Head title={t("Applications")} />
 
             <div className="mx-auto flex w-full max-w-[100rem] min-w-0 flex-col gap-5 p-4 md:p-6">
                 <div className="space-y-1">
                     <h1 className="text-2xl font-semibold">
-                        {t('Applications')}
+                        {t("Applications")}
                     </h1>
                     <p className="text-sm text-muted-foreground">
                         {t(
-                            'The systemd services of the servers with the agent: what runs, what is stopped, switched off or crashed. Press Journal and the agent sends its journal within a minute.',
+                            "The systemd services of the servers with the agent: what runs, what is stopped, switched off or crashed. The buttons act over SSH, right away: start, stop, restart, status and journal.",
                         )}
                     </p>
                 </div>
@@ -247,7 +276,7 @@ export default function Applications({ team, servers, generated_at }: Props) {
                         <Layers className="size-8 text-muted-foreground" />
                         <p className="text-sm text-muted-foreground">
                             {t(
-                                'No services yet. They appear once a server with the agent (version 1.6 or newer) sends its first report.',
+                                "No services yet. They appear once a server with the agent (version 1.6 or newer) sends its first report.",
                             )}
                         </p>
                     </div>
@@ -263,8 +292,8 @@ export default function Applications({ team, servers, generated_at }: Props) {
                                         onChange={(e) =>
                                             setSearch(e.target.value)
                                         }
-                                        placeholder={t('Search services')}
-                                        aria-label={t('Search services')}
+                                        placeholder={t("Search services")}
+                                        aria-label={t("Search services")}
                                         className="pl-8"
                                     />
                                 </div>
@@ -275,13 +304,13 @@ export default function Applications({ team, servers, generated_at }: Props) {
                                 >
                                     <SelectTrigger
                                         className="w-48"
-                                        aria-label={t('Server')}
+                                        aria-label={t("Server")}
                                     >
                                         <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectItem value={ALL}>
-                                            {t('All servers')}
+                                            {t("All servers")}
                                         </SelectItem>
                                         {servers.map((s) => (
                                             <SelectItem
@@ -301,7 +330,7 @@ export default function Applications({ team, servers, generated_at }: Props) {
                                         onClick={clearFilters}
                                     >
                                         <X className="size-3.5" />
-                                        {t('Clear filters')}
+                                        {t("Clear filters")}
                                     </Button>
                                 )}
                             </div>
@@ -334,35 +363,35 @@ export default function Applications({ team, servers, generated_at }: Props) {
                                                         setStatus(value)
                                                     }
                                                     className={cn(
-                                                        'flex items-center gap-2 rounded-full border px-3 py-1 text-sm transition-colors',
+                                                        "flex items-center gap-2 rounded-full border px-3 py-1 text-sm transition-colors",
                                                         status === value
-                                                            ? 'border-foreground/20 bg-muted font-medium'
-                                                            : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground',
-                                                        value === 'failed' &&
+                                                            ? "border-foreground/20 bg-muted font-medium"
+                                                            : "text-muted-foreground hover:bg-muted/60 hover:text-foreground",
+                                                        value === "failed" &&
                                                             count > 0 &&
-                                                            'border-red-500/40',
+                                                            "border-red-500/40",
                                                     )}
                                                 >
                                                     {value !== ALL && (
                                                         <span
                                                             className={cn(
-                                                                'size-2 rounded-full',
+                                                                "size-2 rounded-full",
                                                                 DOT[value],
                                                             )}
                                                             aria-hidden
                                                         />
                                                     )}
                                                     {value === ALL
-                                                        ? t('All')
+                                                        ? t("All")
                                                         : labels[value]}
                                                     <span
                                                         className={cn(
-                                                            'text-xs tabular-nums',
+                                                            "text-xs tabular-nums",
                                                             value ===
-                                                                'failed' &&
+                                                                "failed" &&
                                                                 count > 0
-                                                                ? 'font-semibold text-red-600 dark:text-red-400'
-                                                                : 'text-muted-foreground',
+                                                                ? "font-semibold text-red-600 dark:text-red-400"
+                                                                : "text-muted-foreground",
                                                         )}
                                                     >
                                                         {count}
@@ -380,7 +409,7 @@ export default function Applications({ team, servers, generated_at }: Props) {
                                             toggleHideSystem(value === true)
                                         }
                                     />
-                                    {t('Hide system units')}
+                                    {t("Hide system units")}
                                     {hideSystem && hiddenSystem > 0 && (
                                         <span className="text-xs tabular-nums">
                                             ({hiddenSystem})
@@ -393,7 +422,7 @@ export default function Applications({ team, servers, generated_at }: Props) {
                         {visible.length === 0 ? (
                             <div className="flex flex-col items-center gap-3 py-12 text-center">
                                 <p className="text-sm text-muted-foreground">
-                                    {t('No service matches the filter.')}
+                                    {t("No service matches the filter.")}
                                 </p>
                                 {dirty && (
                                     <Button
@@ -401,7 +430,7 @@ export default function Applications({ team, servers, generated_at }: Props) {
                                         size="sm"
                                         onClick={clearFilters}
                                     >
-                                        {t('Clear filters')}
+                                        {t("Clear filters")}
                                     </Button>
                                 )}
                             </div>
@@ -410,7 +439,7 @@ export default function Applications({ team, servers, generated_at }: Props) {
                                 <div className="flex items-center justify-between text-xs text-muted-foreground">
                                     <span>
                                         {t(
-                                            ':count services on :servers servers',
+                                            ":count services on :servers servers",
                                             {
                                                 count: String(total),
                                                 servers: String(visible.length),
@@ -434,8 +463,8 @@ export default function Applications({ team, servers, generated_at }: Props) {
                                             }
                                         >
                                             {collapsed.size === 0
-                                                ? t('Collapse all')
-                                                : t('Expand all')}
+                                                ? t("Collapse all")
+                                                : t("Expand all")}
                                         </button>
                                     )}
                                 </div>
@@ -471,8 +500,8 @@ export default function Applications({ team, servers, generated_at }: Props) {
                                             >
                                                 <ChevronDown
                                                     className={cn(
-                                                        'size-4 shrink-0 text-muted-foreground transition-transform',
-                                                        !open && '-rotate-90',
+                                                        "size-4 shrink-0 text-muted-foreground transition-transform",
+                                                        !open && "-rotate-90",
                                                     )}
                                                 />
                                                 <h2 className="font-semibold">
@@ -486,16 +515,16 @@ export default function Applications({ team, servers, generated_at }: Props) {
                                                         <span
                                                             key={key}
                                                             className={cn(
-                                                                'flex items-center gap-1',
+                                                                "flex items-center gap-1",
                                                                 key ===
-                                                                    'failed' &&
-                                                                    'font-medium text-red-600 dark:text-red-400',
+                                                                    "failed" &&
+                                                                    "font-medium text-red-600 dark:text-red-400",
                                                             )}
                                                             title={labels[key]}
                                                         >
                                                             <span
                                                                 className={cn(
-                                                                    'size-2 rounded-full',
+                                                                    "size-2 rounded-full",
                                                                     DOT[key],
                                                                 )}
                                                                 aria-hidden
@@ -508,7 +537,7 @@ export default function Applications({ team, servers, generated_at }: Props) {
                                                 </span>
                                                 {s.last_seen_at && (
                                                     <span className="ml-auto text-xs text-muted-foreground">
-                                                        {t('Reported :time', {
+                                                        {t("Reported :time", {
                                                             time: timeAgo(
                                                                 s.last_seen_at,
                                                                 generated_at,
@@ -537,11 +566,29 @@ export default function Applications({ team, servers, generated_at }: Props) {
                                                                                 .status
                                                                         ]
                                                                     }
-                                                                    generatedAt={
-                                                                        generated_at
+                                                                    canManage={
+                                                                        canManage &&
+                                                                        s.ssh
                                                                     }
-                                                                    onRequest={
-                                                                        requestJournal
+                                                                    canRead={
+                                                                        s.ssh
+                                                                    }
+                                                                    busy={
+                                                                        acting ===
+                                                                        service.id
+                                                                    }
+                                                                    onAct={act}
+                                                                    onOutput={(
+                                                                        kind,
+                                                                    ) =>
+                                                                        setOutputOf(
+                                                                            {
+                                                                                service,
+                                                                                serverName:
+                                                                                    s.name,
+                                                                                kind,
+                                                                            },
+                                                                        )
                                                                     }
                                                                 />
                                                             ),
@@ -560,7 +607,7 @@ export default function Applications({ team, servers, generated_at }: Props) {
                                                             className="w-full border-t px-4 py-2 text-sm text-muted-foreground hover:bg-muted/40 hover:text-foreground"
                                                         >
                                                             {t(
-                                                                'Show all :count',
+                                                                "Show all :count",
                                                                 {
                                                                     count: String(
                                                                         s
@@ -586,7 +633,7 @@ export default function Applications({ team, servers, generated_at }: Props) {
                                                                 }
                                                                 className="w-full border-t px-4 py-2 text-sm text-muted-foreground hover:bg-muted/40 hover:text-foreground"
                                                             >
-                                                                {t('Show less')}
+                                                                {t("Show less")}
                                                             </button>
                                                         )}
                                                 </>
@@ -599,6 +646,15 @@ export default function Applications({ team, servers, generated_at }: Props) {
                     </>
                 )}
             </div>
+
+            {outputOf && (
+                <OutputDialog
+                    service={outputOf.service}
+                    serverName={outputOf.serverName}
+                    kind={outputOf.kind}
+                    onClose={() => setOutputOf(null)}
+                />
+            )}
         </>
     );
 }
@@ -606,32 +662,39 @@ export default function Applications({ team, servers, generated_at }: Props) {
 function ServiceRow({
     service,
     label,
-    generatedAt,
-    onRequest,
+    canManage,
+    canRead,
+    busy,
+    onAct,
+    onOutput,
 }: {
     service: Service;
     label: string;
-    generatedAt: string;
-    onRequest: (id: number) => void;
+    canManage: boolean;
+    canRead: boolean;
+    busy: boolean;
+    onAct: (service: Service, action: ServiceAction) => void;
+    onOutput: (kind: OutputKind) => void;
 }) {
-    const { t, locale } = useTranslation();
+    const { t } = useTranslation();
+    const running = service.status === "running";
     const detail = [service.sub_state, service.unit_file_state]
         .filter(Boolean)
-        .join(' · ');
+        .join(" · ");
 
     return (
-        <li className="flex items-center gap-3 px-4 py-2 hover:bg-muted/30">
+        <li className="flex flex-wrap items-center gap-x-3 gap-y-1 px-4 py-2 hover:bg-muted/30">
             <span
                 className={cn(
-                    'size-2.5 shrink-0 rounded-full',
+                    "size-2.5 shrink-0 rounded-full",
                     DOT[service.status],
                 )}
                 title={label}
                 aria-hidden
             />
-            <div className="min-w-0 flex-1">
+            <div className="min-w-0 flex-1 basis-48">
                 <p className="truncate text-sm font-medium">
-                    {service.unit.replace(/\.service$/, '')}
+                    {service.unit.replace(/\.service$/, "")}
                 </p>
                 {service.description && (
                     <p className="truncate text-xs text-muted-foreground">
@@ -642,74 +705,99 @@ function ServiceRow({
             <div className="hidden w-36 shrink-0 text-right text-xs text-muted-foreground sm:block">
                 <p
                     className={cn(
-                        service.status === 'failed' &&
-                            'font-medium text-red-600 dark:text-red-400',
+                        service.status === "failed" &&
+                            "font-medium text-red-600 dark:text-red-400",
                     )}
                 >
                     {label}
                 </p>
                 {detail && <p className="truncate">{detail}</p>}
             </div>
-            <div className="flex w-28 shrink-0 items-center justify-end gap-1 md:w-40">
-                {service.journal_pending ? (
+            <div className="flex shrink-0 items-center justify-end gap-1 md:w-96">
+                {busy ? (
                     <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
                         <Spinner className="size-3.5" />
                         <span className="hidden md:inline">
-                            {t('Waiting for the agent')}
+                            {t("Working…")}
                         </span>
                     </span>
                 ) : (
                     <>
-                        {service.journal_at && (
-                            <Button variant="outline" size="sm" asChild>
-                                <a
-                                    href={ApplicationController.journal.url(
-                                        service.id,
-                                    )}
-                                    download
-                                    title={t('Journal from :time', {
-                                        time: timeAgo(
-                                            service.journal_at,
-                                            generatedAt,
-                                            locale,
-                                        ),
-                                    })}
-                                    aria-label={t(
-                                        'Download the journal of :name',
-                                        { name: service.unit },
-                                    )}
-                                >
-                                    <Download className="size-3.5" />
-                                    <span className="hidden md:inline">
-                                        {t('Download')}
-                                    </span>
-                                </a>
+                        {canManage && !running && (
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => onAct(service, "start")}
+                                aria-label={t("Start :name", {
+                                    name: service.unit,
+                                })}
+                            >
+                                <Play className="size-3.5" />
+                                <span className="hidden md:inline">
+                                    {t("Start")}
+                                </span>
                             </Button>
                         )}
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => onRequest(service.id)}
-                            title={
-                                service.journal_at
-                                    ? t('Request again')
-                                    : t('Journal')
-                            }
-                            aria-label={t('Request the journal of :name', {
-                                name: service.unit,
-                            })}
-                        >
-                            {service.journal_at ? (
-                                <RefreshCw className="size-3.5" />
-                            ) : (
-                                <FileText className="size-3.5" />
-                            )}
-                            {!service.journal_at && (
-                                <span className="hidden md:inline">
-                                    {t('Journal')}
-                                </span>
-                            )}
-                        </Button>
+                        {canManage && running && (
+                            <>
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => onAct(service, "restart")}
+                                    aria-label={t("Restart :name", {
+                                        name: service.unit,
+                                    })}
+                                >
+                                    <RotateCw className="size-3.5" />
+                                    <span className="hidden md:inline">
+                                        {t("Restart")}
+                                    </span>
+                                </Button>
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => onAct(service, "stop")}
+                                    aria-label={t("Stop :name", {
+                                        name: service.unit,
+                                    })}
+                                >
+                                    <Square className="size-3.5" />
+                                    <span className="hidden md:inline">
+                                        {t("Stop")}
+                                    </span>
+                                </Button>
+                            </>
+                        )}
+                        {canRead && (
+                            <>
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => onOutput("status")}
+                                    aria-label={t("Status of :name", {
+                                        name: service.unit,
+                                    })}
+                                >
+                                    <Activity className="size-3.5" />
+                                    <span className="hidden md:inline">
+                                        {t("Status")}
+                                    </span>
+                                </Button>
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => onOutput("journal")}
+                                    aria-label={t("Journal of :name", {
+                                        name: service.unit,
+                                    })}
+                                >
+                                    <FileText className="size-3.5" />
+                                    <span className="hidden md:inline">
+                                        {t("Journal")}
+                                    </span>
+                                </Button>
+                            </>
+                        )}
                     </>
                 )}
             </div>
@@ -717,6 +805,126 @@ function ServiceRow({
     );
 }
 
+function OutputDialog({
+    service,
+    serverName,
+    kind,
+    onClose,
+}: {
+    service: Service;
+    serverName: string;
+    kind: OutputKind;
+    onClose: () => void;
+}) {
+    const { t } = useTranslation();
+    const http = useHttp<Record<string, never>, Output>({});
+    const [state, setState] = useState<Output | null>(null);
+    const [error, setError] = useState<string | null>(null);
+
+    const load = () => {
+        setError(null);
+
+        const url =
+            kind === "status"
+                ? ApplicationController.status.url(service.id)
+                : ApplicationController.journal.url(service.id);
+
+        void http
+            .post(url)
+            .then(setState)
+            .catch(() =>
+                setError(
+                    kind === "status"
+                        ? t("The status could not be loaded.")
+                        : t("The journal could not be loaded."),
+                ),
+            );
+    };
+
+    // Read over SSH right now.
+    useEffect(() => {
+        load();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [service.id, kind]);
+
+    const download = () => {
+        if (!state) {
+            return;
+        }
+
+        const url = URL.createObjectURL(
+            new Blob([state.output + "\n"], { type: "text/plain" }),
+        );
+        const link = document.createElement("a");
+
+        link.href = url;
+        link.download = `${serverName}-${service.unit}-${kind}.txt`.replace(
+            /[^A-Za-z0-9._@-]/g,
+            "_",
+        );
+        link.click();
+        URL.revokeObjectURL(url);
+    };
+
+    return (
+        <Dialog open onOpenChange={(open) => !open && onClose()}>
+            <DialogContent className="max-w-4xl">
+                <DialogHeader>
+                    <DialogTitle>
+                        {service.unit} · {serverName}
+                    </DialogTitle>
+                    <DialogDescription>
+                        {kind === "status"
+                            ? t("The output of systemctl status.")
+                            : t("The last 500 lines of the journal.")}
+                    </DialogDescription>
+                </DialogHeader>
+
+                {error && <p className="text-sm text-red-600">{error}</p>}
+
+                <pre className="max-h-[60vh] overflow-auto rounded-md border bg-muted/40 p-3 font-mono text-xs break-all whitespace-pre-wrap">
+                    {state?.output
+                        ? state.output
+                        : http.processing
+                          ? t("Loading…")
+                          : t("The output is empty.")}
+                </pre>
+
+                <div className="flex items-center justify-between gap-2">
+                    {http.processing ? (
+                        <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
+                            <Spinner className="size-3.5" />
+                            {t("Loading…")}
+                        </span>
+                    ) : (
+                        <span />
+                    )}
+                    <div className="flex gap-2">
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={download}
+                            disabled={!state?.output}
+                        >
+                            <Download className="size-3.5" />
+                            {t("Download")}
+                        </Button>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={load}
+                            disabled={http.processing}
+                        >
+                            <RefreshCw className="size-3.5" />
+                            {t("Refresh")}
+                        </Button>
+                    </div>
+                </div>
+            </DialogContent>
+        </Dialog>
+    );
+}
+
 Applications.layout = {
-    breadcrumbs: [{ title: 'Applications', href: index() }],
+    breadcrumbs: [{ title: "Applications", href: index() }],
 };

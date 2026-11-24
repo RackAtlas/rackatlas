@@ -6,8 +6,11 @@ use App\Models\Server;
 use App\Models\ServerService;
 use App\Models\Team;
 use App\Models\User;
+use App\Services\Ssh\ServiceSsh;
 use App\Services\Ssh\ServiceSync;
 use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
+use Mockery\MockInterface;
+use RuntimeException;
 use Tests\TestCase;
 
 class ApplicationTest extends TestCase
@@ -19,6 +22,14 @@ class ApplicationTest extends TestCase
         return $team->servers()->create([
             'name' => 'web', 'host' => '8.8.8.8', 'port' => 22, 'username' => 'root',
             'auth_type' => 'agent',
+        ]);
+    }
+
+    private function sshServer(Team $team): Server
+    {
+        return $team->servers()->create([
+            'name' => 'web', 'host' => '8.8.8.8', 'port' => 22, 'username' => 'root',
+            'auth_type' => 'password', 'uses_agent' => true,
         ]);
     }
 
@@ -75,25 +86,6 @@ class ApplicationTest extends TestCase
                 ->where('servers.0.services.1.status', 'running'));
     }
 
-    public function test_requesting_the_journal_marks_it_pending_and_the_agent_is_told_in_the_answer(): void
-    {
-        $team = Team::factory()->create();
-        $server = $this->agentServer($team);
-        $token = $server->issueAgentToken();
-        $service = ServerService::factory()->for($server)->create(['unit' => 'nginx.service']);
-        ServerService::factory()->for($server)->create(['unit' => 'quiet.service']);
-
-        $this->actingAs($team->owner)->post(route('applications.journal.request', $service))->assertRedirect();
-
-        $this->assertTrue($service->fresh()->journalIsPending());
-        $this->actingAs($team->owner)->get(route('applications.index'))
-            ->assertInertia(fn ($page) => $page->where('servers.0.services.0.journal_pending', true));
-
-        $this->call('POST', route('agent.ingest'), [], [], [], ['HTTP_AUTHORIZATION' => 'Bearer '.$token], "###CPU1\ncpu  100 0 100 800 0 0 0 0 0 0\n###CPU2\ncpu  150 0 150 900 0 0 0 0 0 0\n###LOAD\n0.1 0.1 0.1 1/1 1\n###CORES\n2\n###MEM\nMemTotal: 1000 kB\nMemAvailable: 500 kB\n###UPTIME\n10\n")
-            ->assertOk()
-            ->assertJsonPath('journal', ['nginx.service']);
-    }
-
     public function test_ingest_stores_the_services_section(): void
     {
         $server = $this->agentServer(Team::factory()->create());
@@ -107,58 +99,96 @@ class ApplicationTest extends TestCase
         $this->assertEqualsCanonicalizing(['ssh.service', 'getty@tty1.service'], $server->services()->pluck('unit')->all());
     }
 
-    public function test_a_request_nobody_answered_expires(): void
-    {
-        $service = ServerService::factory()->for($this->agentServer(Team::factory()->create()))
-            ->create(['journal_requested_at' => now()->subMinutes(ServerService::JOURNAL_REQUEST_MINUTES + 1)]);
-
-        $this->assertFalse($service->journalIsPending());
-    }
-
-    public function test_agent_sends_the_journal_for_a_known_service_only(): void
-    {
-        $server = $this->agentServer(Team::factory()->create());
-        $token = $server->issueAgentToken();
-        $service = ServerService::factory()->for($server)->create([
-            'unit' => 'nginx.service', 'journal_requested_at' => now(),
-        ]);
-
-        $this->call('POST', route('agent.journal'), [], [], [], ['HTTP_AUTHORIZATION' => 'Bearer '.$token, 'HTTP_X_UNIT' => 'nginx.service'], 'line one')->assertOk();
-        $this->call('POST', route('agent.journal'), [], [], [], ['HTTP_AUTHORIZATION' => 'Bearer '.$token, 'HTTP_X_UNIT' => 'other.service'], 'x')->assertNotFound();
-
-        $service->refresh();
-        $this->assertSame('line one', $service->journal);
-        $this->assertNull($service->journal_requested_at);
-        $this->assertNotNull($service->journal_updated_at);
-    }
-
-    public function test_journal_downloads_as_a_text_file_for_the_team_only(): void
+    public function test_an_action_runs_over_ssh_at_once(): void
     {
         $team = Team::factory()->create();
-        $service = ServerService::factory()->for($this->agentServer($team))->create([
-            'unit' => 'nginx.service', 'journal' => 'line one', 'journal_updated_at' => now(),
-        ]);
+        $service = ServerService::factory()->for($this->sshServer($team))->create(['unit' => 'nginx.service']);
+
+        $this->mock(ServiceSsh::class, fn (MockInterface $mock) => $mock
+            ->shouldReceive('act')->once()->withArgs(fn ($s, $action) => $s->is($service) && $action === 'restart')->andReturn(null));
 
         $this->actingAs($team->owner)
-            ->get(route('applications.journal', $service))
-            ->assertOk()
-            ->assertHeader('Content-Disposition', 'attachment; filename="web-nginx.service-journal.txt"')
-            ->assertSee('line one');
+            ->post(route('applications.act', [$service, 'restart']))
+            ->assertRedirect();
 
-        $this->actingAs(User::factory()->create())
-            ->get(route('applications.journal', $service))
-            ->assertForbidden();
-
-        $this->actingAs(User::factory()->create())
-            ->post(route('applications.journal.request', $service))
-            ->assertForbidden();
+        $this->actingAs($team->owner)
+            ->post('/app/applications/'.$service->id.'/delete')
+            ->assertNotFound();
     }
 
-    public function test_service_without_a_journal_cannot_be_downloaded(): void
+    public function test_a_server_without_an_ssh_login_cannot_be_controlled(): void
     {
         $team = Team::factory()->create();
         $service = ServerService::factory()->for($this->agentServer($team))->create();
 
-        $this->actingAs($team->owner)->get(route('applications.journal', $service))->assertNotFound();
+        $this->mock(ServiceSsh::class, fn (MockInterface $mock) => $mock->shouldNotReceive('act', 'status', 'journal'));
+
+        $this->actingAs($team->owner)->post(route('applications.act', [$service, 'stop']))->assertRedirect();
+        $this->actingAs($team->owner)->post(route('applications.status', $service))->assertStatus(422);
+        $this->actingAs($team->owner)->post(route('applications.journal', $service))->assertStatus(422);
+    }
+
+    public function test_status_and_journal_come_over_ssh_now(): void
+    {
+        $team = Team::factory()->create();
+        $service = ServerService::factory()->for($this->sshServer($team))->create(['unit' => 'nginx.service']);
+
+        $this->mock(ServiceSsh::class, function (MockInterface $mock) {
+            $mock->shouldReceive('status')->once()->andReturn('Active: active (running)');
+            $mock->shouldReceive('journal')->once()->andReturn('line one');
+        });
+
+        $this->actingAs($team->owner)->post(route('applications.status', $service))
+            ->assertOk()->assertJsonPath('output', 'Active: active (running)');
+        $this->actingAs($team->owner)->post(route('applications.journal', $service))
+            ->assertOk()->assertJsonPath('output', 'line one');
+    }
+
+    public function test_a_failing_connection_is_reported_as_a_bad_gateway(): void
+    {
+        $team = Team::factory()->create();
+        $service = ServerService::factory()->for($this->sshServer($team))->create();
+
+        $this->mock(ServiceSsh::class, fn (MockInterface $mock) => $mock->shouldReceive('journal')->andThrow(new RuntimeException('Could not connect')));
+
+        $this->actingAs($team->owner)->post(route('applications.journal', $service))
+            ->assertStatus(502)->assertJsonPath('message', 'Could not connect');
+    }
+
+    public function test_a_member_may_look_but_not_start_or_stop_without_the_edit_level(): void
+    {
+        $team = Team::factory()->create();
+        $service = ServerService::factory()->for($this->sshServer($team))->create();
+        $member = User::factory()->create();
+        $team->members()->attach($member->id, ['role' => 'member', 'permissions' => null]);
+
+        $this->mock(ServiceSsh::class, function (MockInterface $mock) {
+            $mock->shouldReceive('status')->once()->andReturn('ok');
+            $mock->shouldNotReceive('act');
+        });
+
+        $this->actingAs($member)->post(route('applications.status', $service))->assertOk();
+        $this->actingAs($member)->post(route('applications.act', [$service, 'stop']))->assertForbidden();
+    }
+
+    public function test_another_team_cannot_reach_the_service(): void
+    {
+        $service = ServerService::factory()->for($this->sshServer(Team::factory()->create()))->create();
+        $stranger = Team::factory()->create()->owner;
+
+        $this->mock(ServiceSsh::class, fn (MockInterface $mock) => $mock->shouldNotReceive('act', 'status', 'journal'));
+
+        $this->actingAs($stranger)->post(route('applications.status', $service))->assertForbidden();
+        $this->actingAs($stranger)->post(route('applications.act', [$service, 'stop']))->assertForbidden();
+    }
+
+    public function test_the_page_tells_which_servers_can_be_controlled(): void
+    {
+        $team = Team::factory()->create();
+        ServerService::factory()->for($this->sshServer($team))->create();
+
+        $this->actingAs($team->owner)
+            ->get(route('applications.index'))
+            ->assertInertia(fn ($page) => $page->where('servers.0.ssh', true)->where('canManage', true));
     }
 }

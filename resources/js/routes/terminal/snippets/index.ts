@@ -60,7 +60,7 @@ store.form = storeForm
 * @see app/Http/Controllers/Terminal/TerminalSnippetController.php:25
 * @route '/app/terminal/snippets/{snippet}'
 */
-export const update = (args: { snippet: number | { id: number } } | [snippet: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
+export const update = (args: { snippet: string | number | { id: string | number } } | [snippet: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
     url: update.url(args, options),
     method: 'put',
 })
@@ -75,7 +75,7 @@ update.definition = {
 * @see app/Http/Controllers/Terminal/TerminalSnippetController.php:25
 * @route '/app/terminal/snippets/{snippet}'
 */
-update.url = (args: { snippet: number | { id: number } } | [snippet: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
+update.url = (args: { snippet: string | number | { id: string | number } } | [snippet: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { snippet: args }
     }
@@ -108,7 +108,7 @@ update.url = (args: { snippet: number | { id: number } } | [snippet: number | { 
 * @see app/Http/Controllers/Terminal/TerminalSnippetController.php:25
 * @route '/app/terminal/snippets/{snippet}'
 */
-update.put = (args: { snippet: number | { id: number } } | [snippet: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
+update.put = (args: { snippet: string | number | { id: string | number } } | [snippet: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
     url: update.url(args, options),
     method: 'put',
 })
@@ -118,7 +118,7 @@ update.put = (args: { snippet: number | { id: number } } | [snippet: number | { 
 * @see app/Http/Controllers/Terminal/TerminalSnippetController.php:25
 * @route '/app/terminal/snippets/{snippet}'
 */
-const updateForm = (args: { snippet: number | { id: number } } | [snippet: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+const updateForm = (args: { snippet: string | number | { id: string | number } } | [snippet: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
     action: update.url(args, {
         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
             _method: 'PUT',
@@ -133,7 +133,7 @@ const updateForm = (args: { snippet: number | { id: number } } | [snippet: numbe
 * @see app/Http/Controllers/Terminal/TerminalSnippetController.php:25
 * @route '/app/terminal/snippets/{snippet}'
 */
-updateForm.put = (args: { snippet: number | { id: number } } | [snippet: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+updateForm.put = (args: { snippet: string | number | { id: string | number } } | [snippet: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
     action: update.url(args, {
         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
             _method: 'PUT',
@@ -150,7 +150,7 @@ update.form = updateForm
 * @see app/Http/Controllers/Terminal/TerminalSnippetController.php:36
 * @route '/app/terminal/snippets/{snippet}'
 */
-export const destroy = (args: { snippet: number | { id: number } } | [snippet: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
+export const destroy = (args: { snippet: string | number | { id: string | number } } | [snippet: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
     url: destroy.url(args, options),
     method: 'delete',
 })
@@ -165,7 +165,7 @@ destroy.definition = {
 * @see app/Http/Controllers/Terminal/TerminalSnippetController.php:36
 * @route '/app/terminal/snippets/{snippet}'
 */
-destroy.url = (args: { snippet: number | { id: number } } | [snippet: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
+destroy.url = (args: { snippet: string | number | { id: string | number } } | [snippet: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { snippet: args }
     }
@@ -198,7 +198,7 @@ destroy.url = (args: { snippet: number | { id: number } } | [snippet: number | {
 * @see app/Http/Controllers/Terminal/TerminalSnippetController.php:36
 * @route '/app/terminal/snippets/{snippet}'
 */
-destroy.delete = (args: { snippet: number | { id: number } } | [snippet: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
+destroy.delete = (args: { snippet: string | number | { id: string | number } } | [snippet: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
     url: destroy.url(args, options),
     method: 'delete',
 })
@@ -208,7 +208,7 @@ destroy.delete = (args: { snippet: number | { id: number } } | [snippet: number 
 * @see app/Http/Controllers/Terminal/TerminalSnippetController.php:36
 * @route '/app/terminal/snippets/{snippet}'
 */
-const destroyForm = (args: { snippet: number | { id: number } } | [snippet: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+const destroyForm = (args: { snippet: string | number | { id: string | number } } | [snippet: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
     action: destroy.url(args, {
         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
             _method: 'DELETE',
@@ -223,7 +223,7 @@ const destroyForm = (args: { snippet: number | { id: number } } | [snippet: numb
 * @see app/Http/Controllers/Terminal/TerminalSnippetController.php:36
 * @route '/app/terminal/snippets/{snippet}'
 */
-destroyForm.delete = (args: { snippet: number | { id: number } } | [snippet: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+destroyForm.delete = (args: { snippet: string | number | { id: string | number } } | [snippet: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
     action: destroy.url(args, {
         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
             _method: 'DELETE',

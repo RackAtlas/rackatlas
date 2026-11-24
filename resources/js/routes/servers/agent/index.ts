@@ -4,7 +4,7 @@ import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFo
 * @see app/Http/Controllers/Servers/ServerAgentController.php:17
 * @route '/app/servers/{server}/agent'
 */
-export const show = (args: { server: number | { id: number } } | [server: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+export const show = (args: { server: string | number | { id: string | number } } | [server: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: show.url(args, options),
     method: 'get',
 })
@@ -19,7 +19,7 @@ show.definition = {
 * @see app/Http/Controllers/Servers/ServerAgentController.php:17
 * @route '/app/servers/{server}/agent'
 */
-show.url = (args: { server: number | { id: number } } | [server: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
+show.url = (args: { server: string | number | { id: string | number } } | [server: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { server: args }
     }
@@ -52,7 +52,7 @@ show.url = (args: { server: number | { id: number } } | [server: number | { id: 
 * @see app/Http/Controllers/Servers/ServerAgentController.php:17
 * @route '/app/servers/{server}/agent'
 */
-show.get = (args: { server: number | { id: number } } | [server: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+show.get = (args: { server: string | number | { id: string | number } } | [server: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: show.url(args, options),
     method: 'get',
 })
@@ -62,7 +62,7 @@ show.get = (args: { server: number | { id: number } } | [server: number | { id: 
 * @see app/Http/Controllers/Servers/ServerAgentController.php:17
 * @route '/app/servers/{server}/agent'
 */
-show.head = (args: { server: number | { id: number } } | [server: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+show.head = (args: { server: string | number | { id: string | number } } | [server: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: show.url(args, options),
     method: 'head',
 })
@@ -72,7 +72,7 @@ show.head = (args: { server: number | { id: number } } | [server: number | { id:
 * @see app/Http/Controllers/Servers/ServerAgentController.php:17
 * @route '/app/servers/{server}/agent'
 */
-const showForm = (args: { server: number | { id: number } } | [server: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+const showForm = (args: { server: string | number | { id: string | number } } | [server: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
     action: show.url(args, options),
     method: 'get',
 })
@@ -82,7 +82,7 @@ const showForm = (args: { server: number | { id: number } } | [server: number | 
 * @see app/Http/Controllers/Servers/ServerAgentController.php:17
 * @route '/app/servers/{server}/agent'
 */
-showForm.get = (args: { server: number | { id: number } } | [server: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+showForm.get = (args: { server: string | number | { id: string | number } } | [server: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
     action: show.url(args, options),
     method: 'get',
 })
@@ -92,7 +92,7 @@ showForm.get = (args: { server: number | { id: number } } | [server: number | { 
 * @see app/Http/Controllers/Servers/ServerAgentController.php:17
 * @route '/app/servers/{server}/agent'
 */
-showForm.head = (args: { server: number | { id: number } } | [server: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+showForm.head = (args: { server: string | number | { id: string | number } } | [server: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
     action: show.url(args, {
         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
             _method: 'HEAD',
@@ -109,7 +109,7 @@ show.form = showForm
 * @see app/Http/Controllers/Servers/ServerAgentController.php:44
 * @route '/app/servers/{server}/agent/token'
 */
-export const rotate = (args: { server: number | { id: number } } | [server: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+export const rotate = (args: { server: string | number | { id: string | number } } | [server: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: rotate.url(args, options),
     method: 'post',
 })
@@ -124,7 +124,7 @@ rotate.definition = {
 * @see app/Http/Controllers/Servers/ServerAgentController.php:44
 * @route '/app/servers/{server}/agent/token'
 */
-rotate.url = (args: { server: number | { id: number } } | [server: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
+rotate.url = (args: { server: string | number | { id: string | number } } | [server: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { server: args }
     }
@@ -157,7 +157,7 @@ rotate.url = (args: { server: number | { id: number } } | [server: number | { id
 * @see app/Http/Controllers/Servers/ServerAgentController.php:44
 * @route '/app/servers/{server}/agent/token'
 */
-rotate.post = (args: { server: number | { id: number } } | [server: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+rotate.post = (args: { server: string | number | { id: string | number } } | [server: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: rotate.url(args, options),
     method: 'post',
 })
@@ -167,7 +167,7 @@ rotate.post = (args: { server: number | { id: number } } | [server: number | { i
 * @see app/Http/Controllers/Servers/ServerAgentController.php:44
 * @route '/app/servers/{server}/agent/token'
 */
-const rotateForm = (args: { server: number | { id: number } } | [server: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+const rotateForm = (args: { server: string | number | { id: string | number } } | [server: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
     action: rotate.url(args, options),
     method: 'post',
 })
@@ -177,7 +177,7 @@ const rotateForm = (args: { server: number | { id: number } } | [server: number 
 * @see app/Http/Controllers/Servers/ServerAgentController.php:44
 * @route '/app/servers/{server}/agent/token'
 */
-rotateForm.post = (args: { server: number | { id: number } } | [server: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+rotateForm.post = (args: { server: string | number | { id: string | number } } | [server: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
     action: rotate.url(args, options),
     method: 'post',
 })

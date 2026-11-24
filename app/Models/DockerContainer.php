@@ -39,9 +39,6 @@ class DockerContainer extends Model
 
     public const ACTIONS = ['start', 'stop', 'restart'];
 
-    /** How long the agent has to carry out a request before it counts as lost. */
-    public const REQUEST_MINUTES = 10;
-
     protected function casts(): array
     {
         return [
@@ -53,17 +50,6 @@ class DockerContainer extends Model
             'logs_updated_at' => 'datetime',
             'logs_requested_at' => 'datetime',
         ];
-    }
-
-    public function actionIsPending(): bool
-    {
-        return $this->pending_action !== null
-            && $this->action_requested_at?->gt(now()->subMinutes(self::REQUEST_MINUTES)) === true;
-    }
-
-    public function logsArePending(): bool
-    {
-        return $this->logs_requested_at?->gt(now()->subMinutes(self::REQUEST_MINUTES)) === true;
     }
 
     public function server(): BelongsTo

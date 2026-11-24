@@ -41,6 +41,7 @@ class DockerController extends Controller
                 'name' => $server->name,
                 'status' => $server->status->value,
                 'via_agent' => $server->collectsViaAgent(),
+                'ssh' => $server->hasSshAccess(),
                 'error' => $server->docker_error,
                 'checked_at' => $server->docker_checked_at?->toIso8601String(),
                 'containers' => $server->dockerContainers->map(fn (DockerContainer $container) => [
@@ -54,7 +55,6 @@ class DockerController extends Controller
                     'cpu_percent' => $container->cpu_percent,
                     'memory_bytes' => $container->memory_bytes,
                     'memory_limit_bytes' => $container->memory_limit_bytes,
-                    'pending_action' => $container->actionIsPending() ? $container->pending_action : null,
                     'action_result' => $container->action_result,
                 ])->values(),
             ])->values(),
@@ -63,7 +63,7 @@ class DockerController extends Controller
     }
 
     /**
-     * Start, stop or restart one container. Over SSH it happens now, through the agent within a minute or two.
+     * Start, stop or restart one container, over SSH and at once.
      */
     public function act(Request $request, DockerContainer $container, string $action, DockerSsh $docker): RedirectResponse
     {
@@ -73,21 +73,14 @@ class DockerController extends Controller
 
         $server = $container->server;
 
-        if ($server->collectsViaAgent()) {
-            $container->forceFill([
-                'pending_action' => $action,
-                'action_requested_at' => now(),
-                'action_sent_at' => null,
-                'action_result' => null,
-            ])->save();
+        if (! $server->hasSshAccess()) {
+            $error = __('This server has no SSH login, so it cannot be controlled from here.');
+        } else {
+            $error = $docker->act($container, $action);
+            $docker->collect($server);
 
-            return back();
+            $container->forceFill(['action_result' => $error])->save();
         }
-
-        $error = $docker->act($container, $action);
-        $docker->collect($server);
-
-        $container->forceFill(['action_result' => $error])->save();
 
         Inertia::flash('toast', $error === null
             ? ['type' => 'success', 'message' => __('Done.')]
@@ -97,51 +90,29 @@ class DockerController extends Controller
     }
 
     /**
-     * Ask for the log of one container. Over SSH it is fetched now, from the agent it arrives with its next report.
+     * The end of the log of one container, fetched over SSH now.
      */
-    public function requestLogs(Request $request, DockerContainer $container, DockerSsh $docker): JsonResponse
+    public function logs(Request $request, DockerContainer $container, DockerSsh $docker): JsonResponse
     {
         $this->authorizeFor($request, $container, 'docker.view');
 
-        if ($container->server->collectsViaAgent()) {
-            $container->forceFill(['logs_requested_at' => now()])->save();
-
-            return response()->json($this->logsPayload($container));
+        if (! $container->server->hasSshAccess()) {
+            return response()->json(['message' => __('This server has no SSH login, so it cannot be controlled from here.')], 422);
         }
 
         try {
             $container->forceFill([
                 'logs' => $docker->logs($container),
                 'logs_updated_at' => now(),
-                'logs_requested_at' => null,
             ])->save();
         } catch (Throwable $e) {
             return response()->json(['message' => mb_substr($e->getMessage(), 0, 300)], 502);
         }
 
-        return response()->json($this->logsPayload($container));
-    }
-
-    /**
-     * The log as it was received last, and whether a newer one is on its way.
-     */
-    public function logs(Request $request, DockerContainer $container): JsonResponse
-    {
-        $this->authorizeFor($request, $container, 'docker.view');
-
-        return response()->json($this->logsPayload($container));
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    private function logsPayload(DockerContainer $container): array
-    {
-        return [
+        return response()->json([
             'logs' => $container->logs,
             'updated_at' => $container->logs_updated_at?->toIso8601String(),
-            'pending' => $container->logsArePending(),
-        ];
+        ]);
     }
 
     private function authorizeFor(Request $request, DockerContainer $container, string $permission): void

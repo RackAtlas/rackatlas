@@ -6,8 +6,10 @@ use App\Models\DockerContainer;
 use App\Models\Server;
 use App\Models\Team;
 use App\Models\User;
+use App\Services\Docker\DockerSsh;
 use App\Services\Docker\DockerSync;
 use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
+use Mockery\MockInterface;
 use Tests\TestCase;
 
 class DockerTest extends TestCase
@@ -19,6 +21,14 @@ class DockerTest extends TestCase
         return $team->servers()->create([
             'name' => 'web', 'host' => '8.8.8.8', 'port' => 22, 'username' => 'root',
             'auth_type' => 'agent', 'has_docker' => $docker,
+        ]);
+    }
+
+    private function sshServer(Team $team): Server
+    {
+        return $team->servers()->create([
+            'name' => 'web', 'host' => '8.8.8.8', 'port' => 22, 'username' => 'root',
+            'auth_type' => 'password', 'has_docker' => true,
         ]);
     }
 
@@ -94,40 +104,26 @@ class DockerTest extends TestCase
         $this->assertSame(0, $off->dockerContainers()->count());
     }
 
-    public function test_the_agent_is_told_whether_docker_is_on_and_gets_each_action_once(): void
+    public function test_the_agent_is_told_whether_docker_is_on_and_gets_nothing_to_do(): void
     {
         $server = $this->agentServer(Team::factory()->create());
         $token = $server->issueAgentToken();
-        $container = DockerContainer::factory()->for($server)->create([
+        DockerContainer::factory()->for($server)->create([
             'container_id' => 'abcdef123456',
-            'pending_action' => 'restart',
-            'action_requested_at' => now(),
             'logs_requested_at' => now(),
         ]);
         $ingest = fn () => $this->call('POST', route('agent.ingest'), [], [], [], ['HTTP_AUTHORIZATION' => 'Bearer '.$token], $this->report());
 
-        $ingest()->assertOk()->assertJson([
-            'docker' => true,
-            'docker_actions' => ['restart:abcdef123456'],
-            'docker_logs' => ['abcdef123456'],
-        ]);
-        $this->assertNotNull($container->fresh()->action_sent_at);
-
-        $ingest()->assertOk()->assertJson(['docker_actions' => []]);
+        $ingest()->assertOk()->assertExactJson(['ok' => true, 'docker' => true]);
 
         $server->update(['has_docker' => false]);
-        $ingest()->assertOk()->assertJson(['docker' => false])->assertJsonMissing(['docker_actions' => []]);
+        $ingest()->assertOk()->assertExactJson(['ok' => true, 'docker' => false]);
     }
 
-    public function test_a_report_after_the_action_clears_it_and_shows_a_failure(): void
+    public function test_a_failure_the_agent_reports_is_shown_on_the_container(): void
     {
         $server = $this->agentServer(Team::factory()->create());
-        DockerContainer::factory()->for($server)->create([
-            'container_id' => 'abcdef123456',
-            'pending_action' => 'start',
-            'action_requested_at' => now()->subMinute(),
-            'action_sent_at' => now()->subMinute(),
-        ]);
+        DockerContainer::factory()->for($server)->create(['container_id' => 'abcdef123456']);
 
         app(DockerSync::class)->sync($server, [
             'DOCKER' => "abcdef123456|web|nginx|exited|Exited (1)|\n",
@@ -135,23 +131,7 @@ class DockerTest extends TestCase
         ]);
 
         $container = $server->dockerContainers()->firstOrFail();
-        $this->assertNull($container->pending_action);
         $this->assertStringContainsString('port is already allocated', $container->action_result);
-    }
-
-    public function test_agent_sends_the_log_of_a_known_container_only(): void
-    {
-        $server = $this->agentServer(Team::factory()->create());
-        $token = $server->issueAgentToken();
-        $container = DockerContainer::factory()->for($server)->create(['container_id' => 'abcdef123456', 'logs_requested_at' => now()]);
-        $send = fn (string $id) => $this->call('POST', route('agent.docker-logs'), [], [], [], ['HTTP_AUTHORIZATION' => 'Bearer '.$token, 'HTTP_X_CONTAINER' => $id], 'line one');
-
-        $send('abcdef123456')->assertOk();
-        $send('ffffffffffff')->assertNotFound();
-
-        $container->refresh();
-        $this->assertSame('line one', $container->logs);
-        $this->assertNull($container->logs_requested_at);
     }
 
     public function test_page_lists_the_containers_of_servers_with_docker(): void
@@ -170,44 +150,93 @@ class DockerTest extends TestCase
                 ->where('servers.0.containers.0.name', 'web'));
     }
 
-    public function test_an_action_through_the_agent_is_queued_for_it(): void
+    public function test_an_action_runs_over_ssh_at_once(): void
     {
         $team = Team::factory()->create();
-        $container = DockerContainer::factory()->for($this->agentServer($team))->create();
+        $container = DockerContainer::factory()->for($this->sshServer($team))->create();
+
+        $this->mock(DockerSsh::class, function (MockInterface $mock) use ($container) {
+            $mock->shouldReceive('act')->once()->withArgs(fn ($c, $action) => $c->is($container) && $action === 'restart')->andReturn(null);
+            $mock->shouldReceive('collect')->once();
+        });
 
         $this->actingAs($team->owner)
             ->post(route('docker.containers.act', [$container, 'restart']))
             ->assertRedirect();
 
-        $container->refresh();
-        $this->assertSame('restart', $container->pending_action);
-        $this->assertTrue($container->actionIsPending());
-        $this->assertNull($container->action_sent_at);
+        $this->assertNull($container->fresh()->action_result);
 
         $this->actingAs($team->owner)
             ->post('/app/docker/containers/'.$container->id.'/delete')
             ->assertNotFound();
     }
 
-    public function test_a_member_may_look_but_not_start_or_stop_without_the_edit_level(): void
+    public function test_a_failed_action_is_kept_on_the_container(): void
+    {
+        $team = Team::factory()->create();
+        $container = DockerContainer::factory()->for($this->sshServer($team))->create();
+
+        $this->mock(DockerSsh::class, function (MockInterface $mock) {
+            $mock->shouldReceive('act')->once()->andReturn('port is already allocated');
+            $mock->shouldReceive('collect')->once();
+        });
+
+        $this->actingAs($team->owner)->post(route('docker.containers.act', [$container, 'start']))->assertRedirect();
+
+        $this->assertSame('port is already allocated', $container->fresh()->action_result);
+    }
+
+    public function test_a_server_without_an_ssh_login_cannot_be_controlled(): void
     {
         $team = Team::factory()->create();
         $container = DockerContainer::factory()->for($this->agentServer($team))->create();
+
+        $this->mock(DockerSsh::class, fn (MockInterface $mock) => $mock->shouldNotReceive('act'));
+
+        $this->actingAs($team->owner)->post(route('docker.containers.act', [$container, 'stop']))->assertRedirect();
+        $this->actingAs($team->owner)->post(route('docker.containers.logs', $container))->assertStatus(422);
+    }
+
+    public function test_the_log_is_fetched_over_ssh_now(): void
+    {
+        $team = Team::factory()->create();
+        $container = DockerContainer::factory()->for($this->sshServer($team))->create();
+
+        $this->mock(DockerSsh::class, fn (MockInterface $mock) => $mock->shouldReceive('logs')->once()->andReturn('line one'));
+
+        $this->actingAs($team->owner)
+            ->post(route('docker.containers.logs', $container))
+            ->assertOk()
+            ->assertJsonPath('logs', 'line one');
+
+        $this->assertSame('line one', $container->fresh()->logs);
+    }
+
+    public function test_a_member_may_look_but_not_start_or_stop_without_the_edit_level(): void
+    {
+        $team = Team::factory()->create();
+        $container = DockerContainer::factory()->for($this->sshServer($team))->create();
         $member = User::factory()->create();
         $team->members()->attach($member->id, ['role' => 'member', 'permissions' => null]);
 
+        $this->mock(DockerSsh::class, function (MockInterface $mock) {
+            $mock->shouldReceive('logs')->once()->andReturn('x');
+            $mock->shouldNotReceive('act');
+        });
+
         $this->actingAs($member)->get(route('docker.index'))->assertOk();
-        $this->actingAs($member)->get(route('docker.containers.logs', $container))->assertOk();
+        $this->actingAs($member)->post(route('docker.containers.logs', $container))->assertOk();
         $this->actingAs($member)->post(route('docker.containers.act', [$container, 'stop']))->assertForbidden();
-        $this->assertNull($container->fresh()->pending_action);
     }
 
     public function test_another_team_cannot_reach_the_container(): void
     {
-        $container = DockerContainer::factory()->for($this->agentServer(Team::factory()->create()))->create();
+        $container = DockerContainer::factory()->for($this->sshServer(Team::factory()->create()))->create();
         $stranger = Team::factory()->create()->owner;
 
-        $this->actingAs($stranger)->get(route('docker.containers.logs', $container))->assertForbidden();
+        $this->mock(DockerSsh::class, fn (MockInterface $mock) => $mock->shouldNotReceive('logs', 'act'));
+
+        $this->actingAs($stranger)->post(route('docker.containers.logs', $container))->assertForbidden();
         $this->actingAs($stranger)->post(route('docker.containers.act', [$container, 'stop']))->assertForbidden();
     }
 }

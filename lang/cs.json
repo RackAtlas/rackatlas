@@ -1754,5 +1754,13 @@
     "Servers with a problem": "Servery s problémem",
     "Traffic and health of all servers of the team :team side by side": "Provoz a stav všech serverů týmu :team vedle sebe",
     "Traffic now": "Provoz nyní",
-    "and :count more": "a dalších :count"
+    "and :count more": "a dalších :count",
+    "Status of :name": "Stav služby :name",
+    "Journal of :name": "Journal služby :name",
+    "The status could not be loaded.": "Stav se nepodařilo načíst.",
+    "The journal could not be loaded.": "Journal se nepodařilo načíst.",
+    "The output of systemctl status.": "Výstup příkazu systemctl status.",
+    "The last 500 lines of the journal.": "Posledních 500 řádků journalu.",
+    "The output is empty.": "Výstup je prázdný.",
+    "This server has no SSH login, so it cannot be controlled from here.": "Tento server nemá SSH přihlášení, proto jej odtud nelze ovládat."
 }

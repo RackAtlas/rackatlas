@@ -4,7 +4,7 @@ import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFo
 * @see app/Http/Controllers/Settings/ApiTokenController.php:17
 * @route '/app/settings/teams/{team}/api-tokens'
 */
-export const store = (args: { team: number | { id: number } } | [team: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+export const store = (args: { team: string | number | { id: string | number } } | [team: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: store.url(args, options),
     method: 'post',
 })
@@ -19,7 +19,7 @@ store.definition = {
 * @see app/Http/Controllers/Settings/ApiTokenController.php:17
 * @route '/app/settings/teams/{team}/api-tokens'
 */
-store.url = (args: { team: number | { id: number } } | [team: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
+store.url = (args: { team: string | number | { id: string | number } } | [team: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { team: args }
     }
@@ -52,7 +52,7 @@ store.url = (args: { team: number | { id: number } } | [team: number | { id: num
 * @see app/Http/Controllers/Settings/ApiTokenController.php:17
 * @route '/app/settings/teams/{team}/api-tokens'
 */
-store.post = (args: { team: number | { id: number } } | [team: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+store.post = (args: { team: string | number | { id: string | number } } | [team: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: store.url(args, options),
     method: 'post',
 })
@@ -62,7 +62,7 @@ store.post = (args: { team: number | { id: number } } | [team: number | { id: nu
 * @see app/Http/Controllers/Settings/ApiTokenController.php:17
 * @route '/app/settings/teams/{team}/api-tokens'
 */
-const storeForm = (args: { team: number | { id: number } } | [team: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+const storeForm = (args: { team: string | number | { id: string | number } } | [team: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
     action: store.url(args, options),
     method: 'post',
 })
@@ -72,7 +72,7 @@ const storeForm = (args: { team: number | { id: number } } | [team: number | { i
 * @see app/Http/Controllers/Settings/ApiTokenController.php:17
 * @route '/app/settings/teams/{team}/api-tokens'
 */
-storeForm.post = (args: { team: number | { id: number } } | [team: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+storeForm.post = (args: { team: string | number | { id: string | number } } | [team: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
     action: store.url(args, options),
     method: 'post',
 })
@@ -84,7 +84,7 @@ store.form = storeForm
 * @see app/Http/Controllers/Settings/ApiTokenController.php:40
 * @route '/app/settings/teams/{team}/api-tokens/{apiToken}'
 */
-export const destroy = (args: { team: number | { id: number }, apiToken: number | { id: number } } | [team: number | { id: number }, apiToken: number | { id: number } ], options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
+export const destroy = (args: { team: string | number | { id: string | number }, apiToken: string | number | { id: string | number } } | [team: string | number | { id: string | number }, apiToken: string | number | { id: string | number } ], options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
     url: destroy.url(args, options),
     method: 'delete',
 })
@@ -99,7 +99,7 @@ destroy.definition = {
 * @see app/Http/Controllers/Settings/ApiTokenController.php:40
 * @route '/app/settings/teams/{team}/api-tokens/{apiToken}'
 */
-destroy.url = (args: { team: number | { id: number }, apiToken: number | { id: number } } | [team: number | { id: number }, apiToken: number | { id: number } ], options?: RouteQueryOptions) => {
+destroy.url = (args: { team: string | number | { id: string | number }, apiToken: string | number | { id: string | number } } | [team: string | number | { id: string | number }, apiToken: string | number | { id: string | number } ], options?: RouteQueryOptions) => {
     if (Array.isArray(args)) {
         args = {
             team: args[0],
@@ -129,7 +129,7 @@ destroy.url = (args: { team: number | { id: number }, apiToken: number | { id: n
 * @see app/Http/Controllers/Settings/ApiTokenController.php:40
 * @route '/app/settings/teams/{team}/api-tokens/{apiToken}'
 */
-destroy.delete = (args: { team: number | { id: number }, apiToken: number | { id: number } } | [team: number | { id: number }, apiToken: number | { id: number } ], options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
+destroy.delete = (args: { team: string | number | { id: string | number }, apiToken: string | number | { id: string | number } } | [team: string | number | { id: string | number }, apiToken: string | number | { id: string | number } ], options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
     url: destroy.url(args, options),
     method: 'delete',
 })
@@ -139,7 +139,7 @@ destroy.delete = (args: { team: number | { id: number }, apiToken: number | { id
 * @see app/Http/Controllers/Settings/ApiTokenController.php:40
 * @route '/app/settings/teams/{team}/api-tokens/{apiToken}'
 */
-const destroyForm = (args: { team: number | { id: number }, apiToken: number | { id: number } } | [team: number | { id: number }, apiToken: number | { id: number } ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+const destroyForm = (args: { team: string | number | { id: string | number }, apiToken: string | number | { id: string | number } } | [team: string | number | { id: string | number }, apiToken: string | number | { id: string | number } ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
     action: destroy.url(args, {
         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
             _method: 'DELETE',
@@ -154,7 +154,7 @@ const destroyForm = (args: { team: number | { id: number }, apiToken: number | {
 * @see app/Http/Controllers/Settings/ApiTokenController.php:40
 * @route '/app/settings/teams/{team}/api-tokens/{apiToken}'
 */
-destroyForm.delete = (args: { team: number | { id: number }, apiToken: number | { id: number } } | [team: number | { id: number }, apiToken: number | { id: number } ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+destroyForm.delete = (args: { team: string | number | { id: string | number }, apiToken: string | number | { id: string | number } } | [team: string | number | { id: string | number }, apiToken: string | number | { id: string | number } ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
     action: destroy.url(args, {
         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
             _method: 'DELETE',

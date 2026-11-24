@@ -4,18 +4,21 @@ namespace App\Http\Controllers;
 
 use App\Models\Server;
 use App\Models\ServerService;
+use App\Services\Ssh\ServiceSsh;
+use Closure;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
-use Symfony\Component\HttpFoundation\Response as HttpResponse;
+use Throwable;
 
 class ApplicationController extends Controller
 {
     /**
      * The systemd services of the servers with the agent: what runs, what is stopped, switched off or crashed.
+     * The list comes from the agent, the buttons act over SSH.
      */
     public function index(Request $request): Response
     {
@@ -29,17 +32,19 @@ class ApplicationController extends Controller
             ->viaAgent()
             ->orderBy('name')
             ->with(['services' => fn ($query) => $query
-                ->select(['id', 'server_id', 'unit', 'description', 'active_state', 'sub_state', 'unit_file_state', 'journal_updated_at', 'journal_requested_at'])
+                ->select(['id', 'server_id', 'unit', 'description', 'active_state', 'sub_state', 'unit_file_state'])
                 ->orderBy('unit')])
-            ->get(['id', 'name', 'status', 'last_seen_at']);
+            ->get(['id', 'name', 'type', 'auth_type', 'status', 'last_seen_at']);
 
         return Inertia::render('applications/index', [
             'team' => $team->only('id', 'name'),
+            'canManage' => $request->user()->can('permit', [$team, 'applications.edit']),
             'servers' => $servers->map(fn (Server $server) => [
                 'id' => $server->id,
                 'name' => $server->name,
                 'status' => $server->status,
                 'last_seen_at' => $server->last_seen_at?->toIso8601String(),
+                'ssh' => $server->hasSshAccess(),
                 'services' => $server->services
                     ->map(fn (ServerService $service) => [
                         'id' => $service->id,
@@ -49,8 +54,6 @@ class ApplicationController extends Controller
                         'active_state' => $service->active_state,
                         'sub_state' => $service->sub_state,
                         'unit_file_state' => $service->unit_file_state,
-                        'journal_at' => $service->journal_updated_at?->toIso8601String(),
-                        'journal_pending' => $service->journalIsPending(),
                     ])
                     ->sortBy(fn (array $service) => array_search($service['status'], ServerService::STATUSES, true))
                     ->values(),
@@ -60,32 +63,63 @@ class ApplicationController extends Controller
     }
 
     /**
-     * Ask the agent for the journal of one service. It sends it with its next report, within a minute or two.
+     * Start, stop or restart one service, over SSH and at once.
      */
-    public function requestJournal(Request $request, ServerService $service): RedirectResponse
+    public function act(Request $request, ServerService $service, string $action, ServiceSsh $ssh): RedirectResponse
     {
-        Gate::forUser($request->user())->authorize('permit', [$service->server->team, 'applications.view']);
+        $this->authorizeFor($request, $service, 'applications.edit');
 
-        $service->forceFill(['journal_requested_at' => now()])->save();
+        abort_unless(in_array($action, ServiceSsh::ACTIONS, true), 404);
+
+        $error = $service->server->hasSshAccess()
+            ? $ssh->act($service, $action)
+            : __('This server has no SSH login, so it cannot be controlled from here.');
+
+        Inertia::flash('toast', $error === null
+            ? ['type' => 'success', 'message' => __('Done.')]
+            : ['type' => 'error', 'message' => $error]);
 
         return back();
     }
 
     /**
-     * Download the journal of one service, as the agent sent it last, as a text file.
+     * The output of `systemctl status` for one service.
      */
-    public function journal(Request $request, ServerService $service): HttpResponse
+    public function status(Request $request, ServerService $service, ServiceSsh $ssh): JsonResponse
     {
-        Gate::forUser($request->user())->authorize('permit', [$service->server->team, 'applications.view']);
+        return $this->output($request, $service, fn () => $ssh->status($service));
+    }
 
-        abort_if($service->journal === null, 404);
+    /**
+     * The end of the journal of one service.
+     */
+    public function journal(Request $request, ServerService $service, ServiceSsh $ssh): JsonResponse
+    {
+        return $this->output($request, $service, fn () => $ssh->journal($service));
+    }
 
-        $name = Str::slug($service->server->name).'-'.preg_replace('/[^A-Za-z0-9._@-]/', '_', $service->unit).'-journal.txt';
+    /**
+     * @param  Closure(): string  $read
+     */
+    private function output(Request $request, ServerService $service, Closure $read): JsonResponse
+    {
+        $this->authorizeFor($request, $service, 'applications.view');
 
-        return response($service->journal."\n", 200, [
-            'Content-Type' => 'text/plain; charset=UTF-8',
-            'Content-Disposition' => 'attachment; filename="'.$name.'"',
-            'X-Content-Type-Options' => 'nosniff',
-        ]);
+        if (! $service->server->hasSshAccess()) {
+            return response()->json(['message' => __('This server has no SSH login, so it cannot be controlled from here.')], 422);
+        }
+
+        try {
+            $output = $read();
+        } catch (Throwable $e) {
+            return response()->json(['message' => mb_substr($e->getMessage(), 0, 300)], 502);
+        }
+
+        return response()->json(['output' => $output, 'fetched_at' => now()->toIso8601String()]);
+    }
+
+    private function authorizeFor(Request $request, ServerService $service, string $permission): void
+    {
+        Gate::forUser($request->user())->authorize('permit', [$service->server->team, $permission]);
     }
 }

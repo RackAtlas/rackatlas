@@ -37,9 +37,6 @@ class ServerService extends Model
 
     public const DISABLED = 'disabled';
 
-    /** How long the agent has to answer a request for the journal before it counts as lost. */
-    public const JOURNAL_REQUEST_MINUTES = 10;
-
     /** From the most urgent to the least. */
     public const STATUSES = [self::FAILED, self::RUNNING, self::STOPPED, self::DISABLED];
 
@@ -65,15 +62,6 @@ class ServerService extends Model
         }
 
         return in_array($this->unit_file_state, ['disabled', 'masked'], true) ? self::DISABLED : self::STOPPED;
-    }
-
-    /**
-     * Whether the agent is still expected to send the journal that was asked for.
-     */
-    public function journalIsPending(): bool
-    {
-        return $this->journal_requested_at !== null
-            && $this->journal_requested_at->gt(now()->subMinutes(self::JOURNAL_REQUEST_MINUTES));
     }
 
     public function server(): BelongsTo

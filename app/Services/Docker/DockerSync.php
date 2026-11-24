@@ -53,11 +53,6 @@ class DockerSync
             $container = $known->get($id) ?? new DockerContainer(['server_id' => $server->id, 'container_id' => $id]);
             $container->fill($data);
 
-            // The report came after the agent was told to act, so the answer is in it.
-            if ($container->pending_action !== null && $container->action_sent_at !== null) {
-                $container->fill(['pending_action' => null, 'action_requested_at' => null, 'action_sent_at' => null]);
-            }
-
             $container->save();
         }
 

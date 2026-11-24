@@ -4,7 +4,7 @@ import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFo
 * @see app/Http/Controllers/DatabaseProcessController.php:15
 * @route '/app/databases/{server}/processes'
 */
-export const index = (args: { server: number | { id: number } } | [server: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+export const index = (args: { server: string | number | { id: string | number } } | [server: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: index.url(args, options),
     method: 'get',
 })
@@ -19,7 +19,7 @@ index.definition = {
 * @see app/Http/Controllers/DatabaseProcessController.php:15
 * @route '/app/databases/{server}/processes'
 */
-index.url = (args: { server: number | { id: number } } | [server: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
+index.url = (args: { server: string | number | { id: string | number } } | [server: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { server: args }
     }
@@ -52,7 +52,7 @@ index.url = (args: { server: number | { id: number } } | [server: number | { id:
 * @see app/Http/Controllers/DatabaseProcessController.php:15
 * @route '/app/databases/{server}/processes'
 */
-index.get = (args: { server: number | { id: number } } | [server: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+index.get = (args: { server: string | number | { id: string | number } } | [server: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: index.url(args, options),
     method: 'get',
 })
@@ -62,7 +62,7 @@ index.get = (args: { server: number | { id: number } } | [server: number | { id:
 * @see app/Http/Controllers/DatabaseProcessController.php:15
 * @route '/app/databases/{server}/processes'
 */
-index.head = (args: { server: number | { id: number } } | [server: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+index.head = (args: { server: string | number | { id: string | number } } | [server: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: index.url(args, options),
     method: 'head',
 })
@@ -72,7 +72,7 @@ index.head = (args: { server: number | { id: number } } | [server: number | { id
 * @see app/Http/Controllers/DatabaseProcessController.php:15
 * @route '/app/databases/{server}/processes'
 */
-const indexForm = (args: { server: number | { id: number } } | [server: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+const indexForm = (args: { server: string | number | { id: string | number } } | [server: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
     action: index.url(args, options),
     method: 'get',
 })
@@ -82,7 +82,7 @@ const indexForm = (args: { server: number | { id: number } } | [server: number |
 * @see app/Http/Controllers/DatabaseProcessController.php:15
 * @route '/app/databases/{server}/processes'
 */
-indexForm.get = (args: { server: number | { id: number } } | [server: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+indexForm.get = (args: { server: string | number | { id: string | number } } | [server: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
     action: index.url(args, options),
     method: 'get',
 })
@@ -92,7 +92,7 @@ indexForm.get = (args: { server: number | { id: number } } | [server: number | {
 * @see app/Http/Controllers/DatabaseProcessController.php:15
 * @route '/app/databases/{server}/processes'
 */
-indexForm.head = (args: { server: number | { id: number } } | [server: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+indexForm.head = (args: { server: string | number | { id: string | number } } | [server: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
     action: index.url(args, {
         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
             _method: 'HEAD',
@@ -109,7 +109,7 @@ index.form = indexForm
 * @see app/Http/Controllers/DatabaseProcessController.php:30
 * @route '/app/databases/{server}/processes/{process}/kill'
 */
-export const kill = (args: { server: number | { id: number }, process: string | number } | [server: number | { id: number }, process: string | number ], options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+export const kill = (args: { server: string | number | { id: string | number }, process: string | number } | [server: string | number | { id: string | number }, process: string | number ], options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: kill.url(args, options),
     method: 'post',
 })
@@ -124,7 +124,7 @@ kill.definition = {
 * @see app/Http/Controllers/DatabaseProcessController.php:30
 * @route '/app/databases/{server}/processes/{process}/kill'
 */
-kill.url = (args: { server: number | { id: number }, process: string | number } | [server: number | { id: number }, process: string | number ], options?: RouteQueryOptions) => {
+kill.url = (args: { server: string | number | { id: string | number }, process: string | number } | [server: string | number | { id: string | number }, process: string | number ], options?: RouteQueryOptions) => {
     if (Array.isArray(args)) {
         args = {
             server: args[0],
@@ -152,7 +152,7 @@ kill.url = (args: { server: number | { id: number }, process: string | number } 
 * @see app/Http/Controllers/DatabaseProcessController.php:30
 * @route '/app/databases/{server}/processes/{process}/kill'
 */
-kill.post = (args: { server: number | { id: number }, process: string | number } | [server: number | { id: number }, process: string | number ], options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+kill.post = (args: { server: string | number | { id: string | number }, process: string | number } | [server: string | number | { id: string | number }, process: string | number ], options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: kill.url(args, options),
     method: 'post',
 })
@@ -162,7 +162,7 @@ kill.post = (args: { server: number | { id: number }, process: string | number }
 * @see app/Http/Controllers/DatabaseProcessController.php:30
 * @route '/app/databases/{server}/processes/{process}/kill'
 */
-const killForm = (args: { server: number | { id: number }, process: string | number } | [server: number | { id: number }, process: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+const killForm = (args: { server: string | number | { id: string | number }, process: string | number } | [server: string | number | { id: string | number }, process: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
     action: kill.url(args, options),
     method: 'post',
 })
@@ -172,7 +172,7 @@ const killForm = (args: { server: number | { id: number }, process: string | num
 * @see app/Http/Controllers/DatabaseProcessController.php:30
 * @route '/app/databases/{server}/processes/{process}/kill'
 */
-killForm.post = (args: { server: number | { id: number }, process: string | number } | [server: number | { id: number }, process: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+killForm.post = (args: { server: string | number | { id: string | number }, process: string | number } | [server: string | number | { id: string | number }, process: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
     action: kill.url(args, options),
     method: 'post',
 })

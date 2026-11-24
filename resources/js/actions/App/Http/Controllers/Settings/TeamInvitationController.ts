@@ -4,7 +4,7 @@ import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFo
 * @see app/Http/Controllers/Settings/TeamInvitationController.php:21
 * @route '/app/settings/teams/{team}/invitations'
 */
-export const store = (args: { team: number | { id: number } } | [team: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+export const store = (args: { team: string | number | { id: string | number } } | [team: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: store.url(args, options),
     method: 'post',
 })
@@ -19,7 +19,7 @@ store.definition = {
 * @see app/Http/Controllers/Settings/TeamInvitationController.php:21
 * @route '/app/settings/teams/{team}/invitations'
 */
-store.url = (args: { team: number | { id: number } } | [team: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
+store.url = (args: { team: string | number | { id: string | number } } | [team: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { team: args }
     }
@@ -52,7 +52,7 @@ store.url = (args: { team: number | { id: number } } | [team: number | { id: num
 * @see app/Http/Controllers/Settings/TeamInvitationController.php:21
 * @route '/app/settings/teams/{team}/invitations'
 */
-store.post = (args: { team: number | { id: number } } | [team: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+store.post = (args: { team: string | number | { id: string | number } } | [team: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: store.url(args, options),
     method: 'post',
 })
@@ -62,7 +62,7 @@ store.post = (args: { team: number | { id: number } } | [team: number | { id: nu
 * @see app/Http/Controllers/Settings/TeamInvitationController.php:21
 * @route '/app/settings/teams/{team}/invitations'
 */
-const storeForm = (args: { team: number | { id: number } } | [team: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+const storeForm = (args: { team: string | number | { id: string | number } } | [team: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
     action: store.url(args, options),
     method: 'post',
 })
@@ -72,7 +72,7 @@ const storeForm = (args: { team: number | { id: number } } | [team: number | { i
 * @see app/Http/Controllers/Settings/TeamInvitationController.php:21
 * @route '/app/settings/teams/{team}/invitations'
 */
-storeForm.post = (args: { team: number | { id: number } } | [team: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+storeForm.post = (args: { team: string | number | { id: string | number } } | [team: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
     action: store.url(args, options),
     method: 'post',
 })
@@ -84,7 +84,7 @@ store.form = storeForm
 * @see app/Http/Controllers/Settings/TeamInvitationController.php:46
 * @route '/app/settings/teams/{team}/invitations/{invitation}/resend'
 */
-export const resend = (args: { team: number | { id: number }, invitation: number | { id: number } } | [team: number | { id: number }, invitation: number | { id: number } ], options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+export const resend = (args: { team: string | number | { id: string | number }, invitation: string | number | { id: string | number } } | [team: string | number | { id: string | number }, invitation: string | number | { id: string | number } ], options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: resend.url(args, options),
     method: 'post',
 })
@@ -99,7 +99,7 @@ resend.definition = {
 * @see app/Http/Controllers/Settings/TeamInvitationController.php:46
 * @route '/app/settings/teams/{team}/invitations/{invitation}/resend'
 */
-resend.url = (args: { team: number | { id: number }, invitation: number | { id: number } } | [team: number | { id: number }, invitation: number | { id: number } ], options?: RouteQueryOptions) => {
+resend.url = (args: { team: string | number | { id: string | number }, invitation: string | number | { id: string | number } } | [team: string | number | { id: string | number }, invitation: string | number | { id: string | number } ], options?: RouteQueryOptions) => {
     if (Array.isArray(args)) {
         args = {
             team: args[0],
@@ -129,7 +129,7 @@ resend.url = (args: { team: number | { id: number }, invitation: number | { id: 
 * @see app/Http/Controllers/Settings/TeamInvitationController.php:46
 * @route '/app/settings/teams/{team}/invitations/{invitation}/resend'
 */
-resend.post = (args: { team: number | { id: number }, invitation: number | { id: number } } | [team: number | { id: number }, invitation: number | { id: number } ], options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+resend.post = (args: { team: string | number | { id: string | number }, invitation: string | number | { id: string | number } } | [team: string | number | { id: string | number }, invitation: string | number | { id: string | number } ], options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: resend.url(args, options),
     method: 'post',
 })
@@ -139,7 +139,7 @@ resend.post = (args: { team: number | { id: number }, invitation: number | { id:
 * @see app/Http/Controllers/Settings/TeamInvitationController.php:46
 * @route '/app/settings/teams/{team}/invitations/{invitation}/resend'
 */
-const resendForm = (args: { team: number | { id: number }, invitation: number | { id: number } } | [team: number | { id: number }, invitation: number | { id: number } ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+const resendForm = (args: { team: string | number | { id: string | number }, invitation: string | number | { id: string | number } } | [team: string | number | { id: string | number }, invitation: string | number | { id: string | number } ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
     action: resend.url(args, options),
     method: 'post',
 })
@@ -149,7 +149,7 @@ const resendForm = (args: { team: number | { id: number }, invitation: number | 
 * @see app/Http/Controllers/Settings/TeamInvitationController.php:46
 * @route '/app/settings/teams/{team}/invitations/{invitation}/resend'
 */
-resendForm.post = (args: { team: number | { id: number }, invitation: number | { id: number } } | [team: number | { id: number }, invitation: number | { id: number } ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+resendForm.post = (args: { team: string | number | { id: string | number }, invitation: string | number | { id: string | number } } | [team: string | number | { id: string | number }, invitation: string | number | { id: string | number } ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
     action: resend.url(args, options),
     method: 'post',
 })
@@ -161,7 +161,7 @@ resend.form = resendForm
 * @see app/Http/Controllers/Settings/TeamInvitationController.php:67
 * @route '/app/settings/teams/{team}/invitations/{invitation}'
 */
-export const destroy = (args: { team: number | { id: number }, invitation: number | { id: number } } | [team: number | { id: number }, invitation: number | { id: number } ], options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
+export const destroy = (args: { team: string | number | { id: string | number }, invitation: string | number | { id: string | number } } | [team: string | number | { id: string | number }, invitation: string | number | { id: string | number } ], options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
     url: destroy.url(args, options),
     method: 'delete',
 })
@@ -176,7 +176,7 @@ destroy.definition = {
 * @see app/Http/Controllers/Settings/TeamInvitationController.php:67
 * @route '/app/settings/teams/{team}/invitations/{invitation}'
 */
-destroy.url = (args: { team: number | { id: number }, invitation: number | { id: number } } | [team: number | { id: number }, invitation: number | { id: number } ], options?: RouteQueryOptions) => {
+destroy.url = (args: { team: string | number | { id: string | number }, invitation: string | number | { id: string | number } } | [team: string | number | { id: string | number }, invitation: string | number | { id: string | number } ], options?: RouteQueryOptions) => {
     if (Array.isArray(args)) {
         args = {
             team: args[0],
@@ -206,7 +206,7 @@ destroy.url = (args: { team: number | { id: number }, invitation: number | { id:
 * @see app/Http/Controllers/Settings/TeamInvitationController.php:67
 * @route '/app/settings/teams/{team}/invitations/{invitation}'
 */
-destroy.delete = (args: { team: number | { id: number }, invitation: number | { id: number } } | [team: number | { id: number }, invitation: number | { id: number } ], options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
+destroy.delete = (args: { team: string | number | { id: string | number }, invitation: string | number | { id: string | number } } | [team: string | number | { id: string | number }, invitation: string | number | { id: string | number } ], options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
     url: destroy.url(args, options),
     method: 'delete',
 })
@@ -216,7 +216,7 @@ destroy.delete = (args: { team: number | { id: number }, invitation: number | { 
 * @see app/Http/Controllers/Settings/TeamInvitationController.php:67
 * @route '/app/settings/teams/{team}/invitations/{invitation}'
 */
-const destroyForm = (args: { team: number | { id: number }, invitation: number | { id: number } } | [team: number | { id: number }, invitation: number | { id: number } ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+const destroyForm = (args: { team: string | number | { id: string | number }, invitation: string | number | { id: string | number } } | [team: string | number | { id: string | number }, invitation: string | number | { id: string | number } ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
     action: destroy.url(args, {
         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
             _method: 'DELETE',
@@ -231,7 +231,7 @@ const destroyForm = (args: { team: number | { id: number }, invitation: number |
 * @see app/Http/Controllers/Settings/TeamInvitationController.php:67
 * @route '/app/settings/teams/{team}/invitations/{invitation}'
 */
-destroyForm.delete = (args: { team: number | { id: number }, invitation: number | { id: number } } | [team: number | { id: number }, invitation: number | { id: number } ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+destroyForm.delete = (args: { team: string | number | { id: string | number }, invitation: string | number | { id: string | number } } | [team: string | number | { id: string | number }, invitation: string | number | { id: string | number } ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
     action: destroy.url(args, {
         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
             _method: 'DELETE',
