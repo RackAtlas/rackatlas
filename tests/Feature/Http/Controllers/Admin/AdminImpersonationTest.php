@@ -3,6 +3,7 @@
 namespace Tests\Feature\Http\Controllers\Admin;
 
 use App\Http\Controllers\Admin\ImpersonationController;
+use App\Models\NotificationPreference;
 use App\Models\User;
 use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
 use Spatie\Activitylog\Models\Activity;
@@ -66,5 +67,26 @@ class AdminImpersonationTest extends TestCase
         $this->delete(route('profile.destroy'), ['password' => 'password'])->assertForbidden();
         $this->put(route('user-password.update'), ['current_password' => 'password', 'password' => 'x', 'password_confirmation' => 'x'])->assertForbidden();
         $this->assertModelExists($user);
+    }
+
+    public function test_notification_types_of_the_user_can_be_changed_without_touching_their_language(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $user = User::factory()->create(['locale' => 'sk']);
+
+        $this->actingAs($admin)->post(route('admin.users.impersonate', $user));
+
+        $payload = array_fill_keys(NotificationPreference::FLAGS, true);
+        $payload['notify_logs'] = false;
+
+        $this->withSession([ImpersonationController::SESSION_KEY => $admin->id])
+            ->put(route('notifications.update'), $payload + ['timezone' => 'Asia/Tokyo'])
+            ->assertSessionHasNoErrors();
+
+        $preference = $user->refresh()->notificationPreference;
+        $this->assertFalse($preference->notify_logs);
+        $this->assertTrue($preference->notify_offline);
+        $this->assertNull($preference->timezone);
+        $this->assertSame('sk', $user->locale);
     }
 }

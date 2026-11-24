@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Settings;
 
+use App\Http\Controllers\Admin\ImpersonationController;
 use App\Http\Controllers\Controller;
 use App\Models\NotificationPreference;
 use App\Models\PushSubscription;
@@ -48,11 +49,19 @@ class NotificationController extends Controller
         ]);
 
         $user = $request->user();
+        $impersonated = $request->session()->has(ImpersonationController::SESSION_KEY);
+
+        // The browser and the language belong to the administrator, not to the user whose account is edited.
+        if ($impersonated) {
+            unset($validated['timezone']);
+        }
 
         $user->notificationPreference()->updateOrCreate([], $validated);
 
         // Alerts are written in the language the user uses right now.
-        $user->forceFill(['locale' => app()->getLocale()])->save();
+        if (! $impersonated) {
+            $user->forceFill(['locale' => app()->getLocale()])->save();
+        }
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Notification settings saved.')]);
 
