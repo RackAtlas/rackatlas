@@ -43,6 +43,7 @@ use Spatie\Activitylog\Support\LogOptions;
  * @property array<int, string>|null $ignored_alerts
  * @property bool $watch_enabled Whether the server is compared with its own normal behaviour around the clock
  * @property bool $in_maintenance While true the server raises no alerts and sends no notifications
+ * @property array<string, mixed>|null $network_info Links (state, speed) and listening ports from the agent
  * @property array<string, string|int|bool>|null $system_info Facts the agent reports: OS, kernel, CPU model, pending updates
  * @property ServerStatus $status
  * @property Carbon|null $last_checked_at
@@ -81,6 +82,7 @@ class Server extends Model
             'in_maintenance' => 'boolean',
             'watch_enabled' => 'boolean',
             'system_info' => 'array',
+            'network_info' => 'array',
         ];
     }
 
@@ -198,6 +200,11 @@ class Server extends Model
     public function metrics(): HasMany
     {
         return $this->hasMany(ServerMetric::class);
+    }
+
+    public function networkSamples(): HasMany
+    {
+        return $this->hasMany(ServerNetworkSample::class);
     }
 
     public function databaseMetrics(): HasMany

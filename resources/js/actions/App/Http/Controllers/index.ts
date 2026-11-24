@@ -18,6 +18,7 @@ import ApplicationController from './ApplicationController'
 import DockerController from './DockerController'
 import MetricsController from './MetricsController'
 import MetricsProcessesController from './MetricsProcessesController'
+import NetworkController from './NetworkController'
 import BackupController from './BackupController'
 import DocumentController from './DocumentController'
 import Admin from './Admin'
@@ -43,6 +44,7 @@ const Controllers = {
     DockerController: Object.assign(DockerController, DockerController),
     MetricsController: Object.assign(MetricsController, MetricsController),
     MetricsProcessesController: Object.assign(MetricsProcessesController, MetricsProcessesController),
+    NetworkController: Object.assign(NetworkController, NetworkController),
     BackupController: Object.assign(BackupController, BackupController),
     DocumentController: Object.assign(DocumentController, DocumentController),
     Admin: Object.assign(Admin, Admin),

@@ -3,11 +3,11 @@
   "files": {
     "amd64": {
       "path": "agent/windows/rackatlas-agent-amd64.exe",
-      "sha256": "fe1ee538190f153a129223d6c49ae4fb47dec34ae80aa7d14b8a8a4c6de2be41"
+      "sha256": "f4ae25c74a47b1a59244ca1c4ff81fd48d13f2c1ba9f3879f3b7d50dcd62dda1"
     },
     "arm64": {
       "path": "agent/windows/rackatlas-agent-arm64.exe",
-      "sha256": "3e7d865626eda374738782c5cc4ab493fcb080b4e0fabc44d7ada567c540d6a4"
+      "sha256": "f7d6b4e6d14b758067fd9c1a82104e15f11917bb19882ba91a551b8884242e8c"
     }
   }
 }

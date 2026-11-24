@@ -9,6 +9,7 @@ import {
     Layers,
     LayoutGrid,
     MemoryStick,
+    Network,
     ScrollText,
     SquareTerminal,
 } from 'lucide-react';
@@ -33,6 +34,7 @@ import { index as dockerIndex } from '@/routes/docker';
 import { index as documentsIndex } from '@/routes/documents';
 import { index as logsIndex } from '@/routes/logs';
 import { index as metricsIndex } from '@/routes/metrics';
+import { index as networkIndex } from '@/routes/network';
 import { index as redisIndex } from '@/routes/redis';
 import { index as sshKeysIndex } from '@/routes/ssh-keys';
 import { usePermissions } from '@/hooks/use-permissions';
@@ -84,6 +86,12 @@ const mainNavItems: NavItem[] = [
         permission: 'metrics.view',
         href: metricsIndex(),
         icon: Activity,
+    },
+    {
+        title: 'Network',
+        permission: 'metrics.view',
+        href: networkIndex(),
+        icon: Network,
     },
     {
         title: 'Logs',

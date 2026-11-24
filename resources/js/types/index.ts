@@ -6,3 +6,4 @@ export type * from './servers';
 export type * from './dashboard';
 export type * from './metrics';
 export type * from './documents';
+export type * from './network';

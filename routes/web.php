@@ -19,6 +19,7 @@ use App\Http\Controllers\FeedbackController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\MetricsController;
 use App\Http\Controllers\MetricsProcessesController;
+use App\Http\Controllers\NetworkController;
 use App\Http\Controllers\PrivacyController;
 use App\Http\Controllers\RedisController;
 use App\Http\Controllers\Servers\LogController;
@@ -128,6 +129,8 @@ Route::prefix('app')->middleware(['auth', 'verified'])->group(function () {
     Route::get('metrics/processes', MetricsProcessesController::class)
         ->middleware(['throttle:60,1', 'permission:metrics.view'])
         ->name('metrics.processes');
+
+    Route::get('network', [NetworkController::class, 'index'])->middleware('permission:metrics.view')->name('network.index');
 
     Route::get('logs', [LogController::class, 'index'])->middleware('permission:logs.view')->name('logs.index');
     Route::post('logs/resolve-all', [LogController::class, 'resolveAll'])->name('logs.resolve-all');

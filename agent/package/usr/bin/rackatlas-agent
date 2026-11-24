@@ -2,7 +2,7 @@
 #
 # RackAtlas agent
 #
-# Collects CPU, memory and disk usage, network traffic, system facts (OS, kernel, pending updates), the busiest processes, the systemd services, plus serious log entries (journal errors, failed systemd units) and sends them to RackAtlas over HTTPS. Meant to run once a
+# Collects CPU, memory and disk usage, network traffic and its detail (interfaces, errors, TCP retransmits, connections, listening ports), system facts (OS, kernel, pending updates), the busiest processes, the systemd services, plus serious log entries (journal errors, failed systemd units) and sends them to RackAtlas over HTTPS. Meant to run once a
 # minute from the systemd timer. Nothing connects into the server.
 #
 # Usage: rackatlas-agent [--dry-run] [--version]
@@ -117,7 +117,7 @@ fi
 
 mkdir -p "$STATE_DIR" 2>/dev/null || true
 TMP="$(mktemp)" || exit 1
-trap 'rm -f "$TMP" "$TMP.out" "$TMP.proc" "$TMP.proc-base" "$TMP.states" "$TMP.journal" "$TMP.dlog" "$TMP.units" "$TMP".cursor-*' EXIT
+trap 'rm -f "$TMP" "$TMP.out" "$TMP.netdetail" "$TMP.proc" "$TMP.proc-base" "$TMP.states" "$TMP.journal" "$TMP.dlog" "$TMP.units" "$TMP".cursor-*' EXIT
 
 export LC_ALL=C
 
@@ -290,6 +290,118 @@ network_section() {
   fi
 }
 
+# Detail of the network, read only from /proc/net and /sys/class/net (no privileges, no extra tools).
+# One line per fact, the first word tells what it is:
+#   link <name> <state> <speed Mbit/s or -1> <mtu>                       every physical interface
+#   rate <name> <seconds> <rx bytes> <tx bytes> <rx pkts> <tx pkts> <rx err> <tx err> <rx drop> <tx drop>
+#                                                                         changes since the previous run
+#   tcp <seconds> <active opens> <passive opens> <attempt fails> <estab resets> <in segs> <out segs> <retrans> <in errs>
+#   tcpstate <established> <syn_recv> <time_wait> <close_wait> <listen>
+#   conntrack <count> <max>
+#   listen tcp <any|bound|loopback> <port>                               ports that accept connections
+# The rate and tcp lines need the counters of the previous run, so the first run (or one after a long
+# pause or a reboot) has none. The counters are kept in the state directory like the CPU ones.
+netdetail_section() {
+  now="$(cut -d' ' -f1 "$PROC_DIR/uptime")"
+  cur="$TMP.netdetail"
+  prev_file="$STATE_DIR/netdetail-prev"
+
+  {
+    echo "T $now"
+    awk '
+      NR > 2 {
+        gsub(/:/, " ")
+        if ($1 ~ /^(lo|docker|veth|br-|virbr|cni|flannel|cali|kube|tap)/) next
+        printf "I %s %.0f %.0f %.0f %.0f %.0f %.0f %.0f %.0f\n", $1, $2, $10, $3, $11, $4, $12, $5, $13
+      }' "$PROC_DIR/net/dev" 2>/dev/null
+    awk '
+      /^Tcp:/ {
+        if (!seen) { for (i = 2; i <= NF; i++) name[i] = $i; seen = 1; next }
+        for (i = 2; i <= NF; i++) v[name[i]] = $i
+        printf "C %.0f %.0f %.0f %.0f %.0f %.0f %.0f %.0f\n", v["ActiveOpens"], v["PassiveOpens"], v["AttemptFails"], v["EstabResets"], v["InSegs"], v["OutSegs"], v["RetransSegs"], v["InErrs"]
+      }' "$PROC_DIR/net/snmp" 2>/dev/null
+  } > "$cur"
+
+  for dir in "${RACKATLAS_SYS:-/sys}"/class/net/*; do
+    [ -d "$dir" ] || continue
+    name="${dir##*/}"
+    case "$name" in
+      lo|docker*|veth*|br-*|virbr*|cni*|flannel*|cali*|kube*|tap*) continue ;;
+    esac
+    state="$(cat "$dir/operstate" 2>/dev/null)"
+    speed="$(cat "$dir/speed" 2>/dev/null)"
+    mtu="$(cat "$dir/mtu" 2>/dev/null)"
+    printf '%s\n' "$name" | grep -Eq '^[A-Za-z0-9_.:@-]{1,32}$' || continue
+    printf 'link %s %s %s %s\n' "$name" "${state:-unknown}" "${speed:--1}" "${mtu:-0}"
+  done | head -n 16
+
+  if [ -s "$prev_file" ] && [ -n "$(find "$prev_file" -mmin -5 2>/dev/null)" ]; then
+    awk '
+      FNR == 1 { file++ }
+      file == 1 {
+        if ($1 == "T") { before = $2 }
+        else if ($1 == "I") { known[$2] = 1; for (i = 3; i <= 10; i++) old[$2, i] = $i }
+        else if ($1 == "C") { for (i = 2; i <= 9; i++) oldc[i] = $i; hadc = 1 }
+        next
+      }
+      $1 == "T" { dt = $2 - before; next }
+      dt <= 0 { next }
+      $1 == "I" && ($2 in known) {
+        line = "rate " $2 " " dt; ok = 1
+        for (i = 3; i <= 10; i++) { d = $i - old[$2, i]; if (d < 0) ok = 0; line = line " " sprintf("%.0f", d) }
+        if (ok) print line
+      }
+      $1 == "C" && hadc {
+        line = "tcp " dt; ok = 1
+        for (i = 2; i <= 9; i++) { d = $i - oldc[i]; if (d < 0) ok = 0; line = line " " sprintf("%.0f", d) }
+        if (ok) print line
+      }
+    ' "$prev_file" "$cur"
+  fi
+
+  tcp_files=""
+  for f in "$PROC_DIR/net/tcp" "$PROC_DIR/net/tcp6"; do
+    [ -r "$f" ] && tcp_files="$tcp_files $f"
+  done
+  if [ -n "$tcp_files" ]; then
+    # Column 4 is the state in hex: 01 established, 03 syn_recv, 06 time_wait, 08 close_wait, 0A listen.
+    # shellcheck disable=SC2086
+    awk '
+      function hex(s,   i, v) {
+        v = 0; s = toupper(s)
+        for (i = 1; i <= length(s); i++) v = v * 16 + index("0123456789ABCDEF", substr(s, i, 1)) - 1
+        return v
+      }
+      FNR > 1 {
+        states[$4]++
+        if ($4 == "0A") {
+          split($2, a, ":")
+          scope = (a[1] ~ /^0+$/) ? "any" : ((a[1] == "0100007F" || a[1] == "00000000000000000000000001000000" || (length(a[1]) == 8 && a[1] ~ /7F$/)) ? "loopback" : "bound")
+          port = hex(a[2])
+          if (!((scope, port) in seen)) { seen[scope, port] = 1; ports[++n] = port " " scope }
+        }
+      }
+      END {
+        printf "tcpstate %d %d %d %d %d\n", states["01"], states["03"], states["06"], states["08"], states["0A"]
+        for (i = 1; i <= n; i++) { split(ports[i], p, " "); print "listen tcp " p[2] " " p[1] }
+      }
+    ' $tcp_files | { read -r first; printf '%s\n' "$first"; sort -k4,4n | head -n 100; }
+  fi
+
+  if [ -r "$PROC_DIR/sys/net/netfilter/nf_conntrack_count" ] && [ -r "$PROC_DIR/sys/net/netfilter/nf_conntrack_max" ]; then
+    read -r ct_count < "$PROC_DIR/sys/net/netfilter/nf_conntrack_count" 2>/dev/null || ct_count=""
+    read -r ct_max < "$PROC_DIR/sys/net/netfilter/nf_conntrack_max" 2>/dev/null || ct_max=""
+    case "$ct_count$ct_max" in
+      ''|*[!0-9]*) ;;
+      *) echo "conntrack $ct_count $ct_max" ;;
+    esac
+  fi
+
+  if [ -z "$DRY_RUN" ]; then
+    cp "$cur" "$prev_file.tmp" 2>/dev/null && mv "$prev_file.tmp" "$prev_file" 2>/dev/null
+  fi
+}
+
 # The systemd services, one per line: unit|active|sub|unit file state|description. Only names that are
 # safe to hand to journalctl are listed.
 services_section() {
@@ -434,6 +546,7 @@ proc_scan full > "$TMP.proc"
   echo '###PROCESSES'; proc_top "$PROC_BASE" "$TMP.proc"
   echo '###SYSTEM'; system_section
   echo '###NETWORK'; network_section
+  echo '###NETDETAIL'; netdetail_section
 
   if command -v journalctl >/dev/null 2>&1; then
     journal_section JOURNAL_CRITICAL 'emerg..crit' critical

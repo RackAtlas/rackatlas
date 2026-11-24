@@ -7,6 +7,7 @@ use App\Exceptions\MetricsCollectionException;
 use App\Models\Server;
 use App\Services\Alerts\AlertEvaluator;
 use App\Services\Docker\DockerSync;
+use App\Services\Network\NetworkParser;
 use App\Services\Redis\RedisParser;
 use Illuminate\Support\Facades\DB;
 
@@ -20,6 +21,7 @@ class AgentIngestor
         private readonly ServiceSync $services,
         private readonly RedisParser $redis,
         private readonly DockerSync $docker,
+        private readonly NetworkParser $network,
     ) {}
 
     /**
@@ -52,6 +54,8 @@ class AgentIngestor
             ];
         }
 
+        $networkDetail = $this->network->parse($sections['NETDETAIL'] ?? null);
+
         $redisMetrics = $this->redisMetrics($server, $sections);
         $redisFailed = false;
 
@@ -70,8 +74,12 @@ class AgentIngestor
 
         $fresh = [];
 
-        DB::transaction(function () use ($server, $data, $sections, $entries, $failedNow, $systemInfo, $agentVersion, $redisMetrics, &$fresh) {
+        DB::transaction(function () use ($server, $data, $sections, $entries, $failedNow, $systemInfo, $agentVersion, $redisMetrics, $networkDetail, &$fresh) {
             $this->collector->store($server, $data);
+
+            if ($networkDetail !== null) {
+                $this->storeNetwork($server, $networkDetail);
+            }
 
             foreach ($redisMetrics as $redisMetric) {
                 $server->redisMetrics()->create($redisMetric);
@@ -98,6 +106,7 @@ class AgentIngestor
                 'agent_version' => $agentVersion ? mb_substr($agentVersion, 0, 32) : $server->agent_version,
                 'failed_units' => $failedNow,
                 'system_info' => $systemInfo ?? $server->system_info,
+                'network_info' => $networkDetail['info'] ?? $server->network_info,
             ])->save();
         });
 
@@ -110,6 +119,18 @@ class AgentIngestor
         // Live: a problem is reported as soon as the agent sends the report that shows it.
         $this->alerts->evaluate($server);
         $this->alerts->notifyLogs($server, $fresh);
+    }
+
+    /**
+     * @param  array{sample: array<string, int|float|null>, interfaces: array<int, array<string, int|float|string>>, info: array<string, mixed>}  $detail
+     */
+    private function storeNetwork(Server $server, array $detail): void
+    {
+        $sample = $server->networkSamples()->create([...$detail['sample'], 'collected_at' => now()]);
+
+        if ($detail['interfaces'] !== []) {
+            $sample->interfaces()->createMany($detail['interfaces']);
+        }
     }
 
     /**
