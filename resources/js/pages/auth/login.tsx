@@ -8,7 +8,6 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Spinner } from "@/components/ui/spinner";
-import { register } from "@/routes";
 import { store } from "@/routes/login";
 import { request } from "@/routes/password";
 import PasskeyVerify from "@/components/passkey-verify";
@@ -127,7 +126,7 @@ export default function Login({
             {canRegister && (
                 <div className="mt-6 text-center text-sm text-muted-foreground">
                     {t("Don't have an account?")}{" "}
-                    <TextLink href={register()} tabIndex={5}>
+                    <TextLink href="/register" tabIndex={5}>
                         {t("Sign up")}
                     </TextLink>
                 </div>

@@ -25,7 +25,7 @@ import { TurnstileField, useTurnstile } from '@/hooks/use-turnstile';
 import { openCookieSettings } from '@/hooks/use-privacy-choices';
 import { useTranslation } from '@/hooks/use-translation';
 import { cn } from '@/lib/utils';
-import { dashboard, demo, login, register } from '@/routes';
+import { dashboard, demo, login } from '@/routes';
 import { store as feedbackStore } from '@/routes/feedback';
 import { localized as homeLocalized } from '@/routes/home';
 import { localized as privacyLocalized } from '@/routes/privacy';
@@ -437,7 +437,7 @@ export default function Welcome({ canRegister, faq }: Props) {
                                     </Link>
                                     {canRegister && (
                                         <Link
-                                            href={register()}
+                                            href="/register"
                                             className="rounded-full bg-[var(--l-ink)] px-4 py-2.5 font-medium whitespace-nowrap text-[var(--l-bg)] transition-transform hover:-translate-y-px sm:px-5"
                                         >
                                             {t('Create account')}
@@ -485,7 +485,7 @@ export default function Welcome({ canRegister, faq }: Props) {
                             ) : (
                                 canRegister && (
                                     <Link
-                                        href={register()}
+                                        href="/register"
                                         className={cn(
                                             primary,
                                             'bg-[var(--l-accent)] text-white shadow-[0_8px_20px_-10px_var(--l-accent)] dark:text-[#04130c]',
@@ -1170,7 +1170,7 @@ export default function Welcome({ canRegister, faq }: Props) {
                                 <>
                                     {canRegister && (
                                         <Link
-                                            href={register()}
+                                            href="/register"
                                             className={cn(
                                                 primary,
                                                 'bg-white text-[#0e1110]',
@@ -1289,7 +1289,7 @@ export default function Welcome({ canRegister, faq }: Props) {
                                             {canRegister && (
                                                 <li>
                                                     <Link
-                                                        href={register()}
+                                                        href="/register"
                                                         className="hover:text-[var(--l-ink)]"
                                                     >
                                                         {t('Create account')}

@@ -8,7 +8,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
 import { login, privacy } from '@/routes';
-import { store } from '@/routes/register';
 import { TurnstileField, useTurnstile } from '@/hooks/use-turnstile';
 import { useTranslation } from '@/hooks/use-translation';
 
@@ -23,7 +22,8 @@ export default function Register({ passwordRules }: Props) {
         <>
             <Head title={t('Register')} />
             <Form
-                {...store.form()}
+                action="/register"
+                method="post"
                 resetOnSuccess={['password', 'password_confirmation']}
                 disableWhileProcessing
                 onFinish={turnstile.reset}
