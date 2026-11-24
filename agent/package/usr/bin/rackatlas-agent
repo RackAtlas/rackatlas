@@ -344,8 +344,8 @@ netdetail_section() {
         else if ($1 == "C") { for (i = 2; i <= 9; i++) oldc[i] = $i; hadc = 1 }
         next
       }
-      $1 == "T" { dt = $2 - before; next }
-      dt <= 0 { next }
+      $1 == "T" { dt = sprintf("%.0f", $2 - before); next }
+      dt < 1 { next }
       $1 == "I" && ($2 in known) {
         line = "rate " $2 " " dt; ok = 1
         for (i = 3; i <= 10; i++) { d = $i - old[$2, i]; if (d < 0) ok = 0; line = line " " sprintf("%.0f", d) }

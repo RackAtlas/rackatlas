@@ -54,23 +54,23 @@ class NetworkParser
                     break;
 
                 case 'rate':
-                    $numbers = array_slice($parts, 1);
+                    $numbers = array_slice($parts, 2);
 
-                    if (count($parts) === 10 && $this->validName($parts[0]) && $this->allDigits($numbers) && count($interfaces) < self::MAX_INTERFACES) {
-                        $seconds = (int) $numbers[0];
+                    if (count($parts) === 10 && $this->validName($parts[0]) && $this->validSeconds($parts[1]) && $this->allDigits($numbers) && count($interfaces) < self::MAX_INTERFACES) {
+                        $seconds = (float) $parts[1];
 
                         if ($seconds < 1 || $seconds > self::MAX_INTERVAL_SECONDS) {
                             break;
                         }
 
-                        [, $rxBytes, $txBytes, $rxPackets, $txPackets, $rxErrors, $txErrors, $rxDrops, $txDrops] = array_map('intval', $numbers);
+                        [$rxBytes, $txBytes, $rxPackets, $txPackets, $rxErrors, $txErrors, $rxDrops, $txDrops] = array_map('intval', $numbers);
 
                         $interfaces[] = [
                             'name' => $parts[0],
-                            'rx_bps' => intdiv($rxBytes, $seconds),
-                            'tx_bps' => intdiv($txBytes, $seconds),
-                            'rx_pps' => intdiv($rxPackets, $seconds),
-                            'tx_pps' => intdiv($txPackets, $seconds),
+                            'rx_bps' => (int) round($rxBytes / $seconds),
+                            'tx_bps' => (int) round($txBytes / $seconds),
+                            'rx_pps' => (int) round($rxPackets / $seconds),
+                            'tx_pps' => (int) round($txPackets / $seconds),
                             'errors' => round(($rxErrors + $txErrors) / $seconds, 4),
                             'drops' => round(($rxDrops + $txDrops) / $seconds, 4),
                         ];
@@ -78,8 +78,8 @@ class NetworkParser
                     break;
 
                 case 'tcp':
-                    if (count($parts) === 9 && $this->allDigits($parts) && (int) $parts[0] >= 1 && (int) $parts[0] <= self::MAX_INTERVAL_SECONDS) {
-                        $seconds = (int) $parts[0];
+                    if (count($parts) === 9 && $this->validSeconds($parts[0]) && $this->allDigits(array_slice($parts, 1)) && (float) $parts[0] >= 1 && (float) $parts[0] <= self::MAX_INTERVAL_SECONDS) {
+                        $seconds = (float) $parts[0];
                         $perSecond = fn (string $value): float => round((int) $value / $seconds, 4);
 
                         $sample['tcp_active_opens'] = $perSecond($parts[1]);
@@ -129,6 +129,12 @@ class NetworkParser
     private function validName(string $name): bool
     {
         return preg_match('/^[A-Za-z0-9_.:@-]{1,32}$/', $name) === 1;
+    }
+
+    /** The agent measures the interval from /proc/uptime, so it may carry decimals ("8.69"). */
+    private function validSeconds(string $value): bool
+    {
+        return preg_match('/^\d{1,5}(\.\d{1,3})?$/', $value) === 1;
     }
 
     /**
