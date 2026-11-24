@@ -31,6 +31,21 @@ import { localized as homeLocalized } from '@/routes/home';
 import { localized as privacyLocalized } from '@/routes/privacy';
 import { apiDocs } from '@/routes';
 
+const GITHUB_URL = 'https://github.com/RackAtlas/rackatlas';
+
+function GithubMark({ className }: { className?: string }) {
+    return (
+        <svg
+            viewBox="0 0 24 24"
+            className={className}
+            fill="currentColor"
+            aria-hidden="true"
+        >
+            <path d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.52-1.33-1.28-1.69-1.28-1.69-1.04-.71.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.76 2.7 1.25 3.36.96.1-.75.4-1.25.73-1.54-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.28 1.18-3.09-.12-.29-.51-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.62 1.59.23 2.76.11 3.05.74.81 1.18 1.83 1.18 3.09 0 4.42-2.7 5.4-5.27 5.68.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5Z" />
+        </svg>
+    );
+}
+
 type Props = {
     canRegister: boolean;
     faq: [string, string][];
@@ -411,6 +426,15 @@ export default function Welcome({ canRegister, faq }: Props) {
                             >
                                 {t('API')}
                             </Link>
+                            <a
+                                href={GITHUB_URL}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-1.5 hover:text-[var(--l-ink)]"
+                            >
+                                <GithubMark className="size-4" />
+                                GitHub
+                            </a>
                         </nav>
                         <div className="ml-auto flex items-center gap-0.5 text-sm sm:gap-1 sm:text-[15px]">
                             {signedIn ? (
@@ -422,13 +446,6 @@ export default function Welcome({ canRegister, faq }: Props) {
                                 </Link>
                             ) : (
                                 <>
-                                    <a
-                                        href={demo.url()}
-                                        data-test="demo-link-header"
-                                        className="hidden rounded-full px-3 py-2 font-medium whitespace-nowrap text-[var(--l-body)] hover:text-[var(--l-ink)] sm:inline-block sm:px-4"
-                                    >
-                                        {t('Try the demo')}
-                                    </a>
                                     <Link
                                         href={login()}
                                         className="rounded-full px-3 py-2 font-medium whitespace-nowrap text-[var(--l-body)] hover:text-[var(--l-ink)] sm:px-4"
@@ -1118,6 +1135,61 @@ export default function Welcome({ canRegister, faq }: Props) {
                     </dl>
                 </section>
 
+                {/* open source */}
+                <section
+                    id="open-source"
+                    className="mx-auto max-w-[1240px] scroll-mt-24 px-4 pt-20 sm:px-8"
+                >
+                    <div className="grid items-center gap-10 rounded-[28px] border border-[var(--l-border)] bg-[var(--l-card)] p-8 sm:p-12 lg:grid-cols-[1.1fr_1fr] lg:gap-16">
+                        <div>
+                            <Eyebrow>{t('Open source')}</Eyebrow>
+                            <h2 className="mb-4 text-[clamp(1.9rem,3.6vw,2.9rem)] leading-[1.05] font-semibold tracking-[-0.04em]">
+                                {t('Open source and self-hosted')}
+                            </h2>
+                            <p className="max-w-[480px] text-[17px] text-[var(--l-body)]">
+                                {t(
+                                    'The code is public on GitHub. Run it on your own server.',
+                                )}
+                            </p>
+                            <div className="mt-7 flex flex-wrap gap-2.5">
+                                <a
+                                    href={GITHUB_URL}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="inline-flex items-center gap-2 rounded-full bg-[var(--l-ink)] px-5 py-3 text-[15px] font-medium text-[var(--l-bg)] transition-opacity hover:opacity-90"
+                                >
+                                    <GithubMark className="size-[18px]" />
+                                    {t('View on GitHub')}
+                                </a>
+                                <a
+                                    href={`${GITHUB_URL}/issues`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="inline-flex items-center rounded-full border border-[var(--l-border)] px-5 py-3 text-[15px] font-medium text-[var(--l-ink)] transition-colors hover:bg-[var(--l-soft)]"
+                                >
+                                    {t('Report an issue')}
+                                </a>
+                            </div>
+                        </div>
+                        <ul className="grid gap-3 text-[15px] text-[var(--l-body)] sm:grid-cols-2 lg:grid-cols-1">
+                            {[
+                                t('Free to use and to modify'),
+                                t('Your data stays on your own infrastructure'),
+                                t('Web app and Android app, both open'),
+                                t('Licensed under AGPL-3.0'),
+                            ].map((item) => (
+                                <li
+                                    key={item}
+                                    className="flex items-center gap-3 rounded-2xl bg-[var(--l-soft)] px-4 py-3"
+                                >
+                                    <span className="size-2 shrink-0 rounded-full bg-[var(--l-dot)]" />
+                                    {item}
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+                </section>
+
                 {/* feedback */}
                 <section
                     id="feedback"
@@ -1311,6 +1383,34 @@ export default function Welcome({ canRegister, faq }: Props) {
                                             className="hover:text-[var(--l-ink)]"
                                         >
                                             {t('Share your opinion')}
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div>
+                                <p className="mb-3 font-medium text-[var(--l-ink)]">
+                                    {t('Open source')}
+                                </p>
+                                <ul className="space-y-2">
+                                    <li>
+                                        <a
+                                            href={GITHUB_URL}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="inline-flex items-center gap-1.5 hover:text-[var(--l-ink)]"
+                                        >
+                                            <GithubMark className="size-3.5" />
+                                            GitHub
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a
+                                            href={`${GITHUB_URL}/issues`}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="hover:text-[var(--l-ink)]"
+                                        >
+                                            {t('Report an issue')}
                                         </a>
                                     </li>
                                 </ul>

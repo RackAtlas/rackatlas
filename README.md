@@ -48,7 +48,7 @@ The screenshots show the built-in demo workspace with made-up servers.
 - **Notifications.** E-mail, Web Push and mobile push (Firebase) with per-event preferences.
 - **REST API.** Token-authenticated, versioned API (`/api/v1`) with an API log.
 - **Administration.** User management, sign in as a user to help them set things up, activity log and API log.
-- **Mobile apps.** Capacitor shells for iOS and Android in `../mobile`.
+- **Mobile apps.** A Capacitor shell for Android in `../mobile`.
 - **Languages.** English, Slovak and Czech.
 
 ## Stack

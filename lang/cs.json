@@ -1784,5 +1784,14 @@
     "You are back in your own account.": "Jste zpět ve svém účtu.",
     "This is not possible while you are signed in as another user.": "Dokud jste přihlášeni jako jiný uživatel, není to možné.",
     "Signed in as a user": "Přihlášení jako uživatel",
-    "Returned to own account": "Návrat do vlastního účtu"
+    "Returned to own account": "Návrat do vlastního účtu",
+    "Open source": "Open source",
+    "Open source and self-hosted": "Open source a vlastní hosting",
+    "The code is public on GitHub. Run it on your own server.": "Kód je veřejný na GitHubu. Spusťte si ho na vlastním serveru.",
+    "View on GitHub": "Zobrazit na GitHubu",
+    "Report an issue": "Nahlásit chybu",
+    "Free to use and to modify": "Zdarma k používání i úpravám",
+    "Your data stays on your own infrastructure": "Vaše data zůstávají na vaší infrastruktuře",
+    "Web app and Android app, both open": "Webová i Android aplikace jsou otevřené",
+    "Licensed under AGPL-3.0": "Licence AGPL-3.0"
 }
