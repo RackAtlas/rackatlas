@@ -57,7 +57,7 @@ class HomeController extends Controller
                 ],
                 [
                     ['label' => __('Log in'), 'url' => route('login')],
-                    ['label' => __('Create account'), 'url' => route('register')],
+                    ...(Route::has('register') ? [['label' => __('Create account'), 'url' => route('register')]] : []),
                     ['label' => __('Privacy and cookies'), 'url' => route('privacy')],
                 ],
             ),

@@ -1,35 +1,40 @@
-import { Form, Head } from '@inertiajs/react';
-import { Lock, Mail } from 'lucide-react';
-import InputError from '@/components/input-error';
-import PasswordInput from '@/components/password-input';
-import TextLink from '@/components/text-link';
-import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Spinner } from '@/components/ui/spinner';
-import { register } from '@/routes';
-import { store } from '@/routes/login';
-import { request } from '@/routes/password';
-import PasskeyVerify from '@/components/passkey-verify';
-import { TurnstileField, useTurnstile } from '@/hooks/use-turnstile';
-import { useTranslation } from '@/hooks/use-translation';
+import { Form, Head } from "@inertiajs/react";
+import { Lock, Mail } from "lucide-react";
+import InputError from "@/components/input-error";
+import PasswordInput from "@/components/password-input";
+import TextLink from "@/components/text-link";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Spinner } from "@/components/ui/spinner";
+import { register } from "@/routes";
+import { store } from "@/routes/login";
+import { request } from "@/routes/password";
+import PasskeyVerify from "@/components/passkey-verify";
+import { TurnstileField, useTurnstile } from "@/hooks/use-turnstile";
+import { useTranslation } from "@/hooks/use-translation";
 
 type Props = {
     status?: string;
     canResetPassword: boolean;
+    canRegister: boolean;
 };
 
-export default function Login({ status, canResetPassword }: Props) {
+export default function Login({
+    status,
+    canResetPassword,
+    canRegister,
+}: Props) {
     const { t } = useTranslation();
-    const turnstile = useTurnstile('login');
+    const turnstile = useTurnstile("login");
     return (
         <>
-            <Head title={t('Log in')} />
+            <Head title={t("Log in")} />
 
             <Form
                 {...store.form()}
-                resetOnSuccess={['password']}
+                resetOnSuccess={["password"]}
                 onFinish={turnstile.reset}
                 className="flex flex-col gap-5"
             >
@@ -38,7 +43,7 @@ export default function Login({ status, canResetPassword }: Props) {
                         <div className="grid gap-5">
                             <div className="grid gap-2">
                                 <Label htmlFor="email">
-                                    {t('Email address')}
+                                    {t("Email address")}
                                 </Label>
                                 <div className="relative">
                                     <Mail className="pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-muted-foreground" />
@@ -59,7 +64,7 @@ export default function Login({ status, canResetPassword }: Props) {
                             <div className="grid gap-2">
                                 <div className="flex items-center">
                                     <Label htmlFor="password">
-                                        {t('Password')}
+                                        {t("Password")}
                                     </Label>
                                     {canResetPassword && (
                                         <TextLink
@@ -67,7 +72,7 @@ export default function Login({ status, canResetPassword }: Props) {
                                             className="ml-auto text-sm"
                                             tabIndex={5}
                                         >
-                                            {t('Forgot your password?')}
+                                            {t("Forgot your password?")}
                                         </TextLink>
                                     )}
                                 </div>
@@ -79,7 +84,7 @@ export default function Login({ status, canResetPassword }: Props) {
                                         required
                                         tabIndex={2}
                                         autoComplete="current-password"
-                                        placeholder={t('Password')}
+                                        placeholder={t("Password")}
                                         className="h-11 rounded-xl pl-10"
                                     />
                                 </div>
@@ -93,7 +98,7 @@ export default function Login({ status, canResetPassword }: Props) {
                                     tabIndex={3}
                                 />
                                 <Label htmlFor="remember">
-                                    {t('Remember me')}
+                                    {t("Remember me")}
                                 </Label>
                             </div>
 
@@ -110,21 +115,23 @@ export default function Login({ status, canResetPassword }: Props) {
                                 data-test="login-button"
                             >
                                 {processing && <Spinner />}
-                                {t('Log in')}
+                                {t("Log in")}
                             </Button>
                         </div>
                     </>
                 )}
             </Form>
 
-            <PasskeyVerify below separator={t('Or')} />
+            <PasskeyVerify below separator={t("Or")} />
 
-            <div className="mt-6 text-center text-sm text-muted-foreground">
-                {t("Don't have an account?")}{' '}
-                <TextLink href={register()} tabIndex={5}>
-                    {t('Sign up')}
-                </TextLink>
-            </div>
+            {canRegister && (
+                <div className="mt-6 text-center text-sm text-muted-foreground">
+                    {t("Don't have an account?")}{" "}
+                    <TextLink href={register()} tabIndex={5}>
+                        {t("Sign up")}
+                    </TextLink>
+                </div>
+            )}
 
             {status && (
                 <div className="mb-4 text-center text-sm font-medium text-green-600">
@@ -136,6 +143,6 @@ export default function Login({ status, canResetPassword }: Props) {
 }
 
 Login.layout = {
-    title: 'Log in to your account',
-    description: 'Enter your email and password below to log in',
+    title: "Log in to your account",
+    description: "Enter your email and password below to log in",
 };

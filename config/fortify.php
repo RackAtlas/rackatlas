@@ -161,7 +161,8 @@ return [
     */
 
     'features' => [
-        Features::registration(),
+        // Sign-up is open only while ENABLE_REGISTER=true in .env; otherwise the register route does not exist.
+        ...(filter_var(env('ENABLE_REGISTER', false), FILTER_VALIDATE_BOOLEAN) ? [Features::registration()] : []),
         Features::resetPasswords(),
         Features::emailVerification(),
         Features::twoFactorAuthentication([
