@@ -21,8 +21,7 @@ func loop(stop <-chan struct{}, logf func(string, ...any)) (restart bool) {
 
 	proven := false
 	lastUpdateCheck = time.Now().Add(-updateInterval + 2*time.Minute)
-	ticker := time.NewTicker(reportInterval)
-	defer ticker.Stop()
+	next := time.Now()
 
 	for {
 		if err == nil {
@@ -56,10 +55,20 @@ func loop(stop <-chan struct{}, logf func(string, ...any)) (restart bool) {
 			continue
 		}
 
+		// Fixed slots, so a slow report does not push the next ones back; a missed slot is skipped.
+		next = next.Add(reportInterval)
+		if now := time.Now(); !next.After(now) {
+			next = now.Add(reportInterval)
+		}
+
+		wait := time.NewTimer(time.Until(next))
+
 		select {
 		case <-stop:
+			wait.Stop()
+
 			return false
-		case <-ticker.C:
+		case <-wait.C:
 		}
 	}
 }

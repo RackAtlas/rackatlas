@@ -58,7 +58,13 @@ are monitored over SSH by `MetricsParser::SCRIPT`, so metrics sections must stay
   model, and the UI that shows it (`resources/js`), plus translations in `lang/sk.json` and `lang/cs.json`.
 - The agent version arrives in the `X-Agent-Version` header and is stored on the server. Use it if the server
   has to behave differently for old agents.
-- The rate limit (`AppServiceProvider`, `throttle:agent`) is 10 requests per minute per token. A new feature
+- **Report interval.** Each server has `servers.report_interval` (10 s to 12 h, default 60; `Server::REPORT_INTERVALS`).
+  The answer to every report carries `"interval":<seconds>`; the agent keeps it in `$STATE_DIR/interval` and the time of
+  the last accepted report in `$STATE_DIR/last-sent`. The timer fires every minute (`OnCalendar=minutely`): for an
+  interval over 60 s a run that is not due exits at once, for an interval under 60 s one run reports several times
+  (re-running itself with `RACKATLAS_CHILD=1`, nothing new starts after about 55 s). The offline limit is per server
+  (`Server::silentAfterMinutes()`: 3 missed reports, at least 3 minutes). Agents before 1.13 ignore the setting.
+- The rate limit (`AppServiceProvider`, `throttle:agent`) is set in `AppServiceProvider` (per IP, generous enough for many servers at 10 s). A new feature
   must not send more than one request per run.
 
 ## Docker (optional, off until the server asks for it)

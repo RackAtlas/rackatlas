@@ -84,7 +84,7 @@ index.form = indexForm
 
 /**
 * @see \App\Http\Controllers\Servers\ServerController::create
-* @see app/Http/Controllers/Servers/ServerController.php:172
+* @see app/Http/Controllers/Servers/ServerController.php:173
 * @route '/app/servers/create'
 */
 export const create = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -99,7 +99,7 @@ create.definition = {
 
 /**
 * @see \App\Http\Controllers\Servers\ServerController::create
-* @see app/Http/Controllers/Servers/ServerController.php:172
+* @see app/Http/Controllers/Servers/ServerController.php:173
 * @route '/app/servers/create'
 */
 create.url = (options?: RouteQueryOptions) => {
@@ -108,7 +108,7 @@ create.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Servers\ServerController::create
-* @see app/Http/Controllers/Servers/ServerController.php:172
+* @see app/Http/Controllers/Servers/ServerController.php:173
 * @route '/app/servers/create'
 */
 create.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -118,7 +118,7 @@ create.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\Servers\ServerController::create
-* @see app/Http/Controllers/Servers/ServerController.php:172
+* @see app/Http/Controllers/Servers/ServerController.php:173
 * @route '/app/servers/create'
 */
 create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -128,7 +128,7 @@ create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\Servers\ServerController::create
-* @see app/Http/Controllers/Servers/ServerController.php:172
+* @see app/Http/Controllers/Servers/ServerController.php:173
 * @route '/app/servers/create'
 */
 const createForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -138,7 +138,7 @@ const createForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => 
 
 /**
 * @see \App\Http\Controllers\Servers\ServerController::create
-* @see app/Http/Controllers/Servers/ServerController.php:172
+* @see app/Http/Controllers/Servers/ServerController.php:173
 * @route '/app/servers/create'
 */
 createForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -148,7 +148,7 @@ createForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\Servers\ServerController::create
-* @see app/Http/Controllers/Servers/ServerController.php:172
+* @see app/Http/Controllers/Servers/ServerController.php:173
 * @route '/app/servers/create'
 */
 createForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -165,7 +165,7 @@ create.form = createForm
 
 /**
 * @see \App\Http\Controllers\Servers\ServerController::store
-* @see app/Http/Controllers/Servers/ServerController.php:188
+* @see app/Http/Controllers/Servers/ServerController.php:189
 * @route '/app/servers'
 */
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -180,7 +180,7 @@ store.definition = {
 
 /**
 * @see \App\Http\Controllers\Servers\ServerController::store
-* @see app/Http/Controllers/Servers/ServerController.php:188
+* @see app/Http/Controllers/Servers/ServerController.php:189
 * @route '/app/servers'
 */
 store.url = (options?: RouteQueryOptions) => {
@@ -189,7 +189,7 @@ store.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Servers\ServerController::store
-* @see app/Http/Controllers/Servers/ServerController.php:188
+* @see app/Http/Controllers/Servers/ServerController.php:189
 * @route '/app/servers'
 */
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -199,7 +199,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\Servers\ServerController::store
-* @see app/Http/Controllers/Servers/ServerController.php:188
+* @see app/Http/Controllers/Servers/ServerController.php:189
 * @route '/app/servers'
 */
 const storeForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -209,7 +209,7 @@ const storeForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => 
 
 /**
 * @see \App\Http\Controllers\Servers\ServerController::store
-* @see app/Http/Controllers/Servers/ServerController.php:188
+* @see app/Http/Controllers/Servers/ServerController.php:189
 * @route '/app/servers'
 */
 storeForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -280,7 +280,7 @@ testConnection.form = testConnectionForm
 * @see app/Http/Controllers/Servers/ServerController.php:72
 * @route '/app/servers/{server}'
 */
-export const show = (args: { server: string | number | { id: string | number } } | [server: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+export const show = (args: { server: number | { id: number } } | [server: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: show.url(args, options),
     method: 'get',
 })
@@ -295,7 +295,7 @@ show.definition = {
 * @see app/Http/Controllers/Servers/ServerController.php:72
 * @route '/app/servers/{server}'
 */
-show.url = (args: { server: string | number | { id: string | number } } | [server: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions) => {
+show.url = (args: { server: number | { id: number } } | [server: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { server: args }
     }
@@ -328,7 +328,7 @@ show.url = (args: { server: string | number | { id: string | number } } | [serve
 * @see app/Http/Controllers/Servers/ServerController.php:72
 * @route '/app/servers/{server}'
 */
-show.get = (args: { server: string | number | { id: string | number } } | [server: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+show.get = (args: { server: number | { id: number } } | [server: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: show.url(args, options),
     method: 'get',
 })
@@ -338,7 +338,7 @@ show.get = (args: { server: string | number | { id: string | number } } | [serve
 * @see app/Http/Controllers/Servers/ServerController.php:72
 * @route '/app/servers/{server}'
 */
-show.head = (args: { server: string | number | { id: string | number } } | [server: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+show.head = (args: { server: number | { id: number } } | [server: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: show.url(args, options),
     method: 'head',
 })
@@ -348,7 +348,7 @@ show.head = (args: { server: string | number | { id: string | number } } | [serv
 * @see app/Http/Controllers/Servers/ServerController.php:72
 * @route '/app/servers/{server}'
 */
-const showForm = (args: { server: string | number | { id: string | number } } | [server: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+const showForm = (args: { server: number | { id: number } } | [server: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
     action: show.url(args, options),
     method: 'get',
 })
@@ -358,7 +358,7 @@ const showForm = (args: { server: string | number | { id: string | number } } | 
 * @see app/Http/Controllers/Servers/ServerController.php:72
 * @route '/app/servers/{server}'
 */
-showForm.get = (args: { server: string | number | { id: string | number } } | [server: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+showForm.get = (args: { server: number | { id: number } } | [server: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
     action: show.url(args, options),
     method: 'get',
 })
@@ -368,7 +368,7 @@ showForm.get = (args: { server: string | number | { id: string | number } } | [s
 * @see app/Http/Controllers/Servers/ServerController.php:72
 * @route '/app/servers/{server}'
 */
-showForm.head = (args: { server: string | number | { id: string | number } } | [server: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+showForm.head = (args: { server: number | { id: number } } | [server: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
     action: show.url(args, {
         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
             _method: 'HEAD',
@@ -382,10 +382,10 @@ show.form = showForm
 
 /**
 * @see \App\Http\Controllers\Servers\ServerController::edit
-* @see app/Http/Controllers/Servers/ServerController.php:202
+* @see app/Http/Controllers/Servers/ServerController.php:203
 * @route '/app/servers/{server}/edit'
 */
-export const edit = (args: { server: string | number | { id: string | number } } | [server: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+export const edit = (args: { server: number | { id: number } } | [server: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: edit.url(args, options),
     method: 'get',
 })
@@ -397,10 +397,10 @@ edit.definition = {
 
 /**
 * @see \App\Http\Controllers\Servers\ServerController::edit
-* @see app/Http/Controllers/Servers/ServerController.php:202
+* @see app/Http/Controllers/Servers/ServerController.php:203
 * @route '/app/servers/{server}/edit'
 */
-edit.url = (args: { server: string | number | { id: string | number } } | [server: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions) => {
+edit.url = (args: { server: number | { id: number } } | [server: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { server: args }
     }
@@ -430,50 +430,50 @@ edit.url = (args: { server: string | number | { id: string | number } } | [serve
 
 /**
 * @see \App\Http\Controllers\Servers\ServerController::edit
-* @see app/Http/Controllers/Servers/ServerController.php:202
+* @see app/Http/Controllers/Servers/ServerController.php:203
 * @route '/app/servers/{server}/edit'
 */
-edit.get = (args: { server: string | number | { id: string | number } } | [server: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+edit.get = (args: { server: number | { id: number } } | [server: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: edit.url(args, options),
     method: 'get',
 })
 
 /**
 * @see \App\Http\Controllers\Servers\ServerController::edit
-* @see app/Http/Controllers/Servers/ServerController.php:202
+* @see app/Http/Controllers/Servers/ServerController.php:203
 * @route '/app/servers/{server}/edit'
 */
-edit.head = (args: { server: string | number | { id: string | number } } | [server: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+edit.head = (args: { server: number | { id: number } } | [server: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: edit.url(args, options),
     method: 'head',
 })
 
 /**
 * @see \App\Http\Controllers\Servers\ServerController::edit
-* @see app/Http/Controllers/Servers/ServerController.php:202
+* @see app/Http/Controllers/Servers/ServerController.php:203
 * @route '/app/servers/{server}/edit'
 */
-const editForm = (args: { server: string | number | { id: string | number } } | [server: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+const editForm = (args: { server: number | { id: number } } | [server: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
     action: edit.url(args, options),
     method: 'get',
 })
 
 /**
 * @see \App\Http\Controllers\Servers\ServerController::edit
-* @see app/Http/Controllers/Servers/ServerController.php:202
+* @see app/Http/Controllers/Servers/ServerController.php:203
 * @route '/app/servers/{server}/edit'
 */
-editForm.get = (args: { server: string | number | { id: string | number } } | [server: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+editForm.get = (args: { server: number | { id: number } } | [server: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
     action: edit.url(args, options),
     method: 'get',
 })
 
 /**
 * @see \App\Http\Controllers\Servers\ServerController::edit
-* @see app/Http/Controllers/Servers/ServerController.php:202
+* @see app/Http/Controllers/Servers/ServerController.php:203
 * @route '/app/servers/{server}/edit'
 */
-editForm.head = (args: { server: string | number | { id: string | number } } | [server: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+editForm.head = (args: { server: number | { id: number } } | [server: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
     action: edit.url(args, {
         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
             _method: 'HEAD',
@@ -487,10 +487,10 @@ edit.form = editForm
 
 /**
 * @see \App\Http\Controllers\Servers\ServerController::update
-* @see app/Http/Controllers/Servers/ServerController.php:247
+* @see app/Http/Controllers/Servers/ServerController.php:249
 * @route '/app/servers/{server}'
 */
-export const update = (args: { server: string | number | { id: string | number } } | [server: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
+export const update = (args: { server: number | { id: number } } | [server: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
     url: update.url(args, options),
     method: 'put',
 })
@@ -502,10 +502,10 @@ update.definition = {
 
 /**
 * @see \App\Http\Controllers\Servers\ServerController::update
-* @see app/Http/Controllers/Servers/ServerController.php:247
+* @see app/Http/Controllers/Servers/ServerController.php:249
 * @route '/app/servers/{server}'
 */
-update.url = (args: { server: string | number | { id: string | number } } | [server: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions) => {
+update.url = (args: { server: number | { id: number } } | [server: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { server: args }
     }
@@ -535,20 +535,20 @@ update.url = (args: { server: string | number | { id: string | number } } | [ser
 
 /**
 * @see \App\Http\Controllers\Servers\ServerController::update
-* @see app/Http/Controllers/Servers/ServerController.php:247
+* @see app/Http/Controllers/Servers/ServerController.php:249
 * @route '/app/servers/{server}'
 */
-update.put = (args: { server: string | number | { id: string | number } } | [server: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
+update.put = (args: { server: number | { id: number } } | [server: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
     url: update.url(args, options),
     method: 'put',
 })
 
 /**
 * @see \App\Http\Controllers\Servers\ServerController::update
-* @see app/Http/Controllers/Servers/ServerController.php:247
+* @see app/Http/Controllers/Servers/ServerController.php:249
 * @route '/app/servers/{server}'
 */
-const updateForm = (args: { server: string | number | { id: string | number } } | [server: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+const updateForm = (args: { server: number | { id: number } } | [server: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
     action: update.url(args, {
         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
             _method: 'PUT',
@@ -560,10 +560,10 @@ const updateForm = (args: { server: string | number | { id: string | number } } 
 
 /**
 * @see \App\Http\Controllers\Servers\ServerController::update
-* @see app/Http/Controllers/Servers/ServerController.php:247
+* @see app/Http/Controllers/Servers/ServerController.php:249
 * @route '/app/servers/{server}'
 */
-updateForm.put = (args: { server: string | number | { id: string | number } } | [server: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+updateForm.put = (args: { server: number | { id: number } } | [server: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
     action: update.url(args, {
         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
             _method: 'PUT',
@@ -577,10 +577,10 @@ update.form = updateForm
 
 /**
 * @see \App\Http\Controllers\Servers\ServerController::destroy
-* @see app/Http/Controllers/Servers/ServerController.php:274
+* @see app/Http/Controllers/Servers/ServerController.php:276
 * @route '/app/servers/{server}'
 */
-export const destroy = (args: { server: string | number | { id: string | number } } | [server: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
+export const destroy = (args: { server: number | { id: number } } | [server: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
     url: destroy.url(args, options),
     method: 'delete',
 })
@@ -592,10 +592,10 @@ destroy.definition = {
 
 /**
 * @see \App\Http\Controllers\Servers\ServerController::destroy
-* @see app/Http/Controllers/Servers/ServerController.php:274
+* @see app/Http/Controllers/Servers/ServerController.php:276
 * @route '/app/servers/{server}'
 */
-destroy.url = (args: { server: string | number | { id: string | number } } | [server: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions) => {
+destroy.url = (args: { server: number | { id: number } } | [server: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { server: args }
     }
@@ -625,20 +625,20 @@ destroy.url = (args: { server: string | number | { id: string | number } } | [se
 
 /**
 * @see \App\Http\Controllers\Servers\ServerController::destroy
-* @see app/Http/Controllers/Servers/ServerController.php:274
+* @see app/Http/Controllers/Servers/ServerController.php:276
 * @route '/app/servers/{server}'
 */
-destroy.delete = (args: { server: string | number | { id: string | number } } | [server: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
+destroy.delete = (args: { server: number | { id: number } } | [server: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
     url: destroy.url(args, options),
     method: 'delete',
 })
 
 /**
 * @see \App\Http\Controllers\Servers\ServerController::destroy
-* @see app/Http/Controllers/Servers/ServerController.php:274
+* @see app/Http/Controllers/Servers/ServerController.php:276
 * @route '/app/servers/{server}'
 */
-const destroyForm = (args: { server: string | number | { id: string | number } } | [server: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+const destroyForm = (args: { server: number | { id: number } } | [server: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
     action: destroy.url(args, {
         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
             _method: 'DELETE',
@@ -650,10 +650,10 @@ const destroyForm = (args: { server: string | number | { id: string | number } }
 
 /**
 * @see \App\Http\Controllers\Servers\ServerController::destroy
-* @see app/Http/Controllers/Servers/ServerController.php:274
+* @see app/Http/Controllers/Servers/ServerController.php:276
 * @route '/app/servers/{server}'
 */
-destroyForm.delete = (args: { server: string | number | { id: string | number } } | [server: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+destroyForm.delete = (args: { server: number | { id: number } } | [server: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
     action: destroy.url(args, {
         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
             _method: 'DELETE',

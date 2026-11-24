@@ -5,42 +5,42 @@ Origin: RackAtlas
 Label: RackAtlas
 Suite: stable
 Codename: stable
-Date: Tue, 24 Nov 2026 07:36:30 UTC
+Date: Tue, 24 Nov 2026 15:40:42 UTC
 Architectures: amd64 arm64 armhf i386
 Components: main
 Description: RackAtlas monitoring agent
 MD5Sum:
- 98e734022a65fb173f0a603f6f016bea            13111 main/binary-amd64/Packages
- bdb05715bf1fe487703c5d40171d9d1d             2402 main/binary-amd64/Packages.gz
- 98e734022a65fb173f0a603f6f016bea            13111 main/binary-arm64/Packages
- bdb05715bf1fe487703c5d40171d9d1d             2402 main/binary-arm64/Packages.gz
- 98e734022a65fb173f0a603f6f016bea            13111 main/binary-armhf/Packages
- bdb05715bf1fe487703c5d40171d9d1d             2402 main/binary-armhf/Packages.gz
- 98e734022a65fb173f0a603f6f016bea            13111 main/binary-i386/Packages
- bdb05715bf1fe487703c5d40171d9d1d             2402 main/binary-i386/Packages.gz
+ fe146cd47311a2a5ebb36c8a677dd708            13746 main/binary-amd64/Packages
+ 13798150e62bfe2a268fcd3441cf006f             2514 main/binary-amd64/Packages.gz
+ fe146cd47311a2a5ebb36c8a677dd708            13746 main/binary-arm64/Packages
+ 13798150e62bfe2a268fcd3441cf006f             2514 main/binary-arm64/Packages.gz
+ fe146cd47311a2a5ebb36c8a677dd708            13746 main/binary-armhf/Packages
+ 13798150e62bfe2a268fcd3441cf006f             2514 main/binary-armhf/Packages.gz
+ fe146cd47311a2a5ebb36c8a677dd708            13746 main/binary-i386/Packages
+ 13798150e62bfe2a268fcd3441cf006f             2514 main/binary-i386/Packages.gz
 SHA1:
- 2a5a10f244332f94d297671ad0f6b9b134d4305d            13111 main/binary-amd64/Packages
- 7c9a38a1a69c5e826c1052d795d6cb4595d95750             2402 main/binary-amd64/Packages.gz
- 2a5a10f244332f94d297671ad0f6b9b134d4305d            13111 main/binary-arm64/Packages
- 7c9a38a1a69c5e826c1052d795d6cb4595d95750             2402 main/binary-arm64/Packages.gz
- 2a5a10f244332f94d297671ad0f6b9b134d4305d            13111 main/binary-armhf/Packages
- 7c9a38a1a69c5e826c1052d795d6cb4595d95750             2402 main/binary-armhf/Packages.gz
- 2a5a10f244332f94d297671ad0f6b9b134d4305d            13111 main/binary-i386/Packages
- 7c9a38a1a69c5e826c1052d795d6cb4595d95750             2402 main/binary-i386/Packages.gz
+ e57bdaa12811fa8e0dd148deadf8f5a789e6be74            13746 main/binary-amd64/Packages
+ 04da1f29abc40c4151f2d88f454af8876bebf8f6             2514 main/binary-amd64/Packages.gz
+ e57bdaa12811fa8e0dd148deadf8f5a789e6be74            13746 main/binary-arm64/Packages
+ 04da1f29abc40c4151f2d88f454af8876bebf8f6             2514 main/binary-arm64/Packages.gz
+ e57bdaa12811fa8e0dd148deadf8f5a789e6be74            13746 main/binary-armhf/Packages
+ 04da1f29abc40c4151f2d88f454af8876bebf8f6             2514 main/binary-armhf/Packages.gz
+ e57bdaa12811fa8e0dd148deadf8f5a789e6be74            13746 main/binary-i386/Packages
+ 04da1f29abc40c4151f2d88f454af8876bebf8f6             2514 main/binary-i386/Packages.gz
 SHA256:
- 390560c7d53dd8ca954df1d6d91b2b7a0d23c1fd448b610f2264528acc89b70e            13111 main/binary-amd64/Packages
- e915dc5e51e6d3096d4178208ca4876ab3040f7ce8f5dbb4894b4f464e69c355             2402 main/binary-amd64/Packages.gz
- 390560c7d53dd8ca954df1d6d91b2b7a0d23c1fd448b610f2264528acc89b70e            13111 main/binary-arm64/Packages
- e915dc5e51e6d3096d4178208ca4876ab3040f7ce8f5dbb4894b4f464e69c355             2402 main/binary-arm64/Packages.gz
- 390560c7d53dd8ca954df1d6d91b2b7a0d23c1fd448b610f2264528acc89b70e            13111 main/binary-armhf/Packages
- e915dc5e51e6d3096d4178208ca4876ab3040f7ce8f5dbb4894b4f464e69c355             2402 main/binary-armhf/Packages.gz
- 390560c7d53dd8ca954df1d6d91b2b7a0d23c1fd448b610f2264528acc89b70e            13111 main/binary-i386/Packages
- e915dc5e51e6d3096d4178208ca4876ab3040f7ce8f5dbb4894b4f464e69c355             2402 main/binary-i386/Packages.gz
+ c19fed55632b9442540814a911fea735591e1d35e71d7164de93293533d526b1            13746 main/binary-amd64/Packages
+ 250f2d936b56cb3cb1612a5f7eb26f6caff4f9cdc5db970daf9f96b95912b693             2514 main/binary-amd64/Packages.gz
+ c19fed55632b9442540814a911fea735591e1d35e71d7164de93293533d526b1            13746 main/binary-arm64/Packages
+ 250f2d936b56cb3cb1612a5f7eb26f6caff4f9cdc5db970daf9f96b95912b693             2514 main/binary-arm64/Packages.gz
+ c19fed55632b9442540814a911fea735591e1d35e71d7164de93293533d526b1            13746 main/binary-armhf/Packages
+ 250f2d936b56cb3cb1612a5f7eb26f6caff4f9cdc5db970daf9f96b95912b693             2514 main/binary-armhf/Packages.gz
+ c19fed55632b9442540814a911fea735591e1d35e71d7164de93293533d526b1            13746 main/binary-i386/Packages
+ 250f2d936b56cb3cb1612a5f7eb26f6caff4f9cdc5db970daf9f96b95912b693             2514 main/binary-i386/Packages.gz
 -----BEGIN PGP SIGNATURE-----
 
-iJEEARYIADkWIQSU5nntdYVKUgfnbjiXaZNas5t54AUCawU+fhsUgAAAAAAEAA5t
-YW51MiwyLjUrMS4xMiwwLDMACgkQl2mTWrObeeAn3QD7BPwOmsfYCB4d+Lxzm+V/
-lhbySXUiz8u8c3Zlm5pBDxABAN8Mw9nQa5mv7EulJ24MCc/zCPZKDUl9Ht+u3yjD
-TH4C
-=q/+L
+iJEEARYIADkWIQSU5nntdYVKUgfnbjiXaZNas5t54AUCawWv+hsUgAAAAAAEAA5t
+YW51MiwyLjUrMS4xMiwwLDMACgkQl2mTWrObeeDwuwEAnrXQ7MBkcJROUIEBhFha
+grqOl22t4r783gv3wbR6EasBAIMCNfWxdpZO/eaAin4QtlZ1uplUuhX1RzRJ6XLB
+BSAL
+=5+SS
 -----END PGP SIGNATURE-----

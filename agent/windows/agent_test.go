@@ -73,3 +73,18 @@ func TestConfigValidation(t *testing.T) {
 		t.Error("a short token was accepted")
 	}
 }
+
+func TestApplyInterval(t *testing.T) {
+	defer func() { reportInterval = defaultReportInterval }()
+
+	applyInterval([]byte(`{"ok":true,"interval":15}`))
+	if reportInterval != 15*time.Second {
+		t.Fatalf("got %v", reportInterval)
+	}
+
+	applyInterval([]byte(`{"ok":true,"interval":3}`))
+	applyInterval([]byte(`not json`))
+	if reportInterval != 15*time.Second {
+		t.Fatalf("invalid answers must be ignored, got %v", reportInterval)
+	}
+}

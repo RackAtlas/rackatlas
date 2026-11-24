@@ -1,4 +1,4 @@
-export type ServerAuthType = 'password' | 'key' | 'agent';
+export type ServerAuthType = "password" | "key" | "agent";
 
 export type ServerCategory = {
     id: number;
@@ -16,9 +16,9 @@ export type SshKey = {
     servers_count?: number;
 };
 
-export type ServerType = 'server' | 'mysql' | 'redis';
+export type ServerType = "server" | "mysql" | "redis";
 
-export type ServerStatus = 'unknown' | 'online' | 'offline';
+export type ServerStatus = "unknown" | "online" | "offline";
 
 export type ServerMetrics = {
     cpu_percent: number;
@@ -64,6 +64,7 @@ export type ServerFormData = {
     ignored_alerts: string[];
     in_maintenance?: boolean;
     watch_enabled?: boolean;
+    report_interval?: number;
 };
 
 export type Backup = {
@@ -76,7 +77,7 @@ export type Backup = {
     expected_interval_hours: number | null;
     webhook_url: string;
     last_run_at: string | null;
-    last_status: 'success' | 'failed' | null;
+    last_status: "success" | "failed" | null;
     last_message: string | null;
     last_size_bytes: number | null;
     overdue: boolean;
@@ -183,7 +184,7 @@ export type RedisCluster = {
     known_nodes: number;
     size: number;
     current_epoch: number;
-    problems: { type: 'state' | 'slots_unassigned' | 'node'; detail: string }[];
+    problems: { type: "state" | "slots_unassigned" | "node"; detail: string }[];
     unmonitored_nodes: number;
     nodes: RedisClusterNode[];
     server_ids: string[];
@@ -191,7 +192,7 @@ export type RedisCluster = {
 };
 
 export type ReplicationLink = {
-    state: 'ok' | 'lagging' | 'broken';
+    state: "ok" | "lagging" | "broken";
     io_running: boolean | null;
     sql_running: boolean | null;
     lag_seconds: number | null;

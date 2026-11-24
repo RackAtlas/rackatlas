@@ -141,7 +141,7 @@ store.form = storeForm
 * @see app/Http/Controllers/Servers/SshKeyController.php:71
 * @route '/app/ssh-keys/{sshKey}/reveal'
 */
-export const reveal = (args: { sshKey: string | number | { id: string | number } } | [sshKey: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+export const reveal = (args: { sshKey: number | { id: number } } | [sshKey: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: reveal.url(args, options),
     method: 'post',
 })
@@ -156,7 +156,7 @@ reveal.definition = {
 * @see app/Http/Controllers/Servers/SshKeyController.php:71
 * @route '/app/ssh-keys/{sshKey}/reveal'
 */
-reveal.url = (args: { sshKey: string | number | { id: string | number } } | [sshKey: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions) => {
+reveal.url = (args: { sshKey: number | { id: number } } | [sshKey: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { sshKey: args }
     }
@@ -189,7 +189,7 @@ reveal.url = (args: { sshKey: string | number | { id: string | number } } | [ssh
 * @see app/Http/Controllers/Servers/SshKeyController.php:71
 * @route '/app/ssh-keys/{sshKey}/reveal'
 */
-reveal.post = (args: { sshKey: string | number | { id: string | number } } | [sshKey: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+reveal.post = (args: { sshKey: number | { id: number } } | [sshKey: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: reveal.url(args, options),
     method: 'post',
 })
@@ -199,7 +199,7 @@ reveal.post = (args: { sshKey: string | number | { id: string | number } } | [ss
 * @see app/Http/Controllers/Servers/SshKeyController.php:71
 * @route '/app/ssh-keys/{sshKey}/reveal'
 */
-const revealForm = (args: { sshKey: string | number | { id: string | number } } | [sshKey: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+const revealForm = (args: { sshKey: number | { id: number } } | [sshKey: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
     action: reveal.url(args, options),
     method: 'post',
 })
@@ -209,7 +209,7 @@ const revealForm = (args: { sshKey: string | number | { id: string | number } } 
 * @see app/Http/Controllers/Servers/SshKeyController.php:71
 * @route '/app/ssh-keys/{sshKey}/reveal'
 */
-revealForm.post = (args: { sshKey: string | number | { id: string | number } } | [sshKey: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+revealForm.post = (args: { sshKey: number | { id: number } } | [sshKey: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
     action: reveal.url(args, options),
     method: 'post',
 })
@@ -221,7 +221,7 @@ reveal.form = revealForm
 * @see app/Http/Controllers/Servers/SshKeyController.php:87
 * @route '/app/ssh-keys/{sshKey}'
 */
-export const destroy = (args: { sshKey: string | number | { id: string | number } } | [sshKey: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
+export const destroy = (args: { sshKey: number | { id: number } } | [sshKey: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
     url: destroy.url(args, options),
     method: 'delete',
 })
@@ -236,7 +236,7 @@ destroy.definition = {
 * @see app/Http/Controllers/Servers/SshKeyController.php:87
 * @route '/app/ssh-keys/{sshKey}'
 */
-destroy.url = (args: { sshKey: string | number | { id: string | number } } | [sshKey: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions) => {
+destroy.url = (args: { sshKey: number | { id: number } } | [sshKey: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { sshKey: args }
     }
@@ -269,7 +269,7 @@ destroy.url = (args: { sshKey: string | number | { id: string | number } } | [ss
 * @see app/Http/Controllers/Servers/SshKeyController.php:87
 * @route '/app/ssh-keys/{sshKey}'
 */
-destroy.delete = (args: { sshKey: string | number | { id: string | number } } | [sshKey: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
+destroy.delete = (args: { sshKey: number | { id: number } } | [sshKey: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
     url: destroy.url(args, options),
     method: 'delete',
 })
@@ -279,7 +279,7 @@ destroy.delete = (args: { sshKey: string | number | { id: string | number } } | 
 * @see app/Http/Controllers/Servers/SshKeyController.php:87
 * @route '/app/ssh-keys/{sshKey}'
 */
-const destroyForm = (args: { sshKey: string | number | { id: string | number } } | [sshKey: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+const destroyForm = (args: { sshKey: number | { id: number } } | [sshKey: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
     action: destroy.url(args, {
         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
             _method: 'DELETE',
@@ -294,7 +294,7 @@ const destroyForm = (args: { sshKey: string | number | { id: string | number } }
 * @see app/Http/Controllers/Servers/SshKeyController.php:87
 * @route '/app/ssh-keys/{sshKey}'
 */
-destroyForm.delete = (args: { sshKey: string | number | { id: string | number } } | [sshKey: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+destroyForm.delete = (args: { sshKey: number | { id: number } } | [sshKey: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
     action: destroy.url(args, {
         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
             _method: 'DELETE',

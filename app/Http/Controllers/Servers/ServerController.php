@@ -104,6 +104,7 @@ class ServerController extends Controller
                 'ignored_alerts' => $server->ignored_alerts ?? [],
                 'in_maintenance' => $server->in_maintenance,
                 'watch_enabled' => $server->watch_enabled,
+                'report_interval' => $server->reportEvery(),
                 'system_info' => $server->system_info,
                 'created_at' => $server->created_at?->toIso8601String(),
                 'last_checked_at' => $server->last_checked_at?->toIso8601String(),
@@ -223,6 +224,7 @@ class ServerController extends Controller
                 'ignored_alerts' => $server->ignored_alerts ?? [],
                 'in_maintenance' => $server->in_maintenance,
                 'watch_enabled' => $server->watch_enabled,
+                'report_interval' => $server->report_interval,
             ],
         ]);
     }
@@ -364,6 +366,7 @@ class ServerController extends Controller
             'auth_type' => $data['auth_type'],
             'uses_agent' => $data['auth_type'] !== ServerAuthType::Agent->value && ($data['uses_agent'] ?? false),
             'has_docker' => (bool) ($data['has_docker'] ?? false),
+            'report_interval' => (int) ($data['report_interval'] ?? Server::DEFAULT_REPORT_INTERVAL),
             'password' => $usesPassword ? ($data['password'] ?? null) : null,
             'ssh_key_id' => $usesKey ? $data['ssh_key_id'] : null,
             'ignored_alerts' => array_values(array_unique($data['ignored_alerts'] ?? [])) ?: null,

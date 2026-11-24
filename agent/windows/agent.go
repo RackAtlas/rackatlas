@@ -12,15 +12,32 @@ import (
 )
 
 const (
-	reportInterval = time.Minute
-	updateInterval = 6 * time.Hour
-	journalBytes   = 64 * 1024
-	journalLines   = 100
+	defaultReportInterval = time.Minute
+	updateInterval        = 6 * time.Hour
+	journalBytes          = 64 * 1024
+	journalLines          = 100
 )
 
 var unitPattern = regexp.MustCompile(`^[A-Za-z0-9][A-Za-z0-9:_.@\\-]*\.service$`)
 
 func validUnit(unit string) bool { return unitPattern.MatchString(unit) }
+
+// reportInterval is how long to wait between two reports. RackAtlas sets it per server and sends it in every answer
+// ("interval", in seconds); anything outside 10 s to 24 h is ignored.
+var reportInterval = defaultReportInterval
+
+// applyInterval reads the interval from the answer of RackAtlas.
+func applyInterval(answer []byte) {
+	var response struct {
+		Interval int `json:"interval"`
+	}
+
+	if json.Unmarshal(answer, &response) != nil || response.Interval < 10 || response.Interval > 86400 {
+		return
+	}
+
+	reportInterval = time.Duration(response.Interval) * time.Second
+}
 
 var httpClient = &http.Client{Timeout: 30 * time.Second}
 
@@ -72,6 +89,7 @@ func reportOnce(cfg config, state string) error {
 	switch {
 	case status >= 200 && status < 300:
 		report.commit()
+		applyInterval(answer)
 		sendRequestedJournals(cfg, answer)
 
 		return nil

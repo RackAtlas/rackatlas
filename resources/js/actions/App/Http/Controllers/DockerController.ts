@@ -85,7 +85,7 @@ index.form = indexForm
 * @see app/Http/Controllers/DockerController.php:95
 * @route '/app/docker/containers/{container}/logs'
 */
-export const logs = (args: { container: string | number | { id: string | number } } | [container: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+export const logs = (args: { container: number | { id: number } } | [container: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: logs.url(args, options),
     method: 'post',
 })
@@ -100,7 +100,7 @@ logs.definition = {
 * @see app/Http/Controllers/DockerController.php:95
 * @route '/app/docker/containers/{container}/logs'
 */
-logs.url = (args: { container: string | number | { id: string | number } } | [container: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions) => {
+logs.url = (args: { container: number | { id: number } } | [container: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { container: args }
     }
@@ -133,7 +133,7 @@ logs.url = (args: { container: string | number | { id: string | number } } | [co
 * @see app/Http/Controllers/DockerController.php:95
 * @route '/app/docker/containers/{container}/logs'
 */
-logs.post = (args: { container: string | number | { id: string | number } } | [container: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+logs.post = (args: { container: number | { id: number } } | [container: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: logs.url(args, options),
     method: 'post',
 })
@@ -143,7 +143,7 @@ logs.post = (args: { container: string | number | { id: string | number } } | [c
 * @see app/Http/Controllers/DockerController.php:95
 * @route '/app/docker/containers/{container}/logs'
 */
-const logsForm = (args: { container: string | number | { id: string | number } } | [container: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+const logsForm = (args: { container: number | { id: number } } | [container: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
     action: logs.url(args, options),
     method: 'post',
 })
@@ -153,7 +153,7 @@ const logsForm = (args: { container: string | number | { id: string | number } }
 * @see app/Http/Controllers/DockerController.php:95
 * @route '/app/docker/containers/{container}/logs'
 */
-logsForm.post = (args: { container: string | number | { id: string | number } } | [container: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+logsForm.post = (args: { container: number | { id: number } } | [container: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
     action: logs.url(args, options),
     method: 'post',
 })
@@ -165,7 +165,7 @@ logs.form = logsForm
 * @see app/Http/Controllers/DockerController.php:68
 * @route '/app/docker/containers/{container}/{action}'
 */
-export const act = (args: { container: string | number | { id: string | number }, action: string | number } | [container: string | number | { id: string | number }, action: string | number ], options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+export const act = (args: { container: number | { id: number }, action: string | number } | [container: number | { id: number }, action: string | number ], options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: act.url(args, options),
     method: 'post',
 })
@@ -180,7 +180,7 @@ act.definition = {
 * @see app/Http/Controllers/DockerController.php:68
 * @route '/app/docker/containers/{container}/{action}'
 */
-act.url = (args: { container: string | number | { id: string | number }, action: string | number } | [container: string | number | { id: string | number }, action: string | number ], options?: RouteQueryOptions) => {
+act.url = (args: { container: number | { id: number }, action: string | number } | [container: number | { id: number }, action: string | number ], options?: RouteQueryOptions) => {
     if (Array.isArray(args)) {
         args = {
             container: args[0],
@@ -208,7 +208,7 @@ act.url = (args: { container: string | number | { id: string | number }, action:
 * @see app/Http/Controllers/DockerController.php:68
 * @route '/app/docker/containers/{container}/{action}'
 */
-act.post = (args: { container: string | number | { id: string | number }, action: string | number } | [container: string | number | { id: string | number }, action: string | number ], options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+act.post = (args: { container: number | { id: number }, action: string | number } | [container: number | { id: number }, action: string | number ], options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: act.url(args, options),
     method: 'post',
 })
@@ -218,7 +218,7 @@ act.post = (args: { container: string | number | { id: string | number }, action
 * @see app/Http/Controllers/DockerController.php:68
 * @route '/app/docker/containers/{container}/{action}'
 */
-const actForm = (args: { container: string | number | { id: string | number }, action: string | number } | [container: string | number | { id: string | number }, action: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+const actForm = (args: { container: number | { id: number }, action: string | number } | [container: number | { id: number }, action: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
     action: act.url(args, options),
     method: 'post',
 })
@@ -228,7 +228,7 @@ const actForm = (args: { container: string | number | { id: string | number }, a
 * @see app/Http/Controllers/DockerController.php:68
 * @route '/app/docker/containers/{container}/{action}'
 */
-actForm.post = (args: { container: string | number | { id: string | number }, action: string | number } | [container: string | number | { id: string | number }, action: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+actForm.post = (args: { container: number | { id: number }, action: string | number } | [container: number | { id: number }, action: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
     action: act.url(args, options),
     method: 'post',
 })

@@ -42,6 +42,7 @@ use Spatie\Activitylog\Support\LogOptions;
  * @property array<int, string>|null $failed_units
  * @property array<int, string>|null $ignored_alerts
  * @property bool $watch_enabled Whether the server is compared with its own normal behaviour around the clock
+ * @property int $report_interval Seconds between two reports of the agent
  * @property bool $in_maintenance While true the server raises no alerts and sends no notifications
  * @property array<string, mixed>|null $network_info Links (state, speed) and listening ports from the agent
  * @property array<string, string|int|bool>|null $system_info Facts the agent reports: OS, kernel, CPU model, pending updates
@@ -49,7 +50,7 @@ use Spatie\Activitylog\Support\LogOptions;
  * @property Carbon|null $last_checked_at
  * @property Carbon|null $last_seen_at
  */
-#[Fillable(['team_id', 'type', 'server_category_id', 'name', 'provider', 'country', 'host', 'port', 'username', 'auth_type', 'uses_agent', 'has_docker', 'password', 'ssh_key_id', 'ignored_alerts', 'in_maintenance', 'watch_enabled'])]
+#[Fillable(['team_id', 'type', 'server_category_id', 'name', 'provider', 'country', 'host', 'port', 'username', 'auth_type', 'uses_agent', 'has_docker', 'password', 'ssh_key_id', 'ignored_alerts', 'in_maintenance', 'watch_enabled', 'report_interval'])]
 #[Hidden(['password', 'agent_token_hash'])]
 class Server extends Model
 {
@@ -64,6 +65,11 @@ class Server extends Model
 
     /** The sources of warnings a server can be told to stay quiet about. */
     public const IGNORABLE_ALERTS = ['cpu', 'ram', 'disk', 'services', 'logs'];
+
+    /** The choices for how often a server reports, in seconds: 10 s up to 12 h. */
+    public const REPORT_INTERVALS = [10, 15, 30, 60, 120, 300, 600, 900, 1800, 3600, 7200, 14400, 21600, 43200];
+
+    public const DEFAULT_REPORT_INTERVAL = 60;
 
     protected function casts(): array
     {
@@ -81,9 +87,31 @@ class Server extends Model
             'ignored_alerts' => 'array',
             'in_maintenance' => 'boolean',
             'watch_enabled' => 'boolean',
+            'report_interval' => 'integer',
             'system_info' => 'array',
             'network_info' => 'array',
         ];
+    }
+
+    /**
+     * Seconds between two reports. Servers that are collected over SSH are polled by the scheduler once a minute
+     * at best, so they never go below that.
+     */
+    public function reportEvery(): int
+    {
+        $interval = in_array((int) $this->report_interval, self::REPORT_INTERVALS, true)
+            ? (int) $this->report_interval
+            : self::DEFAULT_REPORT_INTERVAL;
+
+        return $this->collectsViaAgent() ? $interval : max(60, $interval);
+    }
+
+    /**
+     * Minutes without a report after which the server counts as offline: three missed reports, never under 3 minutes.
+     */
+    public function silentAfterMinutes(): int
+    {
+        return max(3, (int) ceil($this->reportEvery() * 3 / 60));
     }
 
     /**
@@ -285,7 +313,7 @@ class Server extends Model
     {
         return LogOptions::defaults()
             ->useLogName('server')
-            ->logOnly(['type', 'name', 'provider', 'country', 'host', 'port', 'username', 'auth_type', 'uses_agent', 'server_category_id', 'ssh_key_id', 'team_id', 'ignored_alerts', 'in_maintenance', 'watch_enabled'])
+            ->logOnly(['type', 'name', 'provider', 'country', 'host', 'port', 'username', 'auth_type', 'uses_agent', 'server_category_id', 'ssh_key_id', 'team_id', 'ignored_alerts', 'in_maintenance', 'watch_enabled', 'report_interval'])
             ->logOnlyDirty()
             ->dontLogEmptyChanges();
     }

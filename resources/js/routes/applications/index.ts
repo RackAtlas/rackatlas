@@ -85,7 +85,7 @@ index.form = indexForm
 * @see app/Http/Controllers/ApplicationController.php:88
 * @route '/app/applications/{service}/status'
 */
-export const status = (args: { service: string | number | { id: string | number } } | [service: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+export const status = (args: { service: number | { id: number } } | [service: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: status.url(args, options),
     method: 'post',
 })
@@ -100,7 +100,7 @@ status.definition = {
 * @see app/Http/Controllers/ApplicationController.php:88
 * @route '/app/applications/{service}/status'
 */
-status.url = (args: { service: string | number | { id: string | number } } | [service: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions) => {
+status.url = (args: { service: number | { id: number } } | [service: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { service: args }
     }
@@ -133,7 +133,7 @@ status.url = (args: { service: string | number | { id: string | number } } | [se
 * @see app/Http/Controllers/ApplicationController.php:88
 * @route '/app/applications/{service}/status'
 */
-status.post = (args: { service: string | number | { id: string | number } } | [service: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+status.post = (args: { service: number | { id: number } } | [service: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: status.url(args, options),
     method: 'post',
 })
@@ -143,7 +143,7 @@ status.post = (args: { service: string | number | { id: string | number } } | [s
 * @see app/Http/Controllers/ApplicationController.php:88
 * @route '/app/applications/{service}/status'
 */
-const statusForm = (args: { service: string | number | { id: string | number } } | [service: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+const statusForm = (args: { service: number | { id: number } } | [service: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
     action: status.url(args, options),
     method: 'post',
 })
@@ -153,7 +153,7 @@ const statusForm = (args: { service: string | number | { id: string | number } }
 * @see app/Http/Controllers/ApplicationController.php:88
 * @route '/app/applications/{service}/status'
 */
-statusForm.post = (args: { service: string | number | { id: string | number } } | [service: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+statusForm.post = (args: { service: number | { id: number } } | [service: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
     action: status.url(args, options),
     method: 'post',
 })
@@ -165,7 +165,7 @@ status.form = statusForm
 * @see app/Http/Controllers/ApplicationController.php:96
 * @route '/app/applications/{service}/journal'
 */
-export const journal = (args: { service: string | number | { id: string | number } } | [service: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+export const journal = (args: { service: number | { id: number } } | [service: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: journal.url(args, options),
     method: 'post',
 })
@@ -180,7 +180,7 @@ journal.definition = {
 * @see app/Http/Controllers/ApplicationController.php:96
 * @route '/app/applications/{service}/journal'
 */
-journal.url = (args: { service: string | number | { id: string | number } } | [service: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions) => {
+journal.url = (args: { service: number | { id: number } } | [service: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { service: args }
     }
@@ -213,7 +213,7 @@ journal.url = (args: { service: string | number | { id: string | number } } | [s
 * @see app/Http/Controllers/ApplicationController.php:96
 * @route '/app/applications/{service}/journal'
 */
-journal.post = (args: { service: string | number | { id: string | number } } | [service: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+journal.post = (args: { service: number | { id: number } } | [service: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: journal.url(args, options),
     method: 'post',
 })
@@ -223,7 +223,7 @@ journal.post = (args: { service: string | number | { id: string | number } } | [
 * @see app/Http/Controllers/ApplicationController.php:96
 * @route '/app/applications/{service}/journal'
 */
-const journalForm = (args: { service: string | number | { id: string | number } } | [service: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+const journalForm = (args: { service: number | { id: number } } | [service: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
     action: journal.url(args, options),
     method: 'post',
 })
@@ -233,7 +233,7 @@ const journalForm = (args: { service: string | number | { id: string | number } 
 * @see app/Http/Controllers/ApplicationController.php:96
 * @route '/app/applications/{service}/journal'
 */
-journalForm.post = (args: { service: string | number | { id: string | number } } | [service: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+journalForm.post = (args: { service: number | { id: number } } | [service: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
     action: journal.url(args, options),
     method: 'post',
 })
@@ -245,7 +245,7 @@ journal.form = journalForm
 * @see app/Http/Controllers/ApplicationController.php:68
 * @route '/app/applications/{service}/{action}'
 */
-export const act = (args: { service: string | number | { id: string | number }, action: string | number } | [service: string | number | { id: string | number }, action: string | number ], options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+export const act = (args: { service: number | { id: number }, action: string | number } | [service: number | { id: number }, action: string | number ], options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: act.url(args, options),
     method: 'post',
 })
@@ -260,7 +260,7 @@ act.definition = {
 * @see app/Http/Controllers/ApplicationController.php:68
 * @route '/app/applications/{service}/{action}'
 */
-act.url = (args: { service: string | number | { id: string | number }, action: string | number } | [service: string | number | { id: string | number }, action: string | number ], options?: RouteQueryOptions) => {
+act.url = (args: { service: number | { id: number }, action: string | number } | [service: number | { id: number }, action: string | number ], options?: RouteQueryOptions) => {
     if (Array.isArray(args)) {
         args = {
             service: args[0],
@@ -288,7 +288,7 @@ act.url = (args: { service: string | number | { id: string | number }, action: s
 * @see app/Http/Controllers/ApplicationController.php:68
 * @route '/app/applications/{service}/{action}'
 */
-act.post = (args: { service: string | number | { id: string | number }, action: string | number } | [service: string | number | { id: string | number }, action: string | number ], options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+act.post = (args: { service: number | { id: number }, action: string | number } | [service: number | { id: number }, action: string | number ], options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: act.url(args, options),
     method: 'post',
 })
@@ -298,7 +298,7 @@ act.post = (args: { service: string | number | { id: string | number }, action: 
 * @see app/Http/Controllers/ApplicationController.php:68
 * @route '/app/applications/{service}/{action}'
 */
-const actForm = (args: { service: string | number | { id: string | number }, action: string | number } | [service: string | number | { id: string | number }, action: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+const actForm = (args: { service: number | { id: number }, action: string | number } | [service: number | { id: number }, action: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
     action: act.url(args, options),
     method: 'post',
 })
@@ -308,7 +308,7 @@ const actForm = (args: { service: string | number | { id: string | number }, act
 * @see app/Http/Controllers/ApplicationController.php:68
 * @route '/app/applications/{service}/{action}'
 */
-actForm.post = (args: { service: string | number | { id: string | number }, action: string | number } | [service: string | number | { id: string | number }, action: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+actForm.post = (args: { service: number | { id: number }, action: string | number } | [service: number | { id: number }, action: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
     action: act.url(args, options),
     method: 'post',
 })

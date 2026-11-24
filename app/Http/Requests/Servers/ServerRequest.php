@@ -65,6 +65,7 @@ class ServerRequest extends FormRequest
             'new_category' => ['nullable', 'string', 'max:100'],
             'in_maintenance' => ['nullable', 'boolean'],
             'watch_enabled' => ['nullable', 'boolean'],
+            'report_interval' => ['nullable', 'integer', Rule::in(Server::REPORT_INTERVALS)],
             'ignored_alerts' => ['nullable', 'array'],
             'ignored_alerts.*' => ['string', Rule::in(Server::IGNORABLE_ALERTS)],
             'auth_type' => [$isDatabase ? 'nullable' : 'required', Rule::enum(ServerAuthType::class)],

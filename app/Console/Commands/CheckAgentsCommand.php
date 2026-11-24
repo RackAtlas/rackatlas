@@ -13,15 +13,14 @@ use Illuminate\Console\Command;
 #[Description('Mark servers offline when their agent stopped reporting')]
 class CheckAgentsCommand extends Command
 {
-    public const SILENT_MINUTES = 3;
-
     public function handle(): int
     {
         $silent = Server::query()
             ->viaAgent()
             ->where('status', ServerStatus::Online->value)
-            ->where('last_seen_at', '<', now()->subMinutes(self::SILENT_MINUTES))
-            ->get();
+            ->where('last_seen_at', '<', now()->subMinutes(3))
+            ->get()
+            ->filter(fn (Server $server) => $server->last_seen_at->lt(now()->subMinutes($server->silentAfterMinutes())));
 
         foreach ($silent as $server) {
             $server->errors()->create([

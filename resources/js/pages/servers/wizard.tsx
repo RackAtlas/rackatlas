@@ -1,4 +1,4 @@
-import { Head, Link, router, useForm, useHttp } from '@inertiajs/react';
+import { Head, Link, router, useForm, useHttp } from "@inertiajs/react";
 import {
     Check,
     CheckCircle2,
@@ -13,38 +13,38 @@ import {
     ServerCog,
     Wifi,
     XCircle,
-} from 'lucide-react';
-import { useState } from 'react';
-import ServerController from '@/actions/App/Http/Controllers/Servers/ServerController';
-import TestConnectionController from '@/actions/App/Http/Controllers/Servers/TestConnectionController';
-import CreateUserCommand from '@/components/databases/create-user-command';
-import InputError from '@/components/input-error';
-import PasswordInput from '@/components/password-input';
-import CopyField from '@/components/servers/copy-field';
-import SshKeyCreator from '@/components/servers/ssh-key-creator';
-import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+} from "lucide-react";
+import { useState } from "react";
+import ServerController from "@/actions/App/Http/Controllers/Servers/ServerController";
+import TestConnectionController from "@/actions/App/Http/Controllers/Servers/TestConnectionController";
+import CreateUserCommand from "@/components/databases/create-user-command";
+import InputError from "@/components/input-error";
+import PasswordInput from "@/components/password-input";
+import CopyField from "@/components/servers/copy-field";
+import SshKeyCreator from "@/components/servers/ssh-key-creator";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
     Select,
     SelectContent,
     SelectItem,
     SelectTrigger,
     SelectValue,
-} from '@/components/ui/select';
-import { Spinner } from '@/components/ui/spinner';
-import { useTranslation } from '@/hooks/use-translation';
-import { countryName, sortedCountries } from '@/lib/countries';
-import { cn } from '@/lib/utils';
-import { dotClass } from '@/lib/server-colors';
-import { index } from '@/routes/servers';
+} from "@/components/ui/select";
+import { Spinner } from "@/components/ui/spinner";
+import { useTranslation } from "@/hooks/use-translation";
+import { countryName, sortedCountries } from "@/lib/countries";
+import { cn } from "@/lib/utils";
+import { dotClass } from "@/lib/server-colors";
+import { index } from "@/routes/servers";
 import type {
     ServerAuthType,
     ServerCategory,
     ServerFormData,
     SshKey,
-} from '@/types';
+} from "@/types";
 
 type Props = {
     team: { id: number; name: string };
@@ -55,39 +55,53 @@ type Props = {
 
 type TestResult = { success: boolean; message: string };
 
-const NEW_CATEGORY = '__new__';
-const NO_CATEGORY = '__none__';
-const NO_COUNTRY = '__none__';
+const NEW_CATEGORY = "__new__";
+const NO_CATEGORY = "__none__";
+const NO_COUNTRY = "__none__";
 
 const ignorableAlerts: [string, string][] = [
-    ['cpu', 'CPU'],
-    ['ram', 'Memory (RAM)'],
-    ['disk', 'Disks'],
-    ['services', 'Failed services'],
-    ['logs', 'Critical log entries'],
+    ["cpu", "CPU"],
+    ["ram", "Memory (RAM)"],
+    ["disk", "Disks"],
+    ["services", "Failed services"],
+    ["logs", "Critical log entries"],
 ];
+
+/** The choices for how often a server reports, in seconds (the same list as Server::REPORT_INTERVALS). */
+const REPORT_INTERVALS = [
+    10, 15, 30, 60, 120, 300, 600, 900, 1800, 3600, 7200, 14400, 21600, 43200,
+];
+
+function intervalLabel(seconds: number): string {
+    if (seconds < 60) {
+        return `${seconds} s`;
+    }
+
+    return seconds < 3600 ? `${seconds / 60} min` : `${seconds / 3600} h`;
+}
 
 const stepFields: Record<number, string[]> = {
     0: [
-        'type',
-        'name',
-        'provider',
-        'country',
-        'server_category_id',
-        'new_category',
-        'ignored_alerts',
-        'in_maintenance',
-        'watch_enabled',
-        'has_docker',
+        "type",
+        "name",
+        "provider",
+        "country",
+        "server_category_id",
+        "new_category",
+        "ignored_alerts",
+        "in_maintenance",
+        "watch_enabled",
+        "has_docker",
+        "report_interval",
     ],
     1: [
-        'auth_type',
-        'uses_agent',
-        'host',
-        'port',
-        'username',
-        'password',
-        'ssh_key_id',
+        "auth_type",
+        "uses_agent",
+        "host",
+        "port",
+        "username",
+        "password",
+        "ssh_key_id",
     ],
 };
 
@@ -114,39 +128,40 @@ export default function ServerWizard({
     const [testResult, setTestResult] = useState<TestResult | null>(null);
 
     const form = useForm({
-        type: (server?.type ?? 'server') as 'server' | 'mysql' | 'redis',
-        name: server?.name ?? '',
-        provider: server?.provider ?? '',
-        country: server?.country ?? '',
-        host: server?.host ?? '',
+        type: (server?.type ?? "server") as "server" | "mysql" | "redis",
+        name: server?.name ?? "",
+        provider: server?.provider ?? "",
+        country: server?.country ?? "",
+        host: server?.host ?? "",
         port: String(server?.port ?? 22),
-        username: server?.username ?? 'root',
+        username: server?.username ?? "root",
         server_category_id: server?.server_category_id
             ? String(server.server_category_id)
-            : '',
-        new_category: '',
-        auth_type: (server?.auth_type ?? 'agent') as ServerAuthType,
+            : "",
+        new_category: "",
+        auth_type: (server?.auth_type ?? "agent") as ServerAuthType,
         uses_agent: server?.uses_agent ?? false,
-        password: '',
-        ssh_key_id: server?.ssh_key_id ? String(server.ssh_key_id) : '',
+        password: "",
+        ssh_key_id: server?.ssh_key_id ? String(server.ssh_key_id) : "",
         ignored_alerts: server?.ignored_alerts ?? ([] as string[]),
         in_maintenance: server?.in_maintenance ?? false,
         watch_enabled: server?.watch_enabled ?? false,
         has_docker: server?.has_docker ?? false,
+        report_interval: server?.report_interval ?? 60,
     });
 
     const tester = useHttp<Record<string, string>, TestResult>({});
 
     const steps = [
-        { title: t('Basics'), description: t('What is it called?') },
-        { title: t('Access'), description: t('How do we get the data?') },
-        { title: t('Review'), description: t('Check and save') },
+        { title: t("Basics"), description: t("What is it called?") },
+        { title: t("Access"), description: t("How do we get the data?") },
+        { title: t("Review"), description: t("Check and save") },
     ];
 
-    const isMysql = form.data.type === 'mysql';
-    const isRedis = form.data.type === 'redis';
+    const isMysql = form.data.type === "mysql";
+    const isRedis = form.data.type === "redis";
     const isDatabase = isMysql || isRedis;
-    const isAgent = !isDatabase && form.data.auth_type === 'agent';
+    const isAgent = !isDatabase && form.data.auth_type === "agent";
     const sendsViaAgent = isAgent || form.data.uses_agent;
 
     const selectedKey = keys.find(
@@ -158,21 +173,21 @@ export default function ServerWizard({
 
     const fieldsToValidate = (): string[] => {
         if (step === 0) {
-            return ['name'];
+            return ["name"];
         }
 
         if (step === 1 && !isAgent) {
             if (isRedis) {
-                return ['host', 'port'];
+                return ["host", "port"];
             }
 
-            const address = ['host', 'port', 'username'];
+            const address = ["host", "port", "username"];
 
-            if (form.data.auth_type === 'key') {
-                return [...address, 'ssh_key_id'];
+            if (form.data.auth_type === "key") {
+                return [...address, "ssh_key_id"];
             }
 
-            return editing ? address : [...address, 'password'];
+            return editing ? address : [...address, "password"];
         }
 
         return [];
@@ -192,7 +207,7 @@ export default function ServerWizard({
             step === 0 &&
             !form.data.new_category.trim()
         ) {
-            missing.push('new_category');
+            missing.push("new_category");
         }
 
         if (missing.length > 0) {
@@ -200,7 +215,7 @@ export default function ServerWizard({
                 Object.fromEntries(
                     missing.map((field) => [
                         field,
-                        t('This field is required.'),
+                        t("This field is required."),
                     ]),
                 ),
             );
@@ -216,19 +231,19 @@ export default function ServerWizard({
         form.setData((data) => ({
             ...data,
             server_category_id:
-                value === NEW_CATEGORY || value === NO_CATEGORY ? '' : value,
-            new_category: value === NEW_CATEGORY ? data.new_category : '',
+                value === NEW_CATEGORY || value === NO_CATEGORY ? "" : value,
+            new_category: value === NEW_CATEGORY ? data.new_category : "",
         }));
     };
 
-    const chooseType = (kind: 'server' | 'windows' | 'mysql' | 'redis') => {
-        const type = kind === 'windows' ? 'server' : kind;
-        const database = type !== 'server';
-        setWindows(kind === 'windows');
+    const chooseType = (kind: "server" | "windows" | "mysql" | "redis") => {
+        const type = kind === "windows" ? "server" : kind;
+        const database = type !== "server";
+        setWindows(kind === "windows");
         try {
             sessionStorage.setItem(
-                'agent-platform',
-                kind === 'windows' ? 'windows' : 'linux',
+                "agent-platform",
+                kind === "windows" ? "windows" : "linux",
             );
         } catch {
             // the install page then simply starts on Linux
@@ -237,13 +252,13 @@ export default function ServerWizard({
         form.setData((data) => ({
             ...data,
             type,
-            auth_type: database ? 'password' : 'agent',
+            auth_type: database ? "password" : "agent",
             port: {
-                server: '22',
-                mysql: '3306',
-                redis: '6379',
+                server: "22",
+                mysql: "3306",
+                redis: "6379",
             }[type],
-            username: database ? '' : 'root',
+            username: database ? "" : "root",
             uses_agent: false,
             has_docker: false,
         }));
@@ -260,7 +275,7 @@ export default function ServerWizard({
             auth_type: form.data.auth_type,
             password: form.data.password,
             ssh_key_id: form.data.ssh_key_id,
-            server_id: server ? String(server.id) : '',
+            server_id: server ? String(server.id) : "",
         }));
 
         void tester
@@ -269,7 +284,7 @@ export default function ServerWizard({
             .catch(() =>
                 setTestResult({
                     success: false,
-                    message: t('The connection test could not be run.'),
+                    message: t("The connection test could not be run."),
                 }),
             );
     };
@@ -297,28 +312,28 @@ export default function ServerWizard({
 
     const keyAdded = (key: SshKey) => {
         setKeys((current) => [...current, key]);
-        form.setData('ssh_key_id', String(key.id));
-        form.clearErrors('ssh_key_id');
+        form.setData("ssh_key_id", String(key.id));
+        form.clearErrors("ssh_key_id");
         setAddingKey(false);
     };
 
     return (
         <>
-            <Head title={editing ? t('Edit server') : t('Add server')} />
+            <Head title={editing ? t("Edit server") : t("Add server")} />
 
             <div className="mx-auto w-full max-w-[100rem] space-y-6 p-4 md:p-6">
                 <div className="space-y-1">
                     <h1 className="text-2xl font-semibold">
-                        {editing ? t('Edit server') : t('Add a server')}
+                        {editing ? t("Edit server") : t("Add a server")}
                     </h1>
                     <p className="text-sm text-muted-foreground">
-                        {t('It will be added to the team :team.', {
+                        {t("It will be added to the team :team.", {
                             team: team.name,
                         })}
                     </p>
                 </div>
 
-                <ol className="grid grid-cols-3 gap-3" aria-label={t('Steps')}>
+                <ol className="grid grid-cols-3 gap-3" aria-label={t("Steps")}>
                     {steps.map((item, i) => (
                         <li key={item.title}>
                             <button
@@ -329,19 +344,19 @@ export default function ServerWizard({
                             >
                                 <div
                                     className={cn(
-                                        'mb-2 h-1 rounded-full transition-colors',
-                                        i <= step ? 'bg-primary' : 'bg-muted',
+                                        "mb-2 h-1 rounded-full transition-colors",
+                                        i <= step ? "bg-primary" : "bg-muted",
                                     )}
                                 />
                                 <div className="flex items-center gap-2">
                                     <span
                                         className={cn(
-                                            'flex size-5 items-center justify-center rounded-full text-[11px] font-medium',
+                                            "flex size-5 items-center justify-center rounded-full text-[11px] font-medium",
                                             i < step
-                                                ? 'bg-primary text-primary-foreground'
+                                                ? "bg-primary text-primary-foreground"
                                                 : i === step
-                                                  ? 'border-2 border-primary text-primary'
-                                                  : 'border text-muted-foreground',
+                                                  ? "border-2 border-primary text-primary"
+                                                  : "border text-muted-foreground",
                                         )}
                                     >
                                         {i < step ? (
@@ -352,8 +367,8 @@ export default function ServerWizard({
                                     </span>
                                     <span
                                         className={cn(
-                                            'text-sm font-medium',
-                                            i > step && 'text-muted-foreground',
+                                            "text-sm font-medium",
+                                            i > step && "text-muted-foreground",
                                         )}
                                     >
                                         {item.title}
@@ -373,40 +388,40 @@ export default function ServerWizard({
                             {!editing && (
                                 <div
                                     role="radiogroup"
-                                    aria-label={t('What do you want to add?')}
+                                    aria-label={t("What do you want to add?")}
                                     className="grid gap-3 sm:grid-cols-2"
                                 >
                                     {(
                                         [
                                             [
-                                                'server',
-                                                t('Linux server'),
+                                                "server",
+                                                t("Linux server"),
                                                 t(
-                                                    'CPU, memory, disks, services and logs of a machine.',
+                                                    "CPU, memory, disks, services and logs of a machine.",
                                                 ),
                                                 ServerCog,
                                             ],
                                             [
-                                                'windows',
-                                                t('Windows server'),
+                                                "windows",
+                                                t("Windows server"),
                                                 t(
-                                                    'Windows 10/11 or Windows Server. CPU, memory, disks, services and Event Log errors through the agent.',
+                                                    "Windows 10/11 or Windows Server. CPU, memory, disks, services and Event Log errors through the agent.",
                                                 ),
                                                 AppWindow,
                                             ],
                                             [
-                                                'mysql',
-                                                t('MySQL database'),
+                                                "mysql",
+                                                t("MySQL database"),
                                                 t(
-                                                    'Connections, queries, size and availability of a MySQL server.',
+                                                    "Connections, queries, size and availability of a MySQL server.",
                                                 ),
                                                 Database,
                                             ],
                                             [
-                                                'redis',
-                                                t('Redis server'),
+                                                "redis",
+                                                t("Redis server"),
                                                 t(
-                                                    'Memory, clients, commands and replication of a Redis server. A Redis Cluster behind a private network is monitored by the agent of its servers.',
+                                                    "Memory, clients, commands and replication of a Redis server. A Redis Cluster behind a private network is monitored by the agent of its servers.",
                                                 ),
                                                 MemoryStick,
                                             ],
@@ -417,32 +432,32 @@ export default function ServerWizard({
                                             type="button"
                                             role="radio"
                                             aria-checked={
-                                                value === 'windows'
+                                                value === "windows"
                                                     ? windows
                                                     : form.data.type ===
                                                           value &&
                                                       !(
-                                                          value === 'server' &&
+                                                          value === "server" &&
                                                           windows
                                                       )
                                             }
                                             onClick={() => chooseType(value)}
                                             data-test={`type-${value}`}
                                             className={cn(
-                                                'flex items-start gap-3 rounded-lg border bg-card p-4 text-left transition-colors',
+                                                "flex items-start gap-3 rounded-lg border bg-card p-4 text-left transition-colors",
                                                 (
-                                                    value === 'windows'
+                                                    value === "windows"
                                                         ? windows
                                                         : form.data.type ===
                                                               value &&
                                                           !(
                                                               value ===
-                                                                  'server' &&
+                                                                  "server" &&
                                                               windows
                                                           )
                                                 )
-                                                    ? 'border-primary bg-primary/5 ring-1 ring-primary'
-                                                    : 'hover:bg-muted/50',
+                                                    ? "border-primary bg-primary/5 ring-1 ring-primary"
+                                                    : "hover:bg-muted/50",
                                             )}
                                         >
                                             <Icon className="mt-0.5 size-5 shrink-0 text-muted-foreground" />
@@ -460,14 +475,14 @@ export default function ServerWizard({
                             )}
 
                             <div className="grid gap-2">
-                                <Label htmlFor="name">{t('Server name')}</Label>
+                                <Label htmlFor="name">{t("Server name")}</Label>
                                 <Input
                                     id="name"
                                     value={form.data.name}
                                     onChange={(e) =>
-                                        form.setData('name', e.target.value)
+                                        form.setData("name", e.target.value)
                                     }
-                                    placeholder={t('e.g. Production web 1')}
+                                    placeholder={t("e.g. Production web 1")}
                                 />
                                 <InputError message={form.errors.name} />
                             </div>
@@ -475,18 +490,18 @@ export default function ServerWizard({
                             <div className="grid gap-4 sm:grid-cols-2">
                                 <div className="grid gap-2">
                                     <Label htmlFor="provider">
-                                        {t('Provider (optional)')}
+                                        {t("Provider (optional)")}
                                     </Label>
                                     <Input
                                         id="provider"
                                         value={form.data.provider}
                                         onChange={(e) =>
                                             form.setData(
-                                                'provider',
+                                                "provider",
                                                 e.target.value,
                                             )
                                         }
-                                        placeholder={t('e.g. Hetzner')}
+                                        placeholder={t("e.g. Hetzner")}
                                     />
                                     <InputError
                                         message={form.errors.provider}
@@ -494,15 +509,15 @@ export default function ServerWizard({
                                 </div>
                                 <div className="grid gap-2">
                                     <Label htmlFor="country">
-                                        {t('Country (optional)')}
+                                        {t("Country (optional)")}
                                     </Label>
                                     <Select
                                         value={form.data.country || NO_COUNTRY}
                                         onValueChange={(value) =>
                                             form.setData(
-                                                'country',
+                                                "country",
                                                 value === NO_COUNTRY
-                                                    ? ''
+                                                    ? ""
                                                     : value,
                                             )
                                         }
@@ -515,7 +530,7 @@ export default function ServerWizard({
                                         </SelectTrigger>
                                         <SelectContent>
                                             <SelectItem value={NO_COUNTRY}>
-                                                {t('Not set')}
+                                                {t("Not set")}
                                             </SelectItem>
                                             {countries.map((country) => (
                                                 <SelectItem
@@ -533,7 +548,7 @@ export default function ServerWizard({
 
                             <div className="grid gap-2">
                                 <Label htmlFor="category">
-                                    {t('Category (optional)')}
+                                    {t("Category (optional)")}
                                 </Label>
                                 <Select
                                     value={categoryChoice}
@@ -547,7 +562,7 @@ export default function ServerWizard({
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectItem value={NO_CATEGORY}>
-                                            {t('No category')}
+                                            {t("No category")}
                                         </SelectItem>
                                         {categories.map((category) => (
                                             <SelectItem
@@ -557,7 +572,7 @@ export default function ServerWizard({
                                                 <span className="flex items-center gap-2">
                                                     <span
                                                         className={cn(
-                                                            'size-2 rounded-full',
+                                                            "size-2 rounded-full",
                                                             dotClass(
                                                                 category.color,
                                                             ),
@@ -568,7 +583,7 @@ export default function ServerWizard({
                                             </SelectItem>
                                         ))}
                                         <SelectItem value={NEW_CATEGORY}>
-                                            {t('+ New category…')}
+                                            {t("+ New category…")}
                                         </SelectItem>
                                     </SelectContent>
                                 </Select>
@@ -577,11 +592,11 @@ export default function ServerWizard({
                                         value={form.data.new_category}
                                         onChange={(e) =>
                                             form.setData(
-                                                'new_category',
+                                                "new_category",
                                                 e.target.value,
                                             )
                                         }
-                                        placeholder={t('e.g. Production')}
+                                        placeholder={t("e.g. Production")}
                                     />
                                 )}
                                 <InputError
@@ -597,7 +612,7 @@ export default function ServerWizard({
                                     checked={form.data.in_maintenance}
                                     onCheckedChange={(checked) =>
                                         form.setData(
-                                            'in_maintenance',
+                                            "in_maintenance",
                                             checked === true,
                                         )
                                     }
@@ -606,11 +621,11 @@ export default function ServerWizard({
                                 />
                                 <span>
                                     <span className="font-medium">
-                                        {t('Maintenance')}
+                                        {t("Maintenance")}
                                     </span>
                                     <span className="block text-muted-foreground">
                                         {t(
-                                            'While on, this server raises no warnings and sends no notifications.',
+                                            "While on, this server raises no warnings and sends no notifications.",
                                         )}
                                     </span>
                                 </span>
@@ -621,7 +636,7 @@ export default function ServerWizard({
                                     checked={form.data.watch_enabled}
                                     onCheckedChange={(checked) =>
                                         form.setData(
-                                            'watch_enabled',
+                                            "watch_enabled",
                                             checked === true,
                                         )
                                     }
@@ -630,15 +645,60 @@ export default function ServerWizard({
                                 />
                                 <span>
                                     <span className="font-medium">
-                                        {t('Watch around the clock')}
+                                        {t("Watch around the clock")}
                                     </span>
                                     <span className="block text-muted-foreground">
                                         {t(
-                                            'Compares this server with its own normal behaviour as soon as data arrives, warns about unusual changes and disks that will fill up, and explains problems with the local model.',
+                                            "Compares this server with its own normal behaviour as soon as data arrives, warns about unusual changes and disks that will fill up, and explains problems with the local model.",
                                         )}
                                     </span>
                                 </span>
                             </label>
+
+                            {!isDatabase && (
+                                <div className="grid gap-2">
+                                    <Label htmlFor="report_interval">
+                                        {t("How often the server reports")}
+                                    </Label>
+                                    <Select
+                                        value={String(
+                                            form.data.report_interval,
+                                        )}
+                                        onValueChange={(value) =>
+                                            form.setData(
+                                                "report_interval",
+                                                Number(value),
+                                            )
+                                        }
+                                    >
+                                        <SelectTrigger
+                                            id="report_interval"
+                                            className="w-full sm:w-48"
+                                            data-test="report-interval"
+                                        >
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {REPORT_INTERVALS.map((seconds) => (
+                                                <SelectItem
+                                                    key={seconds}
+                                                    value={String(seconds)}
+                                                >
+                                                    {intervalLabel(seconds)}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                    <p className="text-sm text-muted-foreground">
+                                        {t(
+                                            "The agent sends its data this often. Every report is stored, so short intervals mean many more records. Agents older than 1.13 keep reporting once a minute. Servers read over SSH are read once a minute at best.",
+                                        )}
+                                    </p>
+                                    <InputError
+                                        message={form.errors.report_interval}
+                                    />
+                                </div>
+                            )}
 
                             {!isDatabase && (
                                 <label className="flex cursor-pointer items-start gap-2 text-sm">
@@ -646,7 +706,7 @@ export default function ServerWizard({
                                         checked={form.data.has_docker}
                                         onCheckedChange={(checked) =>
                                             form.setData(
-                                                'has_docker',
+                                                "has_docker",
                                                 checked === true,
                                             )
                                         }
@@ -655,11 +715,11 @@ export default function ServerWizard({
                                     />
                                     <span>
                                         <span className="font-medium">
-                                            {t('Docker')}
+                                            {t("Docker")}
                                         </span>
                                         <span className="block text-muted-foreground">
                                             {t(
-                                                'Docker runs on this server. Its containers are listed in the Docker section, where you can start, stop and restart them and read their logs.',
+                                                "Docker runs on this server. Its containers are listed in the Docker section, where you can start, stop and restart them and read their logs.",
                                             )}
                                         </span>
                                     </span>
@@ -668,11 +728,11 @@ export default function ServerWizard({
 
                             <fieldset className="grid gap-3">
                                 <legend className="text-sm font-medium">
-                                    {t('Ignore warnings about')}
+                                    {t("Ignore warnings about")}
                                 </legend>
                                 <p className="text-sm text-muted-foreground">
                                     {t(
-                                        'Ticked sources raise no warnings and send no notifications for this server.',
+                                        "Ticked sources raise no warnings and send no notifications for this server.",
                                     )}
                                 </p>
                                 <div className="grid gap-2 sm:grid-cols-2">
@@ -687,7 +747,7 @@ export default function ServerWizard({
                                                 )}
                                                 onCheckedChange={(checked) =>
                                                     form.setData(
-                                                        'ignored_alerts',
+                                                        "ignored_alerts",
                                                         checked
                                                             ? [
                                                                   ...form.data
@@ -716,32 +776,32 @@ export default function ServerWizard({
                             {!isDatabase && !windows && (
                                 <div
                                     role="radiogroup"
-                                    aria-label={t('How do we get the data?')}
+                                    aria-label={t("How do we get the data?")}
                                     className="grid gap-3 sm:grid-cols-3"
                                 >
                                     {(
                                         [
                                             [
-                                                'agent',
-                                                t('Agent only'),
+                                                "agent",
+                                                t("Agent only"),
                                                 t(
-                                                    'Recommended. A small program on the server sends the data to us. No IP allowlist, no stored passwords. No terminal.',
+                                                    "Recommended. A small program on the server sends the data to us. No IP allowlist, no stored passwords. No terminal.",
                                                 ),
                                                 Radio,
                                             ],
                                             [
-                                                'key',
-                                                t('SSH key'),
+                                                "key",
+                                                t("SSH key"),
                                                 t(
-                                                    'We log in over SSH, for the terminal and optionally for collecting data. More secure than a password, reusable across servers.',
+                                                    "We log in over SSH, for the terminal and optionally for collecting data. More secure than a password, reusable across servers.",
                                                 ),
                                                 KeyRound,
                                             ],
                                             [
-                                                'password',
-                                                t('Password'),
+                                                "password",
+                                                t("Password"),
                                                 t(
-                                                    'We log in over SSH with a password, for the terminal and optionally for collecting data. Simple, but weaker than a key.',
+                                                    "We log in over SSH with a password, for the terminal and optionally for collecting data. Simple, but weaker than a key.",
                                                 ),
                                                 Lock,
                                             ],
@@ -756,16 +816,16 @@ export default function ServerWizard({
                                             }
                                             onClick={() => {
                                                 form.setData(
-                                                    'auth_type',
+                                                    "auth_type",
                                                     value,
                                                 );
                                                 form.clearErrors();
                                             }}
                                             className={cn(
-                                                'flex items-start gap-3 rounded-lg border bg-card p-4 text-left transition-colors',
+                                                "flex items-start gap-3 rounded-lg border bg-card p-4 text-left transition-colors",
                                                 form.data.auth_type === value
-                                                    ? 'border-primary bg-primary/5 ring-1 ring-primary'
-                                                    : 'hover:bg-muted/50',
+                                                    ? "border-primary bg-primary/5 ring-1 ring-primary"
+                                                    : "hover:bg-muted/50",
                                             )}
                                         >
                                             <Icon className="mt-0.5 size-5 shrink-0 text-muted-foreground" />
@@ -785,22 +845,22 @@ export default function ServerWizard({
                             {isAgent && windows && (
                                 <div className="space-y-3 rounded-lg border bg-muted/30 p-4 text-sm">
                                     <p className="font-medium">
-                                        {t('How the agent works on Windows')}
+                                        {t("How the agent works on Windows")}
                                     </p>
                                     <ul className="list-disc space-y-1.5 pl-5 text-muted-foreground">
                                         <li>
                                             {t(
-                                                'After saving you get one PowerShell command. Run it as administrator on the server.',
+                                                "After saving you get one PowerShell command. Run it as administrator on the server.",
                                             )}
                                         </li>
                                         <li>
                                             {t(
-                                                'It installs the agent as a Windows service that starts with Windows and updates itself.',
+                                                "It installs the agent as a Windows service that starts with Windows and updates itself.",
                                             )}
                                         </li>
                                         <li>
                                             {t(
-                                                'Nothing connects into your server, so no port has to be opened. The terminal is not available on Windows.',
+                                                "Nothing connects into your server, so no port has to be opened. The terminal is not available on Windows.",
                                             )}
                                         </li>
                                     </ul>
@@ -810,27 +870,27 @@ export default function ServerWizard({
                             {isAgent && !windows && (
                                 <div className="space-y-3 rounded-lg border bg-muted/30 p-4 text-sm">
                                     <p className="font-medium">
-                                        {t('How the agent works')}
+                                        {t("How the agent works")}
                                     </p>
                                     <ul className="list-disc space-y-1.5 pl-5 text-muted-foreground">
                                         <li>
                                             {t(
-                                                'After saving you get one command to run on the server (Debian or Ubuntu).',
+                                                "After saving you get one command to run on the server (Debian or Ubuntu).",
                                             )}
                                         </li>
                                         <li>
                                             {t(
-                                                'It installs the agent from the signed RackAtlas apt repository, so later updates are a normal apt upgrade.',
+                                                "It installs the agent from the signed RackAtlas apt repository, so later updates are a normal apt upgrade.",
                                             )}
                                         </li>
                                         <li>
                                             {t(
-                                                'The agent sends CPU, memory, disks and serious log entries every minute over HTTPS.',
+                                                "The agent sends CPU, memory, disks and serious log entries every minute over HTTPS.",
                                             )}
                                         </li>
                                         <li>
                                             {t(
-                                                'Nothing connects into your server, so no IP has to be allowed.',
+                                                "Nothing connects into your server, so no IP has to be allowed.",
                                             )}
                                         </li>
                                     </ul>
@@ -854,14 +914,14 @@ export default function ServerWizard({
                                     <div className="grid gap-4 sm:grid-cols-[1fr_7rem]">
                                         <div className="grid gap-2">
                                             <Label htmlFor="host">
-                                                {t('Host or IP address')}
+                                                {t("Host or IP address")}
                                             </Label>
                                             <Input
                                                 id="host"
                                                 value={form.data.host}
                                                 onChange={(e) =>
                                                     form.setData(
-                                                        'host',
+                                                        "host",
                                                         e.target.value,
                                                     )
                                                 }
@@ -875,10 +935,10 @@ export default function ServerWizard({
                                         <div className="grid gap-2">
                                             <Label htmlFor="port">
                                                 {isMysql
-                                                    ? t('MySQL port')
+                                                    ? t("MySQL port")
                                                     : isRedis
-                                                      ? t('Redis port')
-                                                      : t('SSH port')}
+                                                      ? t("Redis port")
+                                                      : t("SSH port")}
                                             </Label>
                                             <Input
                                                 id="port"
@@ -886,7 +946,7 @@ export default function ServerWizard({
                                                 value={form.data.port}
                                                 onChange={(e) =>
                                                     form.setData(
-                                                        'port',
+                                                        "port",
                                                         e.target.value,
                                                     )
                                                 }
@@ -900,15 +960,15 @@ export default function ServerWizard({
                                     <div className="grid gap-2">
                                         <Label htmlFor="username">
                                             {isRedis
-                                                ? t('Username (optional)')
-                                                : t('Username')}
+                                                ? t("Username (optional)")
+                                                : t("Username")}
                                         </Label>
                                         <Input
                                             id="username"
                                             value={form.data.username}
                                             onChange={(e) =>
                                                 form.setData(
-                                                    'username',
+                                                    "username",
                                                     e.target.value,
                                                 )
                                             }
@@ -927,7 +987,7 @@ export default function ServerWizard({
                                         checked={form.data.uses_agent}
                                         onCheckedChange={(checked) =>
                                             form.setData(
-                                                'uses_agent',
+                                                "uses_agent",
                                                 checked === true,
                                             )
                                         }
@@ -937,38 +997,38 @@ export default function ServerWizard({
                                     <span>
                                         <span className="block font-medium">
                                             {t(
-                                                'Collect the data with the agent',
+                                                "Collect the data with the agent",
                                             )}
                                         </span>
                                         <span className="block text-muted-foreground">
                                             {t(
-                                                'The agent sends the metrics, so we do not poll the server over SSH. The SSH login is kept for the terminal. After saving you get the install command.',
+                                                "The agent sends the metrics, so we do not poll the server over SSH. The SSH login is kept for the terminal. After saving you get the install command.",
                                             )}
                                         </span>
                                     </span>
                                 </label>
                             )}
 
-                            {form.data.auth_type === 'password' && (
+                            {form.data.auth_type === "password" && (
                                 <div className="grid gap-2">
                                     <Label htmlFor="password">
                                         {isRedis
-                                            ? t('Password (optional)')
-                                            : t('Password')}
+                                            ? t("Password (optional)")
+                                            : t("Password")}
                                     </Label>
                                     <PasswordInput
                                         id="password"
                                         value={form.data.password}
                                         onChange={(e) =>
                                             form.setData(
-                                                'password',
+                                                "password",
                                                 e.target.value,
                                             )
                                         }
                                         placeholder={
                                             editing
                                                 ? t(
-                                                      'Leave empty to keep the current password',
+                                                      "Leave empty to keep the current password",
                                                   )
                                                 : undefined
                                         }
@@ -978,27 +1038,27 @@ export default function ServerWizard({
                                         message={form.errors.password}
                                     />
                                     <p className="text-xs text-muted-foreground">
-                                        {t('The password is stored encrypted.')}
+                                        {t("The password is stored encrypted.")}
                                     </p>
                                 </div>
                             )}
 
-                            {form.data.auth_type === 'key' && (
+                            {form.data.auth_type === "key" && (
                                 <div className="space-y-4">
                                     {keys.length > 0 && !addingKey && (
                                         <div className="grid gap-2">
                                             <Label htmlFor="ssh-key">
-                                                {t('Choose an SSH key')}
+                                                {t("Choose an SSH key")}
                                             </Label>
                                             <Select
                                                 value={form.data.ssh_key_id}
                                                 onValueChange={(value) => {
                                                     form.setData(
-                                                        'ssh_key_id',
+                                                        "ssh_key_id",
                                                         value,
                                                     );
                                                     form.clearErrors(
-                                                        'ssh_key_id',
+                                                        "ssh_key_id",
                                                     );
                                                 }}
                                             >
@@ -1008,7 +1068,7 @@ export default function ServerWizard({
                                                 >
                                                     <SelectValue
                                                         placeholder={t(
-                                                            'Select a key…',
+                                                            "Select a key…",
                                                         )}
                                                     />
                                                 </SelectTrigger>
@@ -1034,7 +1094,7 @@ export default function ServerWizard({
                                             {selectedKey && (
                                                 <CopyField
                                                     label={t(
-                                                        'Public key (add it to authorized_keys)',
+                                                        "Public key (add it to authorized_keys)",
                                                     )}
                                                     value={
                                                         selectedKey.public_key
@@ -1052,7 +1112,7 @@ export default function ServerWizard({
                                             >
                                                 <Plus className="size-4" />
                                                 {t(
-                                                    'Generate or import a new key',
+                                                    "Generate or import a new key",
                                                 )}
                                             </Button>
                                         </div>
@@ -1086,12 +1146,12 @@ export default function ServerWizard({
                         <>
                             <dl className="divide-y rounded-lg border bg-card text-sm">
                                 {[
-                                    [t('Name'), form.data.name],
+                                    [t("Name"), form.data.name],
                                     ...(form.data.provider.trim() ||
                                     form.data.country
                                         ? [
                                               [
-                                                  t('Location'),
+                                                  t("Location"),
                                                   [
                                                       form.data.provider.trim(),
                                                       form.data.country
@@ -1100,10 +1160,10 @@ export default function ServerWizard({
                                                                     .country,
                                                                 locale,
                                                             )
-                                                          : '',
+                                                          : "",
                                                   ]
                                                       .filter(Boolean)
-                                                      .join(' · '),
+                                                      .join(" · "),
                                               ],
                                           ]
                                         : []),
@@ -1111,31 +1171,31 @@ export default function ServerWizard({
                                         ? []
                                         : [
                                               [
-                                                  t('Address'),
-                                                  `${form.data.username ? `${form.data.username}@` : ''}${form.data.host}:${form.data.port}`,
+                                                  t("Address"),
+                                                  `${form.data.username ? `${form.data.username}@` : ""}${form.data.host}:${form.data.port}`,
                                               ],
                                           ]),
                                     [
-                                        t('Category'),
+                                        t("Category"),
                                         categoryChoice === NEW_CATEGORY
                                             ? form.data.new_category
                                             : (selectedCategory?.name ??
-                                              t('No category')),
+                                              t("No category")),
                                     ],
                                     [
-                                        t('Access'),
+                                        t("Access"),
                                         isAgent
-                                            ? t('Agent')
-                                            : (form.data.auth_type === 'key'
-                                                  ? t('SSH key: :name', {
+                                            ? t("Agent")
+                                            : (form.data.auth_type === "key"
+                                                  ? t("SSH key: :name", {
                                                         name:
                                                             selectedKey?.name ??
-                                                            '',
+                                                            "",
                                                     })
-                                                  : t('Password')) +
+                                                  : t("Password")) +
                                               (form.data.uses_agent
-                                                  ? ` · ${t('data from the agent')}`
-                                                  : ''),
+                                                  ? ` · ${t("data from the agent")}`
+                                                  : ""),
                                     ],
                                 ].map(([label, value]) => (
                                     <div
@@ -1155,7 +1215,7 @@ export default function ServerWizard({
                             {sendsViaAgent && (
                                 <p className="rounded-lg border bg-muted/30 p-3 text-sm text-muted-foreground">
                                     {t(
-                                        'After saving you get the install command for the server.',
+                                        "After saving you get the install command for the server.",
                                     )}
                                 </p>
                             )}
@@ -1174,17 +1234,17 @@ export default function ServerWizard({
                                         ) : (
                                             <Wifi className="size-4" />
                                         )}
-                                        {t('Test connection')}
+                                        {t("Test connection")}
                                     </Button>
 
                                     {testResult && (
                                         <div
                                             role="status"
                                             className={cn(
-                                                'flex items-start gap-2 rounded-lg border bg-card p-3 text-sm',
+                                                "flex items-start gap-2 rounded-lg border bg-card p-3 text-sm",
                                                 testResult.success
-                                                    ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300'
-                                                    : 'border-red-500/30 bg-red-500/10 text-red-700 dark:text-red-300',
+                                                    ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
+                                                    : "border-red-500/30 bg-red-500/10 text-red-700 dark:text-red-300",
                                             )}
                                         >
                                             {testResult.success ? (
@@ -1195,7 +1255,7 @@ export default function ServerWizard({
                                             <span>
                                                 {testResult.message}
                                                 {!testResult.success &&
-                                                    ` ${t('You can still save the server and fix this later.')}`}
+                                                    ` ${t("You can still save the server and fix this later.")}`}
                                             </span>
                                         </div>
                                     )}
@@ -1204,7 +1264,7 @@ export default function ServerWizard({
                                         <div className="space-y-2 rounded-lg border bg-card p-3 text-sm">
                                             <p className="text-muted-foreground">
                                                 {t(
-                                                    'The host key of this server is pinned. If the server was reinstalled, reset it and the next connection pins the new one.',
+                                                    "The host key of this server is pinned. If the server was reinstalled, reset it and the next connection pins the new one.",
                                                 )}
                                             </p>
                                             <code className="block text-xs break-all">
@@ -1226,7 +1286,7 @@ export default function ServerWizard({
                                                 }
                                                 data-test="forget-host-key-button"
                                             >
-                                                {t('Reset host key')}
+                                                {t("Reset host key")}
                                             </Button>
                                         </div>
                                     )}
@@ -1239,7 +1299,7 @@ export default function ServerWizard({
                 <div className="flex items-center justify-between">
                     {step === 0 ? (
                         <Button variant="ghost" asChild>
-                            <Link href={index()}>{t('Cancel')}</Link>
+                            <Link href={index()}>{t("Cancel")}</Link>
                         </Button>
                     ) : (
                         <Button
@@ -1247,13 +1307,13 @@ export default function ServerWizard({
                             type="button"
                             onClick={() => setStep(step - 1)}
                         >
-                            {t('Back')}
+                            {t("Back")}
                         </Button>
                     )}
 
                     {step < 2 ? (
                         <Button type="button" onClick={next}>
-                            {t('Next')}
+                            {t("Next")}
                         </Button>
                     ) : (
                         <Button
@@ -1268,10 +1328,10 @@ export default function ServerWizard({
                                 <ServerCog className="size-4" />
                             )}
                             {editing
-                                ? t('Save changes')
+                                ? t("Save changes")
                                 : sendsViaAgent
-                                  ? t('Add server and get the install command')
-                                  : t('Add server')}
+                                  ? t("Add server and get the install command")
+                                  : t("Add server")}
                         </Button>
                     )}
                 </div>
@@ -1282,9 +1342,9 @@ export default function ServerWizard({
 
 ServerWizard.layout = (props: { server: ServerFormData | null }) => ({
     breadcrumbs: [
-        { title: 'Servers', href: index() },
+        { title: "Servers", href: index() },
         {
-            title: props.server ? 'Edit server' : 'Add server',
+            title: props.server ? "Edit server" : "Add server",
             href: index(),
         },
     ],

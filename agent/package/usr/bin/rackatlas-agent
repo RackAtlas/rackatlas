@@ -2,8 +2,8 @@
 #
 # RackAtlas agent
 #
-# Collects CPU, memory and disk usage, network traffic and its detail (interfaces, errors, TCP retransmits, connections, listening ports), system facts (OS, kernel, pending updates), the busiest processes, the systemd services, plus serious log entries (journal errors, failed systemd units) and sends them to RackAtlas over HTTPS. Meant to run once a
-# minute from the systemd timer. Nothing connects into the server.
+# Collects CPU, memory and disk usage, network traffic and its detail (interfaces, errors, TCP retransmits, connections, listening ports), system facts (OS, kernel, pending updates), the busiest processes, the systemd services, plus serious log entries (journal errors, failed systemd units) and sends them to RackAtlas over HTTPS. Meant to be started every
+# minute by the systemd timer; how often it really reports is set per server in RackAtlas (10 s to 12 h). Nothing connects into the server.
 #
 # Usage: rackatlas-agent [--dry-run] [--version]
 #
@@ -113,6 +113,49 @@ if [ -z "$DRY_RUN" ]; then
     echo 'rackatlas-agent: invalid token format' >&2
     exit 2
   }
+fi
+
+# How often to report is decided by RackAtlas (per server) and arrives in the answer of every report, in seconds.
+# The timer fires every minute. A longer interval skips the runs that are not due yet, a shorter one makes this run
+# report several times (see the loop below).
+INTERVAL_FILE="$STATE_DIR/interval"
+LAST_FILE="$STATE_DIR/last-sent"
+
+read_interval() {
+  INTERVAL="$(head -n 1 "$INTERVAL_FILE" 2>/dev/null | tr -cd '0-9')"
+  case "$INTERVAL" in
+    "") INTERVAL=60 ;;
+    *) { [ "$INTERVAL" -ge 10 ] && [ "$INTERVAL" -le 86400 ]; } 2>/dev/null || INTERVAL=60 ;;
+  esac
+}
+
+if [ -z "$DRY_RUN" ]; then
+  read_interval
+
+  if [ -z "${RACKATLAS_CHILD:-}" ] && [ "$INTERVAL" -gt 60 ]; then
+    LAST="$(head -n 1 "$LAST_FILE" 2>/dev/null | tr -cd '0-9')"
+    NOW="$(date +%s)"
+    # Fifteen seconds of slack, because the timer does not fire at the exact second.
+    if [ -n "$LAST" ] && [ "$LAST" -le "$NOW" ] && [ $((NOW - LAST)) -lt $((INTERVAL - 15)) ]; then
+      exit 0
+    fi
+  fi
+
+  if [ -z "${RACKATLAS_CHILD:-}" ] && [ "$INTERVAL" -lt 60 ]; then
+    START="$(date +%s)"
+    NEXT="$START"
+    while :; do
+      RACKATLAS_CHILD=1 sh "$0" || true
+      read_interval
+      [ "$INTERVAL" -lt 60 ] || break
+      NEXT=$((NEXT + INTERVAL))
+      NOW="$(date +%s)"
+      # Do not start another report in the last seconds of the minute: the timer starts the next run.
+      [ "$NEXT" -lt $((START + 55)) ] || break
+      [ "$NEXT" -le "$NOW" ] || sleep $((NEXT - NOW))
+    done
+    exit 0
+  fi
 fi
 
 mkdir -p "$STATE_DIR" 2>/dev/null || true
@@ -600,6 +643,12 @@ case "$status" in
       mv "$file" "$STATE_DIR/cursor-$kind"
     done
     rm -f "$DOCKER_RESULT"
+    date +%s > "$LAST_FILE" 2>/dev/null || true
+    # The interval RackAtlas wants, kept for the next runs.
+    WANT="$(tr -d '\n' < "$TMP.out" 2>/dev/null | sed -n 's/.*"interval" *: *\([0-9][0-9]*\).*/\1/p')"
+    if [ -n "$WANT" ] && [ "$WANT" -ge 10 ] 2>/dev/null && [ "$WANT" -le 86400 ] 2>/dev/null; then
+      printf '%s\n' "$WANT" > "$INTERVAL_FILE" 2>/dev/null || true
+    fi
     send_requested_journals
     handle_docker
     ;;

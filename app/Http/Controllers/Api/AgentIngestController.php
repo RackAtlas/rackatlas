@@ -46,7 +46,8 @@ class AgentIngestController extends Controller
             return response()->json(['message' => $e->getMessage()], 422);
         }
 
-        // Actions go over SSH, so the agent has nothing to do but report. It only learns whether to report Docker.
-        return response()->json(['ok' => true, 'docker' => $server->has_docker]);
+        // Actions go over SSH, so the agent has nothing to do but report. It learns whether to report Docker
+        // and how often to report.
+        return response()->json(['ok' => true, 'docker' => $server->has_docker, 'interval' => $server->reportEvery()]);
     }
 }

@@ -20,7 +20,12 @@ class CollectServerMetricsCommand extends Command
             // Servers with the agent send their metrics themselves.
             ->whereNot(fn ($query) => $query->viaAgent())
             ->when($this->option('server'), fn ($query, $id) => $query->whereKey($id))
-            ->get();
+            ->get()
+            // A server with a longer interval is only polled when it is due (a few seconds of slack for the scheduler).
+            ->when(! $this->option('server'), fn ($all) => $all->filter(
+                fn (Server $server) => $server->last_checked_at === null
+                    || $server->last_checked_at->lte(now()->subSeconds($server->reportEvery() - 5)),
+            ));
 
         foreach ($servers as $server) {
             $this->option('sync')

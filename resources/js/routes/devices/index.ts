@@ -142,7 +142,7 @@ destroyOthers.form = destroyOthersForm
 * @see app/Http/Controllers/Settings/DeviceController.php:46
 * @route '/app/settings/devices/{device}'
 */
-export const update = (args: { device: string | number | { id: string | number } } | [device: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
+export const update = (args: { device: number | { id: number } } | [device: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
     url: update.url(args, options),
     method: 'patch',
 })
@@ -157,7 +157,7 @@ update.definition = {
 * @see app/Http/Controllers/Settings/DeviceController.php:46
 * @route '/app/settings/devices/{device}'
 */
-update.url = (args: { device: string | number | { id: string | number } } | [device: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions) => {
+update.url = (args: { device: number | { id: number } } | [device: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { device: args }
     }
@@ -190,7 +190,7 @@ update.url = (args: { device: string | number | { id: string | number } } | [dev
 * @see app/Http/Controllers/Settings/DeviceController.php:46
 * @route '/app/settings/devices/{device}'
 */
-update.patch = (args: { device: string | number | { id: string | number } } | [device: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
+update.patch = (args: { device: number | { id: number } } | [device: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
     url: update.url(args, options),
     method: 'patch',
 })
@@ -200,7 +200,7 @@ update.patch = (args: { device: string | number | { id: string | number } } | [d
 * @see app/Http/Controllers/Settings/DeviceController.php:46
 * @route '/app/settings/devices/{device}'
 */
-const updateForm = (args: { device: string | number | { id: string | number } } | [device: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+const updateForm = (args: { device: number | { id: number } } | [device: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
     action: update.url(args, {
         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
             _method: 'PATCH',
@@ -215,7 +215,7 @@ const updateForm = (args: { device: string | number | { id: string | number } } 
 * @see app/Http/Controllers/Settings/DeviceController.php:46
 * @route '/app/settings/devices/{device}'
 */
-updateForm.patch = (args: { device: string | number | { id: string | number } } | [device: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+updateForm.patch = (args: { device: number | { id: number } } | [device: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
     action: update.url(args, {
         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
             _method: 'PATCH',
@@ -232,7 +232,7 @@ update.form = updateForm
 * @see app/Http/Controllers/Settings/DeviceController.php:84
 * @route '/app/settings/devices/{device}'
 */
-export const destroy = (args: { device: string | number | { id: string | number } } | [device: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
+export const destroy = (args: { device: number | { id: number } } | [device: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
     url: destroy.url(args, options),
     method: 'delete',
 })
@@ -247,7 +247,7 @@ destroy.definition = {
 * @see app/Http/Controllers/Settings/DeviceController.php:84
 * @route '/app/settings/devices/{device}'
 */
-destroy.url = (args: { device: string | number | { id: string | number } } | [device: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions) => {
+destroy.url = (args: { device: number | { id: number } } | [device: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { device: args }
     }
@@ -280,7 +280,7 @@ destroy.url = (args: { device: string | number | { id: string | number } } | [de
 * @see app/Http/Controllers/Settings/DeviceController.php:84
 * @route '/app/settings/devices/{device}'
 */
-destroy.delete = (args: { device: string | number | { id: string | number } } | [device: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
+destroy.delete = (args: { device: number | { id: number } } | [device: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
     url: destroy.url(args, options),
     method: 'delete',
 })
@@ -290,7 +290,7 @@ destroy.delete = (args: { device: string | number | { id: string | number } } | 
 * @see app/Http/Controllers/Settings/DeviceController.php:84
 * @route '/app/settings/devices/{device}'
 */
-const destroyForm = (args: { device: string | number | { id: string | number } } | [device: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+const destroyForm = (args: { device: number | { id: number } } | [device: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
     action: destroy.url(args, {
         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
             _method: 'DELETE',
@@ -305,7 +305,7 @@ const destroyForm = (args: { device: string | number | { id: string | number } }
 * @see app/Http/Controllers/Settings/DeviceController.php:84
 * @route '/app/settings/devices/{device}'
 */
-destroyForm.delete = (args: { device: string | number | { id: string | number } } | [device: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+destroyForm.delete = (args: { device: number | { id: number } } | [device: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
     action: destroy.url(args, {
         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
             _method: 'DELETE',

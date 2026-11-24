@@ -1762,5 +1762,7 @@
     "The output of systemctl status.": "Výstup príkazu systemctl status.",
     "The last 500 lines of the journal.": "Posledných 500 riadkov journalu.",
     "The output is empty.": "Výstup je prázdny.",
-    "This server has no SSH login, so it cannot be controlled from here.": "Tento server nemá SSH prihlásenie, preto ho odtiaľto nemožno ovládať."
+    "This server has no SSH login, so it cannot be controlled from here.": "Tento server nemá SSH prihlásenie, preto ho odtiaľto nemožno ovládať.",
+    "How often the server reports": "Ako často server posiela údaje",
+    "The agent sends its data this often. Every report is stored, so short intervals mean many more records. Agents older than 1.13 keep reporting once a minute. Servers read over SSH are read once a minute at best.": "Agent posiela údaje takto často. Každý report sa ukladá, takže krátke intervaly znamenajú oveľa viac záznamov. Agenty staršie ako 1.13 posielajú naďalej raz za minútu. Servery čítané cez SSH sa čítajú najviac raz za minútu."
 }

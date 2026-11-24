@@ -60,7 +60,7 @@ store.form = storeForm
 * @see app/Http/Controllers/Servers/ServerCategoryController.php:22
 * @route '/app/server-categories/{serverCategory}'
 */
-export const update = (args: { serverCategory: string | number | { id: string | number } } | [serverCategory: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
+export const update = (args: { serverCategory: number | { id: number } } | [serverCategory: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
     url: update.url(args, options),
     method: 'patch',
 })
@@ -75,7 +75,7 @@ update.definition = {
 * @see app/Http/Controllers/Servers/ServerCategoryController.php:22
 * @route '/app/server-categories/{serverCategory}'
 */
-update.url = (args: { serverCategory: string | number | { id: string | number } } | [serverCategory: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions) => {
+update.url = (args: { serverCategory: number | { id: number } } | [serverCategory: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { serverCategory: args }
     }
@@ -108,7 +108,7 @@ update.url = (args: { serverCategory: string | number | { id: string | number } 
 * @see app/Http/Controllers/Servers/ServerCategoryController.php:22
 * @route '/app/server-categories/{serverCategory}'
 */
-update.patch = (args: { serverCategory: string | number | { id: string | number } } | [serverCategory: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
+update.patch = (args: { serverCategory: number | { id: number } } | [serverCategory: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
     url: update.url(args, options),
     method: 'patch',
 })
@@ -118,7 +118,7 @@ update.patch = (args: { serverCategory: string | number | { id: string | number 
 * @see app/Http/Controllers/Servers/ServerCategoryController.php:22
 * @route '/app/server-categories/{serverCategory}'
 */
-const updateForm = (args: { serverCategory: string | number | { id: string | number } } | [serverCategory: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+const updateForm = (args: { serverCategory: number | { id: number } } | [serverCategory: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
     action: update.url(args, {
         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
             _method: 'PATCH',
@@ -133,7 +133,7 @@ const updateForm = (args: { serverCategory: string | number | { id: string | num
 * @see app/Http/Controllers/Servers/ServerCategoryController.php:22
 * @route '/app/server-categories/{serverCategory}'
 */
-updateForm.patch = (args: { serverCategory: string | number | { id: string | number } } | [serverCategory: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+updateForm.patch = (args: { serverCategory: number | { id: number } } | [serverCategory: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
     action: update.url(args, {
         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
             _method: 'PATCH',
@@ -150,7 +150,7 @@ update.form = updateForm
 * @see app/Http/Controllers/Servers/ServerCategoryController.php:31
 * @route '/app/server-categories/{serverCategory}'
 */
-export const destroy = (args: { serverCategory: string | number | { id: string | number } } | [serverCategory: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
+export const destroy = (args: { serverCategory: number | { id: number } } | [serverCategory: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
     url: destroy.url(args, options),
     method: 'delete',
 })
@@ -165,7 +165,7 @@ destroy.definition = {
 * @see app/Http/Controllers/Servers/ServerCategoryController.php:31
 * @route '/app/server-categories/{serverCategory}'
 */
-destroy.url = (args: { serverCategory: string | number | { id: string | number } } | [serverCategory: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions) => {
+destroy.url = (args: { serverCategory: number | { id: number } } | [serverCategory: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { serverCategory: args }
     }
@@ -198,7 +198,7 @@ destroy.url = (args: { serverCategory: string | number | { id: string | number }
 * @see app/Http/Controllers/Servers/ServerCategoryController.php:31
 * @route '/app/server-categories/{serverCategory}'
 */
-destroy.delete = (args: { serverCategory: string | number | { id: string | number } } | [serverCategory: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
+destroy.delete = (args: { serverCategory: number | { id: number } } | [serverCategory: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
     url: destroy.url(args, options),
     method: 'delete',
 })
@@ -208,7 +208,7 @@ destroy.delete = (args: { serverCategory: string | number | { id: string | numbe
 * @see app/Http/Controllers/Servers/ServerCategoryController.php:31
 * @route '/app/server-categories/{serverCategory}'
 */
-const destroyForm = (args: { serverCategory: string | number | { id: string | number } } | [serverCategory: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+const destroyForm = (args: { serverCategory: number | { id: number } } | [serverCategory: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
     action: destroy.url(args, {
         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
             _method: 'DELETE',
@@ -223,7 +223,7 @@ const destroyForm = (args: { serverCategory: string | number | { id: string | nu
 * @see app/Http/Controllers/Servers/ServerCategoryController.php:31
 * @route '/app/server-categories/{serverCategory}'
 */
-destroyForm.delete = (args: { serverCategory: string | number | { id: string | number } } | [serverCategory: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+destroyForm.delete = (args: { serverCategory: number | { id: number } } | [serverCategory: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
     action: destroy.url(args, {
         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
             _method: 'DELETE',

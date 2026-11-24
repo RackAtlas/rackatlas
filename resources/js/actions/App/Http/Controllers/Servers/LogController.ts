@@ -141,7 +141,7 @@ resolveAll.form = resolveAllForm
 * @see app/Http/Controllers/Servers/LogController.php:87
 * @route '/app/logs/{log}/resolve'
 */
-export const resolve = (args: { log: string | number | { id: string | number } } | [log: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+export const resolve = (args: { log: number | { id: number } } | [log: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: resolve.url(args, options),
     method: 'post',
 })
@@ -156,7 +156,7 @@ resolve.definition = {
 * @see app/Http/Controllers/Servers/LogController.php:87
 * @route '/app/logs/{log}/resolve'
 */
-resolve.url = (args: { log: string | number | { id: string | number } } | [log: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions) => {
+resolve.url = (args: { log: number | { id: number } } | [log: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { log: args }
     }
@@ -189,7 +189,7 @@ resolve.url = (args: { log: string | number | { id: string | number } } | [log: 
 * @see app/Http/Controllers/Servers/LogController.php:87
 * @route '/app/logs/{log}/resolve'
 */
-resolve.post = (args: { log: string | number | { id: string | number } } | [log: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+resolve.post = (args: { log: number | { id: number } } | [log: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: resolve.url(args, options),
     method: 'post',
 })
@@ -199,7 +199,7 @@ resolve.post = (args: { log: string | number | { id: string | number } } | [log:
 * @see app/Http/Controllers/Servers/LogController.php:87
 * @route '/app/logs/{log}/resolve'
 */
-const resolveForm = (args: { log: string | number | { id: string | number } } | [log: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+const resolveForm = (args: { log: number | { id: number } } | [log: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
     action: resolve.url(args, options),
     method: 'post',
 })
@@ -209,7 +209,7 @@ const resolveForm = (args: { log: string | number | { id: string | number } } | 
 * @see app/Http/Controllers/Servers/LogController.php:87
 * @route '/app/logs/{log}/resolve'
 */
-resolveForm.post = (args: { log: string | number | { id: string | number } } | [log: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+resolveForm.post = (args: { log: number | { id: number } } | [log: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
     action: resolve.url(args, options),
     method: 'post',
 })
@@ -221,7 +221,7 @@ resolve.form = resolveForm
 * @see app/Http/Controllers/Servers/LogController.php:99
 * @route '/app/logs/{log}/analyze'
 */
-export const analyze = (args: { log: string | number | { id: string | number } } | [log: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+export const analyze = (args: { log: number | { id: number } } | [log: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: analyze.url(args, options),
     method: 'post',
 })
@@ -236,7 +236,7 @@ analyze.definition = {
 * @see app/Http/Controllers/Servers/LogController.php:99
 * @route '/app/logs/{log}/analyze'
 */
-analyze.url = (args: { log: string | number | { id: string | number } } | [log: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions) => {
+analyze.url = (args: { log: number | { id: number } } | [log: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { log: args }
     }
@@ -269,7 +269,7 @@ analyze.url = (args: { log: string | number | { id: string | number } } | [log: 
 * @see app/Http/Controllers/Servers/LogController.php:99
 * @route '/app/logs/{log}/analyze'
 */
-analyze.post = (args: { log: string | number | { id: string | number } } | [log: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+analyze.post = (args: { log: number | { id: number } } | [log: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: analyze.url(args, options),
     method: 'post',
 })
@@ -279,7 +279,7 @@ analyze.post = (args: { log: string | number | { id: string | number } } | [log:
 * @see app/Http/Controllers/Servers/LogController.php:99
 * @route '/app/logs/{log}/analyze'
 */
-const analyzeForm = (args: { log: string | number | { id: string | number } } | [log: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+const analyzeForm = (args: { log: number | { id: number } } | [log: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
     action: analyze.url(args, options),
     method: 'post',
 })
@@ -289,7 +289,7 @@ const analyzeForm = (args: { log: string | number | { id: string | number } } | 
 * @see app/Http/Controllers/Servers/LogController.php:99
 * @route '/app/logs/{log}/analyze'
 */
-analyzeForm.post = (args: { log: string | number | { id: string | number } } | [log: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+analyzeForm.post = (args: { log: number | { id: number } } | [log: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
     action: analyze.url(args, options),
     method: 'post',
 })
@@ -301,7 +301,7 @@ analyze.form = analyzeForm
 * @see app/Http/Controllers/Servers/LogController.php:116
 * @route '/app/logs/{log}/resolve'
 */
-export const reopen = (args: { log: string | number | { id: string | number } } | [log: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
+export const reopen = (args: { log: number | { id: number } } | [log: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
     url: reopen.url(args, options),
     method: 'delete',
 })
@@ -316,7 +316,7 @@ reopen.definition = {
 * @see app/Http/Controllers/Servers/LogController.php:116
 * @route '/app/logs/{log}/resolve'
 */
-reopen.url = (args: { log: string | number | { id: string | number } } | [log: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions) => {
+reopen.url = (args: { log: number | { id: number } } | [log: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { log: args }
     }
@@ -349,7 +349,7 @@ reopen.url = (args: { log: string | number | { id: string | number } } | [log: s
 * @see app/Http/Controllers/Servers/LogController.php:116
 * @route '/app/logs/{log}/resolve'
 */
-reopen.delete = (args: { log: string | number | { id: string | number } } | [log: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
+reopen.delete = (args: { log: number | { id: number } } | [log: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
     url: reopen.url(args, options),
     method: 'delete',
 })
@@ -359,7 +359,7 @@ reopen.delete = (args: { log: string | number | { id: string | number } } | [log
 * @see app/Http/Controllers/Servers/LogController.php:116
 * @route '/app/logs/{log}/resolve'
 */
-const reopenForm = (args: { log: string | number | { id: string | number } } | [log: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+const reopenForm = (args: { log: number | { id: number } } | [log: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
     action: reopen.url(args, {
         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
             _method: 'DELETE',
@@ -374,7 +374,7 @@ const reopenForm = (args: { log: string | number | { id: string | number } } | [
 * @see app/Http/Controllers/Servers/LogController.php:116
 * @route '/app/logs/{log}/resolve'
 */
-reopenForm.delete = (args: { log: string | number | { id: string | number } } | [log: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+reopenForm.delete = (args: { log: number | { id: number } } | [log: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
     action: reopen.url(args, {
         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
             _method: 'DELETE',

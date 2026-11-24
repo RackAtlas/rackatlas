@@ -114,10 +114,10 @@ class DockerTest extends TestCase
         ]);
         $ingest = fn () => $this->call('POST', route('agent.ingest'), [], [], [], ['HTTP_AUTHORIZATION' => 'Bearer '.$token], $this->report());
 
-        $ingest()->assertOk()->assertExactJson(['ok' => true, 'docker' => true]);
+        $ingest()->assertOk()->assertExactJson(['ok' => true, 'docker' => true, 'interval' => 60]);
 
         $server->update(['has_docker' => false]);
-        $ingest()->assertOk()->assertExactJson(['ok' => true, 'docker' => false]);
+        $ingest()->assertOk()->assertExactJson(['ok' => true, 'docker' => false, 'interval' => 60]);
     }
 
     public function test_a_failure_the_agent_reports_is_shown_on_the_container(): void

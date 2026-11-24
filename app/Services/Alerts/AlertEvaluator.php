@@ -2,7 +2,6 @@
 
 namespace App\Services\Alerts;
 
-use App\Console\Commands\CheckAgentsCommand;
 use App\Enums\AlertType;
 use App\Enums\ServerStatus;
 use App\Jobs\ExplainAlert;
@@ -147,7 +146,7 @@ class AlertEvaluator
     {
         $since = $server->last_seen_at ?? $server->created_at;
 
-        if ($since === null || $since->gt(now()->subMinutes(CheckAgentsCommand::SILENT_MINUTES))) {
+        if ($since === null || $since->gt(now()->subMinutes($server->silentAfterMinutes()))) {
             return [];
         }
 
