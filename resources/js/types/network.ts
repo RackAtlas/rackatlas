@@ -106,3 +106,41 @@ export type NetworkServer = {
     agent_version: string | null;
     last_seen_at: string | null;
 };
+
+export type NetworkFleetServer = {
+    id: number;
+    name: string;
+    status: string;
+    agent_version: string | null;
+    last_seen_at: string | null;
+    has_data: boolean;
+    current: {
+        collected_at: string;
+        rx_bps: number;
+        tx_bps: number;
+        established: number | null;
+        time_wait: number | null;
+        close_wait: number | null;
+        conntrack_pct: number | null;
+    } | null;
+    retrans_pct: number | null;
+    lost: number;
+    packets: number;
+    link_use: number | null;
+    findings: NetworkFinding[];
+    exposed: { port: number; service: string }[];
+    points: {
+        t: number;
+        traffic: number | null;
+        lost: number | null;
+        retrans_pct: number | null;
+        established: number | null;
+    }[];
+};
+
+export type NetworkFleetReport = {
+    range: MetricsRange;
+    bucket_seconds: number;
+    generated_at: string;
+    servers: NetworkFleetServer[];
+};

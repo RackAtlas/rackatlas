@@ -1,6 +1,7 @@
 import { Head, Link, router, usePoll } from '@inertiajs/react';
 import { CheckCircle2, Network as NetworkIcon, TriangleAlert } from 'lucide-react';
 import { ChartCard, Tile } from '@/components/metrics/cards';
+import FleetOverview from '@/components/network/fleet-overview';
 import LineChart from '@/components/metrics/line-chart';
 import type { ChartSeries } from '@/components/metrics/line-chart';
 import { Button } from '@/components/ui/button';
@@ -13,13 +14,14 @@ import {
 } from '@/components/ui/select';
 import { useTranslation } from '@/hooks/use-translation';
 import { formatBytes, timeAgo } from '@/lib/dashboard';
+import { findingText, SENSITIVE_PORTS } from '@/lib/network';
 import { cn } from '@/lib/utils';
 import { index } from '@/routes/network';
 import { show as agentShow } from '@/routes/servers/agent';
 import { index as teamsIndex } from '@/routes/teams';
 import type {
     MetricsRange,
-    NetworkFinding,
+    NetworkFleetReport,
     NetworkListener,
     NetworkReport,
     NetworkServer,
@@ -32,6 +34,7 @@ type Props = {
     range?: MetricsRange;
     ranges?: MetricsRange[];
     report?: NetworkReport | null;
+    fleet?: NetworkFleetReport | null;
 };
 
 const RANGE_SECONDS: Record<MetricsRange, number> = {
@@ -49,17 +52,6 @@ const COLOR = {
     violet: '#8b5cf6',
     rose: '#f43f5e',
     red: '#ef4444',
-};
-
-/** Services that should not be open to the whole network. A firewall may still block them. */
-const SENSITIVE_PORTS: Record<number, string> = {
-    2375: 'Docker API',
-    3306: 'MySQL',
-    5432: 'PostgreSQL',
-    6379: 'Redis',
-    9200: 'Elasticsearch',
-    11211: 'Memcached',
-    27017: 'MongoDB',
 };
 
 const KNOWN_PORTS: Record<number, string> = {
@@ -96,10 +88,11 @@ export default function Network({
     range = '24h',
     ranges = [],
     report = null,
+    fleet = null,
 }: Props) {
     const { t, locale } = useTranslation();
 
-    usePoll(60000, { only: ['server', 'report'] });
+    usePoll(60000, { only: ['server', 'report', 'fleet'] });
 
     if (!team) {
         return (
@@ -117,23 +110,28 @@ export default function Network({
         );
     }
 
-    const go = (next: { server?: number; range?: MetricsRange }) =>
+    const go = (next: { server?: number | 'all'; range?: MetricsRange }) =>
         router.get(
             index(),
-            { server: next.server ?? server?.id, range: next.range ?? range },
+            {
+                server: next.server ?? (fleet ? 'all' : server?.id),
+                range: next.range ?? range,
+            },
             {
                 preserveState: true,
                 preserveScroll: true,
                 replace: true,
-                only: ['server', 'range', 'report'],
+                only: ['server', 'range', 'report', 'fleet'],
             },
         );
 
     const controls = (
         <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
             <Select
-                value={server ? String(server.id) : undefined}
-                onValueChange={(value) => go({ server: Number(value) })}
+                value={fleet ? 'all' : server ? String(server.id) : undefined}
+                onValueChange={(value) =>
+                    go({ server: value === 'all' ? 'all' : Number(value) })
+                }
             >
                 <SelectTrigger
                     className="w-full sm:w-56"
@@ -142,6 +140,7 @@ export default function Network({
                     <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
+                    <SelectItem value="all">{t('All servers')}</SelectItem>
                     {servers.map((item) => (
                         <SelectItem key={item.id} value={String(item.id)}>
                             {item.name}
@@ -180,15 +179,35 @@ export default function Network({
             <div>
                 <h1 className="text-2xl font-semibold">{t('Network')}</h1>
                 <p className="text-sm text-muted-foreground">
-                    {t(
-                        'Traffic, connections and open ports of one server of the team :team',
-                        { team: team.name },
-                    )}
+                    {fleet
+                        ? t(
+                              'Traffic and health of all servers of the team :team side by side',
+                              { team: team.name },
+                          )
+                        : t(
+                              'Traffic, connections and open ports of one server of the team :team',
+                              { team: team.name },
+                          )}
                 </p>
             </div>
-            {server && controls}
+            {(server || fleet) && controls}
         </div>
     );
+
+    if (fleet) {
+        return (
+            <>
+                <Head title={t('Network')} />
+                <div className="mx-auto w-full max-w-[100rem] min-w-0 space-y-6 p-4 md:p-6">
+                    {header}
+                    <FleetOverview
+                        fleet={fleet}
+                        onOpen={(id) => go({ server: id })}
+                    />
+                </div>
+            </>
+        );
+    }
 
     if (!server || !report) {
         return (
@@ -337,43 +356,6 @@ export default function Network({
         (point) => point.conntrack_pct !== null,
     );
 
-    const findingText = (finding: NetworkFinding): string => {
-        const c = finding.context;
-
-        switch (finding.key) {
-            case 'retransmits':
-                return t(
-                    ':percent % of the sent TCP segments had to be sent again. The connection is lossy or overloaded.',
-                    { percent: c.percent },
-                );
-            case 'lost_packets':
-                return t(
-                    ':count packets were dropped or damaged on the network cards in this period.',
-                    { count: Number(c.count).toLocaleString(locale) },
-                );
-            case 'link_saturated':
-                return t(
-                    'The interface :interface reached :percent % of its link speed. Traffic may be queued or dropped.',
-                    { interface: c.interface, percent: c.percent },
-                );
-            case 'conntrack_full':
-                return t(
-                    'The connection tracking table of the firewall is :percent % full. When it is full, new connections are dropped.',
-                    { percent: c.percent },
-                );
-            case 'syn_backlog':
-                return t(
-                    'Up to :count half-open connections (SYN_RECV). A flood of connection attempts or an application that accepts too slowly.',
-                    { count: c.count },
-                );
-            case 'close_wait':
-                return t(
-                    ':count connections wait in CLOSE_WAIT. An application does not close its sockets (a leak).',
-                    { count: c.count },
-                );
-        }
-    };
-
     const exposure = (listener: NetworkListener) => {
         const sensitive = SENSITIVE_PORTS[listener.port];
 
@@ -448,7 +430,7 @@ export default function Network({
                                             : 'text-amber-600 dark:text-amber-400',
                                     )}
                                 />
-                                <p>{findingText(finding)}</p>
+                                <p>{findingText(finding, t, locale)}</p>
                             </li>
                         ))}
                     </ul>

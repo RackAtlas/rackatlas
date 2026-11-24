@@ -208,8 +208,7 @@ class NetworkReport
     }
 
     /**
-     * What looks wrong in the range. A finding is only raised when the numbers back it up, so an
-     * empty list means the network is healthy as far as the agent can tell.
+     * What looks wrong in the range, see {@see NetworkFindings}.
      *
      * @param  array<int, array<string, int|float|null>>  $points
      * @param  array<string, array<string, int>>  $totals
@@ -218,56 +217,16 @@ class NetworkReport
      */
     private function findings(array $points, array $totals, ?array $current): array
     {
-        $findings = [];
+        $highest = fn (string $column): float => (float) max(array_filter(array_column($points, $column), fn ($value) => $value !== null) ?: [0]);
 
-        $retrans = $this->weightedRetransmits();
-
-        if ($retrans !== null && $retrans >= 1) {
-            $findings[] = ['key' => 'retransmits', 'level' => $retrans >= 3 ? 'critical' : 'warning', 'context' => ['percent' => round($retrans, 2)]];
-        }
-
-        $lost = array_sum(array_column($totals, 'errors')) + array_sum(array_column($totals, 'drops'));
-        $packets = array_sum(array_column($totals, 'packets'));
-
-        if ($lost > 0) {
-            $findings[] = [
-                'key' => 'lost_packets',
-                'level' => $packets > 0 && $lost / $packets >= 0.01 ? 'critical' : 'warning',
-                'context' => ['count' => $lost],
-            ];
-        }
-
-        foreach ($this->server->network_info['links'] ?? [] as $link) {
-            $total = $totals[$link['name']] ?? null;
-
-            if ($total === null || ($link['speed'] ?? null) === null) {
-                continue;
-            }
-
-            $used = max($total['rx_peak'], $total['tx_peak']) * 8 / ($link['speed'] * 1_000_000) * 100;
-
-            if ($used >= 80) {
-                $findings[] = ['key' => 'link_saturated', 'level' => $used >= 95 ? 'critical' : 'warning', 'context' => ['interface' => $link['name'], 'percent' => round($used)]];
-            }
-        }
-
-        $conntrack = max(array_filter(array_column($points, 'conntrack_pct'), fn ($value) => $value !== null) ?: [0]);
-
-        if ($conntrack >= 80) {
-            $findings[] = ['key' => 'conntrack_full', 'level' => $conntrack >= 95 ? 'critical' : 'warning', 'context' => ['percent' => round($conntrack)]];
-        }
-
-        $synRecv = max(array_filter(array_column($points, 'syn_recv_max'), fn ($value) => $value !== null) ?: [0]);
-
-        if ($synRecv >= 200) {
-            $findings[] = ['key' => 'syn_backlog', 'level' => 'warning', 'context' => ['count' => (int) $synRecv]];
-        }
-
-        if (($current['tcp_close_wait'] ?? 0) >= 100) {
-            $findings[] = ['key' => 'close_wait', 'level' => 'warning', 'context' => ['count' => (int) $current['tcp_close_wait']]];
-        }
-
-        return $findings;
+        return NetworkFindings::evaluate(
+            $this->weightedRetransmits(),
+            $totals,
+            $this->server->network_info['links'] ?? [],
+            $highest('conntrack_pct'),
+            (int) $highest('syn_recv_max'),
+            (int) ($current['tcp_close_wait'] ?? 0),
+        );
     }
 
     /**
