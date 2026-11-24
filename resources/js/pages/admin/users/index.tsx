@@ -1,15 +1,15 @@
-import { Head, Link, router } from '@inertiajs/react';
-import { Plus, Search, ShieldCheck } from 'lucide-react';
-import { useState } from 'react';
-import UserController from '@/actions/App/Http/Controllers/Admin/UserController';
-import Pagination from '@/components/admin/pagination';
-import type { Paginated } from '@/components/admin/pagination';
-import { SettingsSection } from '@/components/settings/section';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { useTranslation } from '@/hooks/use-translation';
-import { cn } from '@/lib/utils';
+import { Head, Link, router } from "@inertiajs/react";
+import { Plus, Search, ShieldCheck } from "lucide-react";
+import { useState } from "react";
+import UserController from "@/actions/App/Http/Controllers/Admin/UserController";
+import Pagination from "@/components/admin/pagination";
+import type { Paginated } from "@/components/admin/pagination";
+import { SettingsSection } from "@/components/settings/section";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { useTranslation } from "@/hooks/use-translation";
+import { cn } from "@/lib/utils";
 
 type AdminUserRow = {
     id: number;
@@ -24,7 +24,7 @@ type AdminUserRow = {
 
 type Props = {
     users: Paginated<AdminUserRow>;
-    filters: { search: string; filter: 'admins' | 'unverified' | null };
+    filters: { search: string; filter: "admins" | "unverified" | null };
     totals: { all: number; admins: number; unverified: number };
 };
 
@@ -32,7 +32,7 @@ export default function AdminUsers({ users, filters, totals }: Props) {
     const { t, locale } = useTranslation();
     const [search, setSearch] = useState(filters.search);
 
-    const visit = (next: Partial<Props['filters']>) =>
+    const visit = (next: Partial<Props["filters"]>) =>
         router.get(
             UserController.index.url(),
             { ...filters, ...next },
@@ -40,28 +40,28 @@ export default function AdminUsers({ users, filters, totals }: Props) {
         );
 
     const chips: {
-        key: Props['filters']['filter'];
+        key: Props["filters"]["filter"];
         label: string;
         count: number;
     }[] = [
-        { key: null, label: t('All'), count: totals.all },
-        { key: 'admins', label: t('Administrators'), count: totals.admins },
-        { key: 'unverified', label: t('Unverified'), count: totals.unverified },
+        { key: null, label: t("All"), count: totals.all },
+        { key: "admins", label: t("Administrators"), count: totals.admins },
+        { key: "unverified", label: t("Unverified"), count: totals.unverified },
     ];
 
     return (
         <>
-            <Head title={t('Users')} />
+            <Head title={t("Users")} />
 
             <SettingsSection
                 flush
-                title={t('Users')}
-                description={t(':count users in total', { count: totals.all })}
+                title={t("Users")}
+                description={t(":count users in total", { count: totals.all })}
                 action={
                     <Button asChild>
                         <Link href={UserController.create()}>
                             <Plus className="size-4" />
-                            {t('New user')}
+                            {t("New user")}
                         </Link>
                     </Button>
                 }
@@ -78,7 +78,7 @@ export default function AdminUsers({ users, filters, totals }: Props) {
                         <Input
                             value={search}
                             onChange={(event) => setSearch(event.target.value)}
-                            placeholder={t('Search by name or email')}
+                            placeholder={t("Search by name or email")}
                             className="pl-9"
                             data-test="admin-user-search"
                         />
@@ -90,13 +90,13 @@ export default function AdminUsers({ users, filters, totals }: Props) {
                                 type="button"
                                 onClick={() => visit({ filter: chip.key })}
                                 className={cn(
-                                    'rounded-full px-3 py-1.5 text-sm transition-colors',
+                                    "rounded-full px-3 py-1.5 text-sm transition-colors",
                                     filters.filter === chip.key
-                                        ? 'bg-primary/10 font-medium text-primary'
-                                        : 'text-muted-foreground hover:bg-muted',
+                                        ? "bg-primary/10 font-medium text-primary"
+                                        : "text-muted-foreground hover:bg-muted",
                                 )}
                             >
-                                {chip.label}{' '}
+                                {chip.label}{" "}
                                 <span className="text-xs">{chip.count}</span>
                             </button>
                         ))}
@@ -105,7 +105,7 @@ export default function AdminUsers({ users, filters, totals }: Props) {
 
                 {users.data.length === 0 ? (
                     <p className="p-8 text-center text-sm text-muted-foreground">
-                        {t('No users found')}
+                        {t("No users found")}
                     </p>
                 ) : (
                     <ul className="divide-y">
@@ -128,20 +128,20 @@ export default function AdminUsers({ users, filters, totals }: Props) {
                                     </div>
                                     <div className="flex flex-wrap items-center gap-2 text-xs">
                                         {user.is_admin && (
-                                            <Badge>{t('Administrator')}</Badge>
+                                            <Badge>{t("Administrator")}</Badge>
                                         )}
                                         {!user.verified && (
                                             <Badge variant="outline">
-                                                {t('Unverified')}
+                                                {t("Unverified")}
                                             </Badge>
                                         )}
                                         {user.two_factor && (
                                             <Badge variant="secondary">
-                                                {t('2FA')}
+                                                {t("2FA")}
                                             </Badge>
                                         )}
                                         <span className="text-muted-foreground">
-                                            {t(':count teams', {
+                                            {t(":count teams", {
                                                 count: user.teams_count,
                                             })}
                                         </span>

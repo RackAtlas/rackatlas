@@ -1,5 +1,6 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../wayfinder'
 import activity from './activity'
+import apiLogs from './api-logs'
 import users from './users'
 import teams from './teams'
 /**
@@ -231,6 +232,7 @@ index.form = indexForm
 const admin = {
     index: Object.assign(index, index),
     activity: Object.assign(activity, activity),
+    apiLogs: Object.assign(apiLogs, apiLogs),
     users: Object.assign(users, users),
     teams: Object.assign(teams, teams),
 }

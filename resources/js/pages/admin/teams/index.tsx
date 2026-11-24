@@ -1,17 +1,17 @@
-import { Head, Link, router, useForm } from '@inertiajs/react';
-import { Plus, Search } from 'lucide-react';
-import type { FormEvent } from 'react';
-import { useState } from 'react';
-import TeamController from '@/actions/App/Http/Controllers/Admin/TeamController';
-import Pagination from '@/components/admin/pagination';
-import type { Paginated } from '@/components/admin/pagination';
-import InputError from '@/components/input-error';
-import { SettingsSection } from '@/components/settings/section';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Spinner } from '@/components/ui/spinner';
-import { useTranslation } from '@/hooks/use-translation';
+import { Head, Link, router, useForm } from "@inertiajs/react";
+import { Plus, Search } from "lucide-react";
+import type { FormEvent } from "react";
+import { useState } from "react";
+import TeamController from "@/actions/App/Http/Controllers/Admin/TeamController";
+import Pagination from "@/components/admin/pagination";
+import type { Paginated } from "@/components/admin/pagination";
+import InputError from "@/components/input-error";
+import { SettingsSection } from "@/components/settings/section";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Spinner } from "@/components/ui/spinner";
+import { useTranslation } from "@/hooks/use-translation";
 
 type AdminTeamRow = {
     id: number;
@@ -37,7 +37,7 @@ export default function AdminTeams({
     const [search, setSearch] = useState(filters.search);
     const [creating, setCreating] = useState(false);
 
-    const form = useForm({ name: '', owner_email: '' });
+    const form = useForm({ name: "", owner_email: "" });
 
     const create = (event: FormEvent) => {
         event.preventDefault();
@@ -46,24 +46,24 @@ export default function AdminTeams({
 
     return (
         <>
-            <Head title={t('Teams')} />
+            <Head title={t("Teams")} />
 
             <div className="space-y-6">
                 {creating && (
                     <SettingsSection
-                        title={t('New team')}
+                        title={t("New team")}
                         description={t(
-                            'The owner has to be an existing user of the application.',
+                            "The owner has to be an existing user of the application.",
                         )}
                     >
                         <form onSubmit={create} className="space-y-6">
                             <div className="grid gap-2">
-                                <Label htmlFor="name">{t('Name')}</Label>
+                                <Label htmlFor="name">{t("Name")}</Label>
                                 <Input
                                     id="name"
                                     value={form.data.name}
                                     onChange={(event) =>
-                                        form.setData('name', event.target.value)
+                                        form.setData("name", event.target.value)
                                     }
                                     required
                                 />
@@ -71,7 +71,7 @@ export default function AdminTeams({
                             </div>
                             <div className="grid gap-2">
                                 <Label htmlFor="owner_email">
-                                    {t('Owner email')}
+                                    {t("Owner email")}
                                 </Label>
                                 <Input
                                     id="owner_email"
@@ -79,7 +79,7 @@ export default function AdminTeams({
                                     value={form.data.owner_email}
                                     onChange={(event) =>
                                         form.setData(
-                                            'owner_email',
+                                            "owner_email",
                                             event.target.value,
                                         )
                                     }
@@ -90,14 +90,14 @@ export default function AdminTeams({
                             <div className="flex gap-3">
                                 <Button disabled={form.processing}>
                                     {form.processing && <Spinner />}
-                                    {t('Create team')}
+                                    {t("Create team")}
                                 </Button>
                                 <Button
                                     type="button"
                                     variant="outline"
                                     onClick={() => setCreating(false)}
                                 >
-                                    {t('Cancel')}
+                                    {t("Cancel")}
                                 </Button>
                             </div>
                         </form>
@@ -106,15 +106,15 @@ export default function AdminTeams({
 
                 <SettingsSection
                     flush
-                    title={t('Teams')}
-                    description={t(':count teams in total', {
+                    title={t("Teams")}
+                    description={t(":count teams in total", {
                         count: totals.all,
                     })}
                     action={
                         !creating && (
                             <Button onClick={() => setCreating(true)}>
                                 <Plus className="size-4" />
-                                {t('New team')}
+                                {t("New team")}
                             </Button>
                         )
                     }
@@ -134,14 +134,14 @@ export default function AdminTeams({
                         <Input
                             value={search}
                             onChange={(event) => setSearch(event.target.value)}
-                            placeholder={t('Search by team or owner')}
+                            placeholder={t("Search by team or owner")}
                             className="pl-9"
                         />
                     </form>
 
                     {teams.data.length === 0 ? (
                         <p className="p-8 text-center text-sm text-muted-foreground">
-                            {t('No teams found')}
+                            {t("No teams found")}
                         </p>
                     ) : (
                         <ul className="divide-y">
@@ -158,17 +158,17 @@ export default function AdminTeams({
                                             <p className="truncate text-sm text-muted-foreground">
                                                 {team.owner
                                                     ? `${team.owner.name} · ${team.owner.email}`
-                                                    : '—'}
+                                                    : "—"}
                                             </p>
                                         </div>
                                         <div className="flex gap-4 text-sm text-muted-foreground">
                                             <span>
-                                                {t(':count members', {
+                                                {t(":count members", {
                                                     count: team.members_count,
                                                 })}
                                             </span>
                                             <span>
-                                                {t(':count servers', {
+                                                {t(":count servers", {
                                                     count: team.servers_count,
                                                 })}
                                             </span>

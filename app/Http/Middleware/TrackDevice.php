@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Http\Controllers\Admin\ImpersonationController;
 use App\Models\User;
 use App\Models\UserDevice;
 use App\Support\DeviceDetector;
@@ -34,7 +35,7 @@ class TrackDevice
         $user = $request->user();
 
         // The shared demo account is signed in by many visitors, there are no devices to remember.
-        if ($user === null || $user->is_demo) {
+        if ($user === null || $user->is_demo || $request->session()->has(ImpersonationController::SESSION_KEY)) {
             return $next($request);
         }
 

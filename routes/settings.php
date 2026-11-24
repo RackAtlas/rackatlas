@@ -26,7 +26,7 @@ Route::middleware(['auth'])->group(function () {
 });
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::delete('app/settings/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::delete('app/settings/profile', [ProfileController::class, 'destroy'])->middleware('not.impersonating')->name('profile.destroy');
 
     Route::get('app/two-factor-required', [TwoFactorRequiredController::class, 'show'])->name('two-factor.required');
 
@@ -35,11 +35,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('security.edit');
 
     Route::put('app/settings/password', [SecurityController::class, 'update'])
-        ->middleware('throttle:6,1')
+        ->middleware(['throttle:6,1', 'not.impersonating'])
         ->name('user-password.update');
 
     Route::put('app/settings/password-login', [SecurityController::class, 'updatePasswordLogin'])
-        ->middleware([RequirePassword::class, 'throttle:6,1'])
+        ->middleware([RequirePassword::class, 'throttle:6,1', 'not.impersonating'])
         ->name('password-login.update');
 
     Route::redirect('app/settings/appearance', '/app/settings/profile')->name('appearance.edit');

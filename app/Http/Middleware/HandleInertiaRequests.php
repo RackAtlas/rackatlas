@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Enums\PermissionLevel;
+use App\Http\Controllers\Admin\ImpersonationController;
 use App\Http\Controllers\CurrentTeamController;
 use App\Services\TurnstileVerifier;
 use Illuminate\Http\Request;
@@ -68,6 +69,7 @@ class HandleInertiaRequests extends Middleware
             'locales' => config('app.supported_locales'),
             'translations' => $this->translations(),
             'permissions' => fn () => $this->currentPermissions($request, $currentTeam['id'] ?? null),
+            'impersonating' => fn () => $this->impersonating($request),
             'auth' => [
                 'user' => $request->user(),
             ],
@@ -75,6 +77,18 @@ class HandleInertiaRequests extends Middleware
             'biometrics' => (bool) TrackDevice::current($request)?->biometrics_enabled,
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
         ];
+    }
+
+    /**
+     * Who the signed-in administrator is working as, or null when this is the user's own session.
+     *
+     * @return array{name: string, email: string}|null
+     */
+    private function impersonating(Request $request): ?array
+    {
+        return $request->session()->has(ImpersonationController::SESSION_KEY) && $request->user() !== null
+            ? $request->user()->only('name', 'email')
+            : null;
     }
 
     /**

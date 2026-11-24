@@ -1,13 +1,14 @@
-import { DemoBanner } from '@/components/demo-banner';
-import { AppContent } from '@/components/app-content';
-import { AppShell } from '@/components/app-shell';
-import { AppSidebar } from '@/components/app-sidebar';
-import { AppSidebarHeader } from '@/components/app-sidebar-header';
-import { BiometricGate } from '@/components/biometric-gate';
-import { MobileTabBar } from '@/components/mobile-tab-bar';
-import { NativeExtras } from '@/components/native-extras';
-import { NativePush } from '@/components/native-push';
-import type { AppLayoutProps } from '@/types';
+import { DemoBanner } from "@/components/demo-banner";
+import { ImpersonationBanner } from "@/components/impersonation-banner";
+import { AppContent } from "@/components/app-content";
+import { AppShell } from "@/components/app-shell";
+import { AppSidebar } from "@/components/app-sidebar";
+import { AppSidebarHeader } from "@/components/app-sidebar-header";
+import { BiometricGate } from "@/components/biometric-gate";
+import { MobileTabBar } from "@/components/mobile-tab-bar";
+import { NativeExtras } from "@/components/native-extras";
+import { NativePush } from "@/components/native-push";
+import type { AppLayoutProps } from "@/types";
 
 export default function AppSidebarLayout({
     children,
@@ -21,6 +22,7 @@ export default function AppSidebarLayout({
                 className="min-w-0 overflow-x-clip pb-[calc(3.5rem+env(safe-area-inset-bottom))] native:pb-[calc(6rem+env(safe-area-inset-bottom))] md:pb-0"
             >
                 <DemoBanner />
+                <ImpersonationBanner />
                 <AppSidebarHeader breadcrumbs={breadcrumbs} />
                 {children}
             </AppContent>

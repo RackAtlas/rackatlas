@@ -1,6 +1,6 @@
-import type { ReactNode } from 'react';
-import CookieConsent from '@/components/privacy-choices';
-import { useDocumentLocale } from '@/hooks/use-translation';
+import type { ReactNode } from "react";
+import CookieConsent from "@/components/privacy-choices";
+import { useDocumentLocale } from "@/hooks/use-translation";
 
 /**
  * Pages for visitors that are not signed in: no sidebar, the page draws everything itself.

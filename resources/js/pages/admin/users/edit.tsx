@@ -1,18 +1,19 @@
-import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
-import { ArrowLeft } from 'lucide-react';
-import type { FormEvent } from 'react';
-import UserController from '@/actions/App/Http/Controllers/Admin/UserController';
-import InputError from '@/components/input-error';
-import { SettingsSection } from '@/components/settings/section';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Spinner } from '@/components/ui/spinner';
-import { Switch } from '@/components/ui/switch';
-import { useTranslation } from '@/hooks/use-translation';
-import { show as showTeam } from '@/routes/admin/teams';
-import type { Auth, TeamRole } from '@/types';
+import { Head, Link, router, useForm, usePage } from "@inertiajs/react";
+import { ArrowLeft } from "lucide-react";
+import type { FormEvent } from "react";
+import ImpersonationController from "@/actions/App/Http/Controllers/Admin/ImpersonationController";
+import UserController from "@/actions/App/Http/Controllers/Admin/UserController";
+import InputError from "@/components/input-error";
+import { SettingsSection } from "@/components/settings/section";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Spinner } from "@/components/ui/spinner";
+import { Switch } from "@/components/ui/switch";
+import { useTranslation } from "@/hooks/use-translation";
+import { show as showTeam } from "@/routes/admin/teams";
+import type { Auth, TeamRole } from "@/types";
 
 type Member = {
     id: number;
@@ -40,9 +41,9 @@ export default function EditUser({ member }: { member: Member | null }) {
     const isSelf = member?.id === auth.user.id;
 
     const form = useForm({
-        name: member?.name ?? '',
-        email: member?.email ?? '',
-        password: '',
+        name: member?.name ?? "",
+        email: member?.email ?? "",
+        password: "",
         is_admin: member?.is_admin ?? false,
         email_verified: member?.verified ?? true,
         two_factor_required: member?.two_factor_required ?? false,
@@ -56,7 +57,7 @@ export default function EditUser({ member }: { member: Member | null }) {
         if (member) {
             form.put(UserController.update.url(member.id), {
                 preserveScroll: true,
-                onSuccess: () => form.setData('password', ''),
+                onSuccess: () => form.setData("password", ""),
             });
         } else {
             form.post(UserController.store.url());
@@ -73,7 +74,7 @@ export default function EditUser({ member }: { member: Member | null }) {
 
     return (
         <>
-            <Head title={member?.name ?? t('New user')} />
+            <Head title={member?.name ?? t("New user")} />
 
             <div className="max-w-4xl space-y-6">
                 <Link
@@ -81,25 +82,25 @@ export default function EditUser({ member }: { member: Member | null }) {
                     className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
                 >
                     <ArrowLeft className="size-4" />
-                    {t('Users')}
+                    {t("Users")}
                 </Link>
 
                 <SettingsSection
-                    title={member ? member.name : t('New user')}
+                    title={member ? member.name : t("New user")}
                     description={
                         member
                             ? member.email
-                            : t('The account is created immediately.')
+                            : t("The account is created immediately.")
                     }
                 >
                     <form onSubmit={submit} className="space-y-6">
                         <div className="grid gap-2">
-                            <Label htmlFor="name">{t('Name')}</Label>
+                            <Label htmlFor="name">{t("Name")}</Label>
                             <Input
                                 id="name"
                                 value={form.data.name}
                                 onChange={(event) =>
-                                    form.setData('name', event.target.value)
+                                    form.setData("name", event.target.value)
                                 }
                                 required
                             />
@@ -107,13 +108,13 @@ export default function EditUser({ member }: { member: Member | null }) {
                         </div>
 
                         <div className="grid gap-2">
-                            <Label htmlFor="email">{t('Email')}</Label>
+                            <Label htmlFor="email">{t("Email")}</Label>
                             <Input
                                 id="email"
                                 type="email"
                                 value={form.data.email}
                                 onChange={(event) =>
-                                    form.setData('email', event.target.value)
+                                    form.setData("email", event.target.value)
                                 }
                                 required
                             />
@@ -123,8 +124,8 @@ export default function EditUser({ member }: { member: Member | null }) {
                         <div className="grid gap-2">
                             <Label htmlFor="password">
                                 {member
-                                    ? t('New password (leave empty to keep)')
-                                    : t('Password')}
+                                    ? t("New password (leave empty to keep)")
+                                    : t("Password")}
                             </Label>
                             <Input
                                 id="password"
@@ -132,7 +133,7 @@ export default function EditUser({ member }: { member: Member | null }) {
                                 autoComplete="new-password"
                                 value={form.data.password}
                                 onChange={(event) =>
-                                    form.setData('password', event.target.value)
+                                    form.setData("password", event.target.value)
                                 }
                                 required={!member}
                             />
@@ -142,11 +143,11 @@ export default function EditUser({ member }: { member: Member | null }) {
                         <div className="flex items-center justify-between gap-4 rounded-lg border bg-card p-4">
                             <div>
                                 <Label htmlFor="is_admin">
-                                    {t('Administrator')}
+                                    {t("Administrator")}
                                 </Label>
                                 <p className="text-sm text-muted-foreground">
                                     {t(
-                                        'Can manage all users and teams of the application.',
+                                        "Can manage all users and teams of the application.",
                                     )}
                                 </p>
                                 <InputError message={errors.is_admin} />
@@ -155,7 +156,7 @@ export default function EditUser({ member }: { member: Member | null }) {
                                 id="is_admin"
                                 checked={form.data.is_admin}
                                 onCheckedChange={(value) =>
-                                    form.setData('is_admin', value)
+                                    form.setData("is_admin", value)
                                 }
                                 data-test="admin-switch"
                             />
@@ -164,11 +165,11 @@ export default function EditUser({ member }: { member: Member | null }) {
                         <div className="flex items-center justify-between gap-4 rounded-lg border bg-card p-4">
                             <div>
                                 <Label htmlFor="email_verified">
-                                    {t('Email verified')}
+                                    {t("Email verified")}
                                 </Label>
                                 <p className="text-sm text-muted-foreground">
                                     {t(
-                                        'Unverified users cannot open the application.',
+                                        "Unverified users cannot open the application.",
                                     )}
                                 </p>
                             </div>
@@ -176,7 +177,7 @@ export default function EditUser({ member }: { member: Member | null }) {
                                 id="email_verified"
                                 checked={form.data.email_verified}
                                 onCheckedChange={(value) =>
-                                    form.setData('email_verified', value)
+                                    form.setData("email_verified", value)
                                 }
                             />
                         </div>
@@ -184,11 +185,11 @@ export default function EditUser({ member }: { member: Member | null }) {
                         <div className="flex items-center justify-between gap-4 rounded-lg border bg-card p-4">
                             <div>
                                 <Label htmlFor="two_factor_required">
-                                    {t('Require two-factor authentication')}
+                                    {t("Require two-factor authentication")}
                                 </Label>
                                 <p className="text-sm text-muted-foreground">
                                     {t(
-                                        'The user has to turn on two-factor authentication at the next sign-in and cannot turn it off.',
+                                        "The user has to turn on two-factor authentication at the next sign-in and cannot turn it off.",
                                     )}
                                 </p>
                                 <InputError
@@ -199,7 +200,7 @@ export default function EditUser({ member }: { member: Member | null }) {
                                 id="two_factor_required"
                                 checked={form.data.two_factor_required}
                                 onCheckedChange={(value) =>
-                                    form.setData('two_factor_required', value)
+                                    form.setData("two_factor_required", value)
                                 }
                                 data-test="two-factor-required-switch"
                             />
@@ -207,7 +208,7 @@ export default function EditUser({ member }: { member: Member | null }) {
 
                         <Button disabled={form.processing}>
                             {form.processing && <Spinner />}
-                            {member ? t('Save') : t('Create user')}
+                            {member ? t("Save") : t("Create user")}
                         </Button>
                     </form>
                 </SettingsSection>
@@ -216,14 +217,14 @@ export default function EditUser({ member }: { member: Member | null }) {
                     <>
                         <SettingsSection
                             flush
-                            title={t('Teams')}
+                            title={t("Teams")}
                             description={t(
-                                'Teams this user belongs to (click to manage)',
+                                "Teams this user belongs to (click to manage)",
                             )}
                         >
                             {member.teams.length === 0 ? (
                                 <p className="p-6 text-sm text-muted-foreground">
-                                    {t('Not a member of any team.')}
+                                    {t("Not a member of any team.")}
                                 </p>
                             ) : (
                                 <ul className="divide-y">
@@ -237,18 +238,18 @@ export default function EditUser({ member }: { member: Member | null }) {
                                                     {team.name}
                                                 </span>
                                                 <span className="flex items-center gap-2 text-sm text-muted-foreground">
-                                                    {t(':count servers', {
+                                                    {t(":count servers", {
                                                         count: team.servers_count,
                                                     })}
                                                     <Badge variant="secondary">
                                                         {t(
                                                             team.role ===
-                                                                'owner'
-                                                                ? 'Owner'
+                                                                "owner"
+                                                                ? "Owner"
                                                                 : team.role ===
-                                                                    'admin'
-                                                                  ? 'Admin'
-                                                                  : 'Member',
+                                                                    "admin"
+                                                                  ? "Admin"
+                                                                  : "Member",
                                                         )}
                                                     </Badge>
                                                 </span>
@@ -260,22 +261,43 @@ export default function EditUser({ member }: { member: Member | null }) {
                         </SettingsSection>
 
                         <SettingsSection
-                            title={t('Security')}
+                            title={t("Security")}
                             description={t(
-                                ':passkeys passkeys, :devices active devices',
+                                ":passkeys passkeys, :devices active devices",
                                 {
                                     passkeys: member.passkeys,
                                     devices: member.devices,
                                 },
                             )}
                         >
+                            <InputError message={errors.impersonate} />
                             <div className="flex flex-wrap gap-3">
+                                <Button
+                                    disabled={isSelf || member.is_admin}
+                                    onClick={() =>
+                                        act(
+                                            t(
+                                                "Sign in as :name? You will work in their account until you leave it.",
+                                                { name: member.name },
+                                            ),
+                                            () =>
+                                                router.post(
+                                                    ImpersonationController.start.url(
+                                                        member.id,
+                                                    ),
+                                                ),
+                                        )
+                                    }
+                                    data-test="admin-impersonate"
+                                >
+                                    {t("Sign in as this user")}
+                                </Button>
                                 <Button
                                     variant="outline"
                                     onClick={() =>
                                         act(
                                             t(
-                                                'Sign :name out on all devices?',
+                                                "Sign :name out on all devices?",
                                                 { name: member.name },
                                             ),
                                             () =>
@@ -289,7 +311,7 @@ export default function EditUser({ member }: { member: Member | null }) {
                                         )
                                     }
                                 >
-                                    {t('Sign out everywhere')}
+                                    {t("Sign out everywhere")}
                                 </Button>
                                 <Button
                                     variant="outline"
@@ -297,7 +319,7 @@ export default function EditUser({ member }: { member: Member | null }) {
                                     onClick={() =>
                                         act(
                                             t(
-                                                'Turn off two-factor authentication for :name?',
+                                                "Turn off two-factor authentication for :name?",
                                                 { name: member.name },
                                             ),
                                             () =>
@@ -311,26 +333,26 @@ export default function EditUser({ member }: { member: Member | null }) {
                                     }
                                 >
                                     {member.two_factor
-                                        ? t('Reset two-factor authentication')
-                                        : t('Two-factor authentication is off')}
+                                        ? t("Reset two-factor authentication")
+                                        : t("Two-factor authentication is off")}
                                 </Button>
                             </div>
                         </SettingsSection>
 
                         <SettingsSection
                             danger
-                            title={t('Delete user')}
+                            title={t("Delete user")}
                             description={
                                 ownedTeams.length > 0
                                     ? t(
-                                          'The teams owned by this user (:teams) are deleted with all their servers.',
+                                          "The teams owned by this user (:teams) are deleted with all their servers.",
                                           {
                                               teams: ownedTeams
                                                   .map((team) => team.name)
-                                                  .join(', '),
+                                                  .join(", "),
                                           },
                                       )
-                                    : t('This cannot be undone.')
+                                    : t("This cannot be undone.")
                             }
                         >
                             <InputError message={errors.delete} />
@@ -339,7 +361,7 @@ export default function EditUser({ member }: { member: Member | null }) {
                                 disabled={isSelf}
                                 onClick={() =>
                                     act(
-                                        t('Delete :name permanently?', {
+                                        t("Delete :name permanently?", {
                                             name: member.name,
                                         }),
                                         () =>
@@ -352,7 +374,7 @@ export default function EditUser({ member }: { member: Member | null }) {
                                 }
                                 data-test="admin-delete-user"
                             >
-                                {t('Delete user')}
+                                {t("Delete user")}
                             </Button>
                         </SettingsSection>
                     </>

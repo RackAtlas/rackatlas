@@ -1,5 +1,5 @@
-import { Link } from '@inertiajs/react';
-import type { LucideIcon } from 'lucide-react';
+import { Link } from "@inertiajs/react";
+import type { LucideIcon } from "lucide-react";
 import {
     Bell,
     ChevronsUpDown,
@@ -8,26 +8,26 @@ import {
     ShieldCheck,
     User,
     Users,
-} from 'lucide-react';
-import type { PropsWithChildren } from 'react';
-import { useState } from 'react';
+} from "lucide-react";
+import type { PropsWithChildren } from "react";
+import { useState } from "react";
 import {
     Sheet,
     SheetContent,
     SheetDescription,
     SheetTitle,
-} from '@/components/ui/sheet';
-import { useCurrentUrl } from '@/hooks/use-current-url';
-import { usePermissions } from '@/hooks/use-permissions';
-import { useTranslation } from '@/hooks/use-translation';
-import { cn, toUrl } from '@/lib/utils';
-import { index as devicesIndex } from '@/routes/devices';
-import { edit as editNotifications } from '@/routes/notifications';
-import { edit } from '@/routes/profile';
-import { edit as editSecurity } from '@/routes/security';
-import { index as serversIndex } from '@/routes/servers';
-import { index as teamsIndex } from '@/routes/teams';
-import type { NavItem } from '@/types';
+} from "@/components/ui/sheet";
+import { useCurrentUrl } from "@/hooks/use-current-url";
+import { usePermissions } from "@/hooks/use-permissions";
+import { useTranslation } from "@/hooks/use-translation";
+import { cn, toUrl } from "@/lib/utils";
+import { index as devicesIndex } from "@/routes/devices";
+import { edit as editNotifications } from "@/routes/notifications";
+import { edit } from "@/routes/profile";
+import { edit as editSecurity } from "@/routes/security";
+import { index as serversIndex } from "@/routes/servers";
+import { index as teamsIndex } from "@/routes/teams";
+import type { NavItem } from "@/types";
 
 type SettingsItem = NavItem & {
     icon: LucideIcon;
@@ -36,51 +36,52 @@ type SettingsItem = NavItem & {
 
 const allGroups: { title: string; items: SettingsItem[] }[] = [
     {
-        title: 'Account',
+        title: "Account",
         items: [
             {
-                title: 'Profile',
+                title: "Profile",
                 href: edit(),
                 icon: User,
-                description: 'Your name, email, appearance and language',
+                description: "Your name, email, appearance and language",
             },
             {
-                title: 'Security',
+                title: "Security",
                 href: editSecurity(),
                 icon: ShieldCheck,
-                description: 'Password, two-factor authentication and passkeys',
+                description: "Password, two-factor authentication and passkeys",
             },
             {
-                title: 'Devices',
+                title: "Devices",
                 href: devicesIndex(),
                 icon: MonitorSmartphone,
                 description:
-                    'Where you are signed in and the layout of each device',
+                    "Where you are signed in and the layout of each device",
             },
         ],
     },
     {
-        title: 'Workspace',
+        title: "Workspace",
         items: [
             {
-                title: 'Teams',
+                title: "Teams",
                 href: teamsIndex(),
                 icon: Users,
-                description: 'Your teams, their members and invitations',
+                description: "Your teams, their members and invitations",
             },
             {
-                title: 'Servers',
+                title: "Servers",
                 href: serversIndex(),
                 icon: Server,
-                permission: 'servers.view',
-                description: 'The servers of your team and how they are connected',
+                permission: "servers.view",
+                description:
+                    "The servers of your team and how they are connected",
             },
             {
-                title: 'Notifications',
+                title: "Notifications",
                 href: editNotifications(),
                 icon: Bell,
                 description:
-                    'Get a message when something is wrong on your servers.',
+                    "Get a message when something is wrong on your servers.",
             },
         ],
     },
@@ -107,9 +108,9 @@ export default function SettingsLayout({ children }: PropsWithChildren) {
     return (
         <div className="mx-auto w-full max-w-[100rem] p-4 md:p-6">
             <div className="mb-4 space-y-1 lg:mb-8">
-                <h1 className="text-2xl font-semibold">{t('Settings')}</h1>
+                <h1 className="text-2xl font-semibold">{t("Settings")}</h1>
                 <p className="text-sm text-muted-foreground">
-                    {t('Manage your profile and account settings')}
+                    {t("Manage your profile and account settings")}
                 </p>
             </div>
 
@@ -144,13 +145,13 @@ export default function SettingsLayout({ children }: PropsWithChildren) {
                         >
                             <div className="mx-auto mt-2 h-1 w-10 rounded-full bg-muted" />
                             <SheetTitle className="px-5 pt-3 pb-1 text-base">
-                                {t('Settings')}
+                                {t("Settings")}
                             </SheetTitle>
                             <SheetDescription className="sr-only">
-                                {t('Manage your profile and account settings')}
+                                {t("Manage your profile and account settings")}
                             </SheetDescription>
                             <nav
-                                aria-label={t('Settings')}
+                                aria-label={t("Settings")}
                                 className="space-y-4 p-4"
                             >
                                 {groups.map((group) => (
@@ -173,12 +174,12 @@ export default function SettingsLayout({ children }: PropsWithChildren) {
                                                     }
                                                     aria-current={
                                                         active
-                                                            ? 'page'
+                                                            ? "page"
                                                             : undefined
                                                     }
                                                     className={cn(
-                                                        'flex items-center gap-3 rounded-xl p-2.5 active:bg-muted',
-                                                        active && 'bg-muted',
+                                                        "flex items-center gap-3 rounded-xl p-2.5 active:bg-muted",
+                                                        active && "bg-muted",
                                                     )}
                                                 >
                                                     <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
@@ -206,7 +207,7 @@ export default function SettingsLayout({ children }: PropsWithChildren) {
 
                 {/* Computers: tabs under the heading. */}
                 <nav
-                    aria-label={t('Settings')}
+                    aria-label={t("Settings")}
                     className="hidden gap-1 border-b lg:flex"
                 >
                     {items.map((item) => {
@@ -216,18 +217,18 @@ export default function SettingsLayout({ children }: PropsWithChildren) {
                             <Link
                                 key={toUrl(item.href)}
                                 href={item.href}
-                                aria-current={active ? 'page' : undefined}
+                                aria-current={active ? "page" : undefined}
                                 className={cn(
-                                    '-mb-px flex items-center gap-2 border-b-2 px-4 py-2.5 text-sm transition-colors',
+                                    "-mb-px flex items-center gap-2 border-b-2 px-4 py-2.5 text-sm transition-colors",
                                     active
-                                        ? 'border-primary font-medium text-foreground'
-                                        : 'border-transparent text-muted-foreground hover:border-border hover:text-foreground',
+                                        ? "border-primary font-medium text-foreground"
+                                        : "border-transparent text-muted-foreground hover:border-border hover:text-foreground",
                                 )}
                             >
                                 <item.icon
                                     className={cn(
-                                        'size-4',
-                                        active && 'text-primary',
+                                        "size-4",
+                                        active && "text-primary",
                                     )}
                                 />
                                 {t(item.title)}

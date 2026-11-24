@@ -1,11 +1,11 @@
-import { useEffect } from 'react';
-import { useDocumentLocale } from '@/hooks/use-translation';
-import AuthLayoutTemplate from '@/layouts/auth/auth-split-layout';
-import { resetNativePrompts } from '@/lib/native';
+import { useEffect } from "react";
+import { useDocumentLocale } from "@/hooks/use-translation";
+import AuthLayoutTemplate from "@/layouts/auth/auth-split-layout";
+import { resetNativePrompts } from "@/lib/native";
 
 export default function AuthLayout({
-    title = '',
-    description = '',
+    title = "",
+    description = "",
     children,
 }: {
     title?: string;

@@ -1,24 +1,24 @@
-import { Head, Link, router, useForm } from '@inertiajs/react';
-import { ArrowLeft, Crown, UserMinus } from 'lucide-react';
-import type { FormEvent } from 'react';
-import { useState } from 'react';
-import TeamController from '@/actions/App/Http/Controllers/Admin/TeamController';
-import InputError from '@/components/input-error';
-import { SettingsSection } from '@/components/settings/section';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Head, Link, router, useForm } from "@inertiajs/react";
+import { ArrowLeft, Crown, UserMinus } from "lucide-react";
+import type { FormEvent } from "react";
+import { useState } from "react";
+import TeamController from "@/actions/App/Http/Controllers/Admin/TeamController";
+import InputError from "@/components/input-error";
+import { SettingsSection } from "@/components/settings/section";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
     Select,
     SelectContent,
     SelectItem,
     SelectTrigger,
     SelectValue,
-} from '@/components/ui/select';
-import { Spinner } from '@/components/ui/spinner';
-import { useTranslation } from '@/hooks/use-translation';
-import { edit as editUser } from '@/routes/admin/users';
-import type { TeamMember, TeamRole } from '@/types';
+} from "@/components/ui/select";
+import { Spinner } from "@/components/ui/spinner";
+import { useTranslation } from "@/hooks/use-translation";
+import { edit as editUser } from "@/routes/admin/users";
+import type { TeamMember, TeamRole } from "@/types";
 
 type Props = {
     team: {
@@ -30,24 +30,24 @@ type Props = {
         invitations_count: number;
         created_at: string | null;
     };
-    members: (Omit<TeamMember, 'role'> & { role: TeamRole })[];
+    members: (Omit<TeamMember, "role"> & { role: TeamRole })[];
     assignableRoles: TeamRole[];
 };
 
 const roleLabel: Record<TeamRole, string> = {
-    owner: 'Owner',
-    admin: 'Admin',
-    member: 'Member',
+    owner: "Owner",
+    admin: "Admin",
+    member: "Member",
 };
 
 export default function AdminTeam({ team, members, assignableRoles }: Props) {
     const { t } = useTranslation();
-    const [newOwner, setNewOwner] = useState('');
+    const [newOwner, setNewOwner] = useState("");
 
     const rename = useForm({ name: team.name });
     const add = useForm({
-        email: '',
-        role: (assignableRoles.at(-1) ?? 'member') as string,
+        email: "",
+        role: (assignableRoles.at(-1) ?? "member") as string,
     });
     const addErrors = add.errors as Record<string, string | undefined>;
 
@@ -62,7 +62,7 @@ export default function AdminTeam({ team, members, assignableRoles }: Props) {
         event.preventDefault();
         add.post(TeamController.addMember.url(team.id), {
             preserveScroll: true,
-            onSuccess: () => add.setData('email', ''),
+            onSuccess: () => add.setData("email", ""),
         });
     };
 
@@ -78,13 +78,13 @@ export default function AdminTeam({ team, members, assignableRoles }: Props) {
                     className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
                 >
                     <ArrowLeft className="size-4" />
-                    {t('Teams')}
+                    {t("Teams")}
                 </Link>
 
                 <SettingsSection
                     title={team.name}
                     description={t(
-                        ':servers servers, :keys SSH keys, :invitations pending invitations',
+                        ":servers servers, :keys SSH keys, :invitations pending invitations",
                         {
                             servers: team.servers_count,
                             keys: team.ssh_keys_count,
@@ -94,28 +94,28 @@ export default function AdminTeam({ team, members, assignableRoles }: Props) {
                 >
                     <form onSubmit={submitRename} className="space-y-6">
                         <div className="grid gap-2">
-                            <Label htmlFor="name">{t('Team name')}</Label>
+                            <Label htmlFor="name">{t("Team name")}</Label>
                             <Input
                                 id="name"
                                 value={rename.data.name}
                                 onChange={(event) =>
-                                    rename.setData('name', event.target.value)
+                                    rename.setData("name", event.target.value)
                                 }
                                 required
                             />
                             <InputError message={rename.errors.name} />
                         </div>
                         <Button disabled={rename.processing}>
-                            {t('Save')}
+                            {t("Save")}
                         </Button>
                     </form>
                 </SettingsSection>
 
                 <SettingsSection
                     flush
-                    title={t('Members')}
+                    title={t("Members")}
                     description={t(
-                        'The owner is changed with a transfer of ownership below.',
+                        "The owner is changed with a transfer of ownership below.",
                     )}
                 >
                     <ul className="divide-y">
@@ -188,12 +188,12 @@ export default function AdminTeam({ team, members, assignableRoles }: Props) {
                                             <Button
                                                 variant="ghost"
                                                 size="icon"
-                                                aria-label={t('Remove member')}
+                                                aria-label={t("Remove member")}
                                                 onClick={() => {
                                                     if (
                                                         window.confirm(
                                                             t(
-                                                                'Remove :member from :team?',
+                                                                "Remove :member from :team?",
                                                                 {
                                                                     member: member.name,
                                                                     team: team.name,
@@ -226,9 +226,9 @@ export default function AdminTeam({ team, members, assignableRoles }: Props) {
                 </SettingsSection>
 
                 <SettingsSection
-                    title={t('Add member')}
+                    title={t("Add member")}
                     description={t(
-                        'The user has to have an account already. No invitation is sent.',
+                        "The user has to have an account already. No invitation is sent.",
                     )}
                 >
                     <form
@@ -236,24 +236,24 @@ export default function AdminTeam({ team, members, assignableRoles }: Props) {
                         className="grid gap-4 sm:grid-cols-[1fr_10rem_auto] sm:items-end"
                     >
                         <div className="grid gap-2">
-                            <Label htmlFor="member_email">{t('Email')}</Label>
+                            <Label htmlFor="member_email">{t("Email")}</Label>
                             <Input
                                 id="member_email"
                                 type="email"
                                 value={add.data.email}
                                 onChange={(event) =>
-                                    add.setData('email', event.target.value)
+                                    add.setData("email", event.target.value)
                                 }
                                 required
                             />
                             <InputError message={addErrors.email} />
                         </div>
                         <div className="grid gap-2">
-                            <Label>{t('Role')}</Label>
+                            <Label>{t("Role")}</Label>
                             <Select
                                 value={add.data.role}
                                 onValueChange={(role) =>
-                                    add.setData('role', role)
+                                    add.setData("role", role)
                                 }
                             >
                                 <SelectTrigger>
@@ -270,22 +270,22 @@ export default function AdminTeam({ team, members, assignableRoles }: Props) {
                         </div>
                         <Button disabled={add.processing}>
                             {add.processing && <Spinner />}
-                            {t('Add')}
+                            {t("Add")}
                         </Button>
                     </form>
                 </SettingsSection>
 
                 <SettingsSection
-                    title={t('Transfer ownership')}
+                    title={t("Transfer ownership")}
                     description={t(
-                        'The new owner has to be a member. The previous owner becomes an administrator.',
+                        "The new owner has to be a member. The previous owner becomes an administrator.",
                     )}
                 >
                     <div className="flex flex-wrap items-center gap-3">
                         <Select value={newOwner} onValueChange={setNewOwner}>
                             <SelectTrigger className="w-64">
                                 <SelectValue
-                                    placeholder={t('Choose a member')}
+                                    placeholder={t("Choose a member")}
                                 />
                             </SelectTrigger>
                             <SelectContent avoidCollisions>
@@ -301,7 +301,7 @@ export default function AdminTeam({ team, members, assignableRoles }: Props) {
                         </Select>
                         <Button
                             variant="outline"
-                            disabled={newOwner === ''}
+                            disabled={newOwner === ""}
                             onClick={() =>
                                 router.put(
                                     TeamController.transferOwnership.url(
@@ -310,21 +310,21 @@ export default function AdminTeam({ team, members, assignableRoles }: Props) {
                                     { user_id: Number(newOwner) },
                                     {
                                         preserveScroll: true,
-                                        onSuccess: () => setNewOwner(''),
+                                        onSuccess: () => setNewOwner(""),
                                     },
                                 )
                             }
                         >
-                            {t('Transfer')}
+                            {t("Transfer")}
                         </Button>
                     </div>
                 </SettingsSection>
 
                 <SettingsSection
                     danger
-                    title={t('Delete team')}
+                    title={t("Delete team")}
                     description={t(
-                        'All servers, metrics and SSH keys of the team are deleted. This cannot be undone.',
+                        "All servers, metrics and SSH keys of the team are deleted. This cannot be undone.",
                     )}
                 >
                     <Button
@@ -332,7 +332,7 @@ export default function AdminTeam({ team, members, assignableRoles }: Props) {
                         onClick={() => {
                             if (
                                 window.confirm(
-                                    t('Delete :team permanently?', {
+                                    t("Delete :team permanently?", {
                                         team: team.name,
                                     }),
                                 )
@@ -343,7 +343,7 @@ export default function AdminTeam({ team, members, assignableRoles }: Props) {
                             }
                         }}
                     >
-                        {t('Delete team')}
+                        {t("Delete team")}
                     </Button>
                 </SettingsSection>
             </div>

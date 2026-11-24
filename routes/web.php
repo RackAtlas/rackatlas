@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\Admin\ActivityController as AdminActivityController;
+use App\Http\Controllers\Admin\ApiLogController as AdminApiLogController;
+use App\Http\Controllers\Admin\ImpersonationController as AdminImpersonationController;
 use App\Http\Controllers\Admin\TeamController as AdminTeamController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\ApiDocsController;
@@ -170,16 +172,20 @@ Route::prefix('app')->middleware(['auth', 'verified'])->group(function () {
     Route::delete('server-categories/{serverCategory}', [ServerCategoryController::class, 'destroy'])->name('server-categories.destroy');
 });
 
+Route::post('app/impersonation/leave', [AdminImpersonationController::class, 'leave'])->middleware('auth')->name('impersonation.leave');
+
 Route::prefix('app/admin')->name('admin.')->middleware(['auth', 'verified', 'can:access-admin'])->group(function () {
     Route::redirect('/', '/app/admin/users')->name('index');
 
     Route::get('activity', [AdminActivityController::class, 'index'])->name('activity.index');
+    Route::get('api-logs', [AdminApiLogController::class, 'index'])->name('api-logs.index');
 
     Route::get('users', [AdminUserController::class, 'index'])->name('users.index');
     Route::get('users/create', [AdminUserController::class, 'create'])->name('users.create');
     Route::post('users', [AdminUserController::class, 'store'])->name('users.store');
     Route::get('users/{user}', [AdminUserController::class, 'edit'])->name('users.edit');
     Route::put('users/{user}', [AdminUserController::class, 'update'])->name('users.update');
+    Route::post('users/{user}/impersonate', [AdminImpersonationController::class, 'start'])->name('users.impersonate');
     Route::post('users/{user}/sign-out', [AdminUserController::class, 'signOut'])->name('users.sign-out');
     Route::delete('users/{user}/two-factor', [AdminUserController::class, 'resetTwoFactor'])->name('users.two-factor.destroy');
     Route::delete('users/{user}', [AdminUserController::class, 'destroy'])->name('users.destroy');

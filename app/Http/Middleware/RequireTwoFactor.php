@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Http\Controllers\Admin\ImpersonationController;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -26,7 +27,7 @@ class RequireTwoFactor
     {
         $user = $request->user();
 
-        if ($user === null || ! $user->two_factor_required) {
+        if ($user === null || ! $user->two_factor_required || $request->session()->has(ImpersonationController::SESSION_KEY)) {
             return $next($request);
         }
 

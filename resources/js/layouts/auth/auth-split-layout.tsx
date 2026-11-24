@@ -1,37 +1,37 @@
-import { Link, router, usePage } from '@inertiajs/react';
-import { ArrowLeft } from 'lucide-react';
-import AppLogoIcon from '@/components/app-logo-icon';
-import LanguageController from '@/actions/App/Http/Controllers/Settings/LanguageController';
-import { preferencesAllowed } from '@/hooks/use-privacy-choices';
-import { cn } from '@/lib/utils';
-import { home } from '@/routes';
-import type { AuthLayoutProps } from '@/types';
-import { useTranslation } from '@/hooks/use-translation';
+import { Link, router, usePage } from "@inertiajs/react";
+import { ArrowLeft } from "lucide-react";
+import AppLogoIcon from "@/components/app-logo-icon";
+import LanguageController from "@/actions/App/Http/Controllers/Settings/LanguageController";
+import { preferencesAllowed } from "@/hooks/use-privacy-choices";
+import { cn } from "@/lib/utils";
+import { home } from "@/routes";
+import type { AuthLayoutProps } from "@/types";
+import { useTranslation } from "@/hooks/use-translation";
 
 type Unit = {
     name: string;
-    state: 'ok' | 'warn' | 'bad';
+    state: "ok" | "warn" | "bad";
     cpu: number;
     ram: number;
 };
 
 // A rack of sample servers: the same picture the dashboard draws, so the sign-in page already shows the product.
 const units: Unit[] = [
-    { name: 'web-1', state: 'ok', cpu: 34, ram: 52 },
-    { name: 'web-2', state: 'ok', cpu: 28, ram: 47 },
-    { name: 'db-1', state: 'ok', cpu: 61, ram: 78 },
-    { name: 'cache-1', state: 'ok', cpu: 12, ram: 33 },
-    { name: 'backup-1', state: 'warn', cpu: 9, ram: 41 },
-    { name: 'mail-1', state: 'ok', cpu: 18, ram: 36 },
-    { name: 'proxy-1', state: 'ok', cpu: 22, ram: 29 },
-    { name: 'ci-1', state: 'bad', cpu: 0, ram: 0 },
-    { name: 'api-1', state: 'ok', cpu: 44, ram: 58 },
+    { name: "web-1", state: "ok", cpu: 34, ram: 52 },
+    { name: "web-2", state: "ok", cpu: 28, ram: 47 },
+    { name: "db-1", state: "ok", cpu: 61, ram: 78 },
+    { name: "cache-1", state: "ok", cpu: 12, ram: 33 },
+    { name: "backup-1", state: "warn", cpu: 9, ram: 41 },
+    { name: "mail-1", state: "ok", cpu: 18, ram: 36 },
+    { name: "proxy-1", state: "ok", cpu: 22, ram: 29 },
+    { name: "ci-1", state: "bad", cpu: 0, ram: 0 },
+    { name: "api-1", state: "ok", cpu: 44, ram: 58 },
 ];
 
 const dot = {
-    ok: 'bg-emerald-400',
-    warn: 'bg-amber-400',
-    bad: 'bg-red-500',
+    ok: "bg-emerald-400",
+    warn: "bg-amber-400",
+    bad: "bg-red-500",
 } as const;
 
 function LanguageLinks() {
@@ -63,10 +63,10 @@ function LanguageLinks() {
                         )
                     }
                     className={cn(
-                        'rounded-md px-2 py-1 font-mono uppercase transition-colors',
+                        "rounded-md px-2 py-1 font-mono uppercase transition-colors",
                         code === locale
-                            ? 'bg-muted font-medium text-foreground'
-                            : 'text-muted-foreground hover:text-foreground',
+                            ? "bg-muted font-medium text-foreground"
+                            : "text-muted-foreground hover:text-foreground",
                     )}
                 >
                     {code}
@@ -101,7 +101,7 @@ export default function AuthSplitLayout({
                             className="size-5 fill-white"
                             style={
                                 {
-                                    '--logo-dot': '#059669',
+                                    "--logo-dot": "#059669",
                                 } as React.CSSProperties
                             }
                         />
@@ -115,25 +115,25 @@ export default function AuthSplitLayout({
                             <div
                                 key={unit.name}
                                 className={cn(
-                                    'rounded-lg border border-l-[3px] bg-white/[0.04] p-3',
-                                    unit.state === 'ok' &&
-                                        'border-white/10 border-l-emerald-400',
-                                    unit.state === 'warn' &&
-                                        'border-white/10 border-l-amber-400',
-                                    unit.state === 'bad' &&
-                                        'border-red-500/30 border-l-red-500 bg-red-500/[0.07]',
+                                    "rounded-lg border border-l-[3px] bg-white/[0.04] p-3",
+                                    unit.state === "ok" &&
+                                        "border-white/10 border-l-emerald-400",
+                                    unit.state === "warn" &&
+                                        "border-white/10 border-l-amber-400",
+                                    unit.state === "bad" &&
+                                        "border-red-500/30 border-l-red-500 bg-red-500/[0.07]",
                                 )}
                             >
                                 <p className="mb-2.5 flex items-center gap-2 font-mono text-[11px] text-zinc-300">
                                     <span
                                         className={cn(
-                                            'size-1.5 rounded-full',
+                                            "size-1.5 rounded-full",
                                             dot[unit.state],
                                         )}
                                     />
                                     {unit.name}
                                 </p>
-                                {unit.state === 'bad' ? (
+                                {unit.state === "bad" ? (
                                     <p className="font-mono text-[10px] text-red-300">
                                         offline
                                     </p>
@@ -147,12 +147,12 @@ export default function AuthSplitLayout({
                                                 >
                                                     <span
                                                         className={cn(
-                                                            'block h-1 rounded-full',
+                                                            "block h-1 rounded-full",
                                                             unit.state ===
-                                                                'warn' &&
+                                                                "warn" &&
                                                                 index === 1
-                                                                ? 'bg-amber-400'
-                                                                : 'bg-emerald-400/80',
+                                                                ? "bg-amber-400"
+                                                                : "bg-emerald-400/80",
                                                         )}
                                                         style={{
                                                             width: `${value}%`,
@@ -168,13 +168,13 @@ export default function AuthSplitLayout({
                     </div>
                     <div className="space-y-3">
                         <h2 className="text-4xl leading-[1.05] font-semibold tracking-[-0.035em]">
-                            {t('All your servers.')}
+                            {t("All your servers.")}
                             <br />
-                            {t('One screen.')}
+                            {t("One screen.")}
                         </h2>
                         <p className="max-w-sm text-[15px] leading-normal text-zinc-400">
                             {t(
-                                'In 5 seconds you know whether everything is fine, without logging in to individual servers.',
+                                "In 5 seconds you know whether everything is fine, without logging in to individual servers.",
                             )}
                         </p>
                     </div>
@@ -192,7 +192,7 @@ export default function AuthSplitLayout({
                         className="flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground native:hidden"
                     >
                         <ArrowLeft className="size-4" aria-hidden />
-                        {t('Back to home')}
+                        {t("Back to home")}
                     </Link>
                     <LanguageLinks />
                 </div>
@@ -207,7 +207,7 @@ export default function AuthSplitLayout({
                                     className="size-4.5 fill-primary-foreground"
                                     style={
                                         {
-                                            '--logo-dot': 'var(--primary)',
+                                            "--logo-dot": "var(--primary)",
                                         } as React.CSSProperties
                                     }
                                 />

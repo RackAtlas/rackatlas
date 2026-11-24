@@ -7,11 +7,12 @@ use App\Http\Controllers\Api\V1;
 use App\Http\Middleware\AuthenticateAgent;
 use App\Http\Middleware\AuthenticateApiToken;
 use App\Http\Middleware\AuthenticateTerminalBridge;
+use App\Http\Middleware\LogApiRequest;
 use App\Http\Middleware\RequireJson;
 use Illuminate\Support\Facades\Route;
 
 Route::post('agent/ingest', AgentIngestController::class)
-    ->middleware(['throttle:agent', AuthenticateAgent::class])
+    ->middleware(['throttle:agent', LogApiRequest::class.':agent', AuthenticateAgent::class])
     ->name('agent.ingest');
 
 Route::middleware(AuthenticateTerminalBridge::class)->prefix('terminal')->group(function () {
@@ -26,7 +27,7 @@ Route::match(['get', 'post'], 'webhooks/backups/{token}', BackupWebhookControlle
     ->name('webhooks.backups');
 
 // External API for the keys of a team (Grafana and the like): JSON only, read-only, every route needs a scope.
-Route::prefix('v1')->name('api.v1.')->middleware([RequireJson::class, AuthenticateApiToken::class])->group(function () {
+Route::prefix('v1')->name('api.v1.')->middleware([LogApiRequest::class.':v1', RequireJson::class, AuthenticateApiToken::class])->group(function () {
     Route::get('me', V1\MeController::class)->name('me');
     Route::get('widget', V1\WidgetController::class)->middleware('api.scope:servers:read')->name('widget');
 

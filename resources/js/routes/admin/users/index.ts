@@ -414,6 +414,86 @@ updateForm.put = (args: { user: number | { id: number } } | [user: number | { id
 update.form = updateForm
 
 /**
+* @see \App\Http\Controllers\Admin\ImpersonationController::impersonate
+* @see app/Http/Controllers/Admin/ImpersonationController.php:21
+* @route '/app/admin/users/{user}/impersonate'
+*/
+export const impersonate = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: impersonate.url(args, options),
+    method: 'post',
+})
+
+impersonate.definition = {
+    methods: ["post"],
+    url: '/app/admin/users/{user}/impersonate',
+} satisfies RouteDefinition<["post"]>
+
+/**
+* @see \App\Http\Controllers\Admin\ImpersonationController::impersonate
+* @see app/Http/Controllers/Admin/ImpersonationController.php:21
+* @route '/app/admin/users/{user}/impersonate'
+*/
+impersonate.url = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
+    if (typeof args === 'string' || typeof args === 'number') {
+        args = { user: args }
+    }
+
+    if (typeof args === 'object' && !Array.isArray(args) && 'id' in args) {
+        args = { user: args.id }
+    }
+
+    if (Array.isArray(args)) {
+        args = {
+            user: args[0],
+        }
+    }
+
+    args = applyUrlDefaults(args)
+
+    const parsedArgs = {
+        user: typeof args.user === 'object'
+        ? args.user.id
+        : args.user,
+    }
+
+    return impersonate.definition.url
+            .replace('{user}', parsedArgs.user.toString())
+            .replace(/\/+$/, '') + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\Admin\ImpersonationController::impersonate
+* @see app/Http/Controllers/Admin/ImpersonationController.php:21
+* @route '/app/admin/users/{user}/impersonate'
+*/
+impersonate.post = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: impersonate.url(args, options),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\Admin\ImpersonationController::impersonate
+* @see app/Http/Controllers/Admin/ImpersonationController.php:21
+* @route '/app/admin/users/{user}/impersonate'
+*/
+const impersonateForm = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: impersonate.url(args, options),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\Admin\ImpersonationController::impersonate
+* @see app/Http/Controllers/Admin/ImpersonationController.php:21
+* @route '/app/admin/users/{user}/impersonate'
+*/
+impersonateForm.post = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: impersonate.url(args, options),
+    method: 'post',
+})
+
+impersonate.form = impersonateForm
+
+/**
 * @see \App\Http\Controllers\Admin\UserController::signOut
 * @see app/Http/Controllers/Admin/UserController.php:135
 * @route '/app/admin/users/{user}/sign-out'
@@ -589,6 +669,7 @@ const users = {
     store: Object.assign(store, store),
     edit: Object.assign(edit, edit),
     update: Object.assign(update, update),
+    impersonate: Object.assign(impersonate, impersonate),
     signOut: Object.assign(signOut, signOut),
     twoFactor: Object.assign(twoFactor, twoFactor),
     destroy: Object.assign(destroy, destroy),

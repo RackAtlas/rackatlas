@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\BlockDemoChanges;
+use App\Http\Middleware\BlockWhileImpersonating;
 use App\Http\Middleware\EnsureApiScope;
 use App\Http\Middleware\EnsureTeamPermission;
 use App\Http\Middleware\HandleAppearance;
@@ -36,6 +37,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'api.scope' => EnsureApiScope::class,
             'permission' => EnsureTeamPermission::class,
+            'not.impersonating' => BlockWhileImpersonating::class,
         ]);
 
         $middleware->append(SecurityHeaders::class);
