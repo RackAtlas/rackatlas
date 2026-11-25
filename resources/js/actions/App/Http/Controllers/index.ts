@@ -20,6 +20,7 @@ import FirewallController from './FirewallController'
 import FileManagerController from './FileManagerController'
 import CronController from './CronController'
 import UpdateController from './UpdateController'
+import ServerUserController from './ServerUserController'
 import MetricsController from './MetricsController'
 import MetricsProcessesController from './MetricsProcessesController'
 import NetworkController from './NetworkController'
@@ -50,6 +51,7 @@ const Controllers = {
     FileManagerController: Object.assign(FileManagerController, FileManagerController),
     CronController: Object.assign(CronController, CronController),
     UpdateController: Object.assign(UpdateController, UpdateController),
+    ServerUserController: Object.assign(ServerUserController, ServerUserController),
     MetricsController: Object.assign(MetricsController, MetricsController),
     MetricsProcessesController: Object.assign(MetricsProcessesController, MetricsProcessesController),
     NetworkController: Object.assign(NetworkController, NetworkController),

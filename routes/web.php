@@ -33,6 +33,7 @@ use App\Http\Controllers\Servers\ServerCategoryController;
 use App\Http\Controllers\Servers\ServerController;
 use App\Http\Controllers\Servers\SshKeyController;
 use App\Http\Controllers\Servers\TestConnectionController;
+use App\Http\Controllers\ServerUserController;
 use App\Http\Controllers\Settings\LanguageController;
 use App\Http\Controllers\Settings\WidgetTokenController;
 use App\Http\Controllers\Terminal\TerminalController;
@@ -197,6 +198,24 @@ Route::prefix('app')->middleware(['auth', 'verified'])->group(function () {
             Route::post('start', [UpdateController::class, 'start'])->name('start');
             Route::put('hold', [UpdateController::class, 'hold'])->name('hold');
             Route::post('reboot', [UpdateController::class, 'reboot'])->name('reboot');
+        });
+    });
+
+    Route::get('server-users', [ServerUserController::class, 'index'])->middleware('permission:server_users.view')->name('server-users.index');
+    Route::prefix('server-users/{server}')->whereNumber('server')->name('server-users.')->group(function () {
+        Route::post('/', [ServerUserController::class, 'show'])->middleware('throttle:60,1')->name('show');
+        Route::middleware('throttle:30,1')->group(function () {
+            Route::post('users', [ServerUserController::class, 'store'])->name('store');
+            Route::put('users/{user}', [ServerUserController::class, 'update'])->name('update');
+            Route::delete('users/{user}', [ServerUserController::class, 'destroy'])->name('destroy');
+            Route::put('users/{user}/enabled', [ServerUserController::class, 'enabled'])->name('enabled');
+            Route::put('users/{user}/password', [ServerUserController::class, 'password'])->name('password');
+            Route::post('users/{user}/keys', [ServerUserController::class, 'storeKey'])->name('keys.store');
+            Route::delete('users/{user}/keys', [ServerUserController::class, 'destroyKey'])->name('keys.destroy');
+            Route::post('groups', [ServerUserController::class, 'storeGroup'])->name('groups.store');
+            Route::delete('groups/{group}', [ServerUserController::class, 'destroyGroup'])->name('groups.destroy');
+            Route::post('sessions/end', [ServerUserController::class, 'endSession'])->name('sessions.end');
+            Route::put('sshd', [ServerUserController::class, 'sshd'])->name('sshd');
         });
     });
 

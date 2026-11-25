@@ -20,6 +20,7 @@ import {
     Shield,
     ShieldCheck,
     SquareTerminal,
+    UserCog,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { useState } from 'react';
@@ -50,6 +51,7 @@ import { edit as editProfile } from '@/routes/profile';
 import { index as serversIndex } from '@/routes/servers';
 import { index as sshKeysIndex } from '@/routes/ssh-keys';
 import { index as updatesIndex } from '@/routes/updates';
+import { index as serverUsersIndex } from '@/routes/server-users';
 import type { Auth, NavItem } from '@/types';
 
 type Tab = NavItem & { icon: LucideIcon; exact?: boolean };
@@ -104,6 +106,12 @@ const moreItems: Tab[] = [
         permission: 'updates.view',
         href: updatesIndex(),
         icon: PackageCheck,
+    },
+    {
+        title: 'Server users',
+        permission: 'server_users.view',
+        href: serverUsersIndex(),
+        icon: UserCog,
     },
     {
         title: 'Backups',

@@ -24,6 +24,7 @@ enum TeamPermission: string
     case Files = 'files';
     case Cron = 'cron';
     case Updates = 'updates';
+    case ServerUsers = 'server_users';
 
     /**
      * The levels that make sense for the permission. Some are a switch: allowed or not.

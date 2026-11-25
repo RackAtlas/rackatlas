@@ -69,6 +69,10 @@ const labels: Record<string, { title: string; hint: string }> = {
         title: 'Updates',
         hint: 'Package updates; Edit installs them and restarts the server',
     },
+    server_users: {
+        title: 'Server users',
+        hint: 'Linux users, SSH keys and logins; Edit creates, changes and deletes users',
+    },
     database_kill: {
         title: 'Kill MySQL processes',
         hint: 'Stop running queries, nothing else can be changed',

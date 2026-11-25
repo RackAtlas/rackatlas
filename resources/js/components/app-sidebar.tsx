@@ -16,6 +16,7 @@ import {
     ScrollText,
     ShieldCheck,
     SquareTerminal,
+    UserCog,
 } from 'lucide-react';
 import { AndroidAppCard } from '@/components/android-app-card';
 import AppLogo from '@/components/app-logo';
@@ -45,6 +46,7 @@ import { index as networkIndex } from '@/routes/network';
 import { index as redisIndex } from '@/routes/redis';
 import { index as sshKeysIndex } from '@/routes/ssh-keys';
 import { index as updatesIndex } from '@/routes/updates';
+import { index as serverUsersIndex } from '@/routes/server-users';
 import { usePermissions } from '@/hooks/use-permissions';
 import type { NavItem } from '@/types';
 
@@ -89,6 +91,12 @@ const serverNavItems: NavItem[] = [
         permission: 'updates.view',
         href: updatesIndex(),
         icon: PackageCheck,
+    },
+    {
+        title: 'Server users',
+        permission: 'server_users.view',
+        href: serverUsersIndex(),
+        icon: UserCog,
     },
 ];
 
