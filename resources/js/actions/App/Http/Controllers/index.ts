@@ -16,6 +16,10 @@ import RedisController from './RedisController'
 import Terminal from './Terminal'
 import ApplicationController from './ApplicationController'
 import DockerController from './DockerController'
+import FirewallController from './FirewallController'
+import FileManagerController from './FileManagerController'
+import CronController from './CronController'
+import UpdateController from './UpdateController'
 import MetricsController from './MetricsController'
 import MetricsProcessesController from './MetricsProcessesController'
 import NetworkController from './NetworkController'
@@ -42,6 +46,10 @@ const Controllers = {
     Terminal: Object.assign(Terminal, Terminal),
     ApplicationController: Object.assign(ApplicationController, ApplicationController),
     DockerController: Object.assign(DockerController, DockerController),
+    FirewallController: Object.assign(FirewallController, FirewallController),
+    FileManagerController: Object.assign(FileManagerController, FileManagerController),
+    CronController: Object.assign(CronController, CronController),
+    UpdateController: Object.assign(UpdateController, UpdateController),
     MetricsController: Object.assign(MetricsController, MetricsController),
     MetricsProcessesController: Object.assign(MetricsProcessesController, MetricsProcessesController),
     NetworkController: Object.assign(NetworkController, NetworkController),

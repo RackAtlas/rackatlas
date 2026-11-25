@@ -44,6 +44,9 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->encryptCookies(except: ['appearance', 'sidebar_state']);
 
+        // A file saved from the file manager keeps its exact bytes: leading spaces and the final newline matter.
+        $middleware->trimStrings(except: [fn (Request $request) => $request->is('app/files/*/save')]);
+
         // The biometric device must be signed in before the auth middleware looks for a user.
         $middleware->prependToPriorityList(before: AuthenticatesRequests::class, prepend: SignInBiometricDevice::class);
 

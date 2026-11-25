@@ -53,6 +53,22 @@ const labels: Record<string, { title: string; hint: string }> = {
         title: 'Documentation',
         hint: 'Write and change the documentation of servers and services',
     },
+    firewall: {
+        title: 'Firewall',
+        hint: 'Firewall rules and fail2ban; Edit changes rules and bans addresses',
+    },
+    files: {
+        title: 'Files',
+        hint: 'Browse and read the files of the servers; Edit changes, uploads and deletes them',
+    },
+    cron: {
+        title: 'Cron and timers',
+        hint: 'Scheduled jobs and systemd timers; Edit adds, changes and runs them',
+    },
+    updates: {
+        title: 'Updates',
+        hint: 'Package updates; Edit installs them and restarts the server',
+    },
     database_kill: {
         title: 'Kill MySQL processes',
         hint: 'Stop running queries, nothing else can be changed',

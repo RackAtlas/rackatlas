@@ -10,6 +10,7 @@ use App\Http\Controllers\AppFeedbackController;
 use App\Http\Controllers\ApplicationController;
 use App\Http\Controllers\BackupController;
 use App\Http\Controllers\CrawlerController;
+use App\Http\Controllers\CronController;
 use App\Http\Controllers\CurrentTeamController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DatabaseController;
@@ -18,6 +19,8 @@ use App\Http\Controllers\DemoController;
 use App\Http\Controllers\DockerController;
 use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\FeedbackController;
+use App\Http\Controllers\FileManagerController;
+use App\Http\Controllers\FirewallController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\MetricsController;
 use App\Http\Controllers\MetricsProcessesController;
@@ -35,6 +38,7 @@ use App\Http\Controllers\Settings\WidgetTokenController;
 use App\Http\Controllers\Terminal\TerminalController;
 use App\Http\Controllers\Terminal\TerminalSessionController;
 use App\Http\Controllers\Terminal\TerminalSnippetController;
+use App\Http\Controllers\UpdateController;
 use Illuminate\Routing\RedirectController;
 use Illuminate\Support\Facades\Route;
 
@@ -129,6 +133,72 @@ Route::prefix('app')->middleware(['auth', 'verified'])->group(function () {
         ->whereIn('action', ['start', 'stop', 'restart'])
         ->middleware('throttle:30,1')
         ->name('docker.containers.act');
+
+    Route::get('firewall', [FirewallController::class, 'index'])->middleware('permission:firewall.view')->name('firewall.index');
+    Route::prefix('firewall/{server}')->whereNumber('server')->name('firewall.')->group(function () {
+        Route::post('/', [FirewallController::class, 'show'])->middleware('throttle:60,1')->name('show');
+        Route::middleware('throttle:30,1')->group(function () {
+            Route::post('rules', [FirewallController::class, 'storeRule'])->name('rules.store');
+            Route::delete('rules', [FirewallController::class, 'destroyRule'])->name('rules.destroy');
+            Route::put('enabled', [FirewallController::class, 'toggle'])->name('toggle');
+            Route::put('defaults', [FirewallController::class, 'defaults'])->name('defaults');
+            Route::put('logging', [FirewallController::class, 'logging'])->name('logging');
+            Route::post('reload', [FirewallController::class, 'reload'])->name('reload');
+            Route::post('confirm', [FirewallController::class, 'confirm'])->name('confirm');
+            Route::post('rollback', [FirewallController::class, 'rollback'])->name('rollback');
+            Route::post('fail2ban', [FirewallController::class, 'fail2ban'])->name('fail2ban');
+        });
+    });
+
+    Route::get('files', [FileManagerController::class, 'index'])->middleware('permission:files.view')->name('files.index');
+    Route::prefix('files/{server}')->whereNumber('server')->name('files.')->group(function () {
+        Route::middleware('throttle:120,1')->group(function () {
+            Route::post('list', [FileManagerController::class, 'list'])->name('list');
+            Route::post('read', [FileManagerController::class, 'read'])->name('read');
+            Route::post('size', [FileManagerController::class, 'size'])->name('size');
+        });
+        Route::middleware('throttle:30,1')->group(function () {
+            Route::post('search', [FileManagerController::class, 'search'])->name('search');
+            Route::post('validate', [FileManagerController::class, 'validateConfig'])->name('validate');
+            Route::post('download', [FileManagerController::class, 'download'])->name('download');
+        });
+        Route::middleware('throttle:60,1')->group(function () {
+            Route::put('save', [FileManagerController::class, 'save'])->name('save');
+            Route::post('create', [FileManagerController::class, 'create'])->name('create');
+            Route::post('move', [FileManagerController::class, 'move'])->name('move');
+            Route::delete('/', [FileManagerController::class, 'destroy'])->name('destroy');
+            Route::put('permissions', [FileManagerController::class, 'permissions'])->name('permissions');
+            Route::post('compress', [FileManagerController::class, 'compress'])->name('compress');
+            Route::post('extract', [FileManagerController::class, 'extract'])->name('extract');
+            Route::post('upload', [FileManagerController::class, 'upload'])->name('upload');
+        });
+    });
+
+    Route::get('cron', [CronController::class, 'index'])->middleware('permission:cron.view')->name('cron.index');
+    Route::post('cron/preview', [CronController::class, 'preview'])->middleware(['throttle:120,1', 'permission:cron.view'])->name('cron.preview');
+    Route::prefix('cron/{server}')->whereNumber('server')->name('cron.')->group(function () {
+        Route::post('/', [CronController::class, 'show'])->middleware('throttle:60,1')->name('show');
+        Route::post('journal', [CronController::class, 'journal'])->middleware('throttle:60,1')->name('journal');
+        Route::middleware('throttle:30,1')->group(function () {
+            Route::post('jobs', [CronController::class, 'store'])->name('jobs.store');
+            Route::put('jobs', [CronController::class, 'update'])->name('jobs.update');
+            Route::put('jobs/enabled', [CronController::class, 'toggle'])->name('jobs.toggle');
+            Route::delete('jobs', [CronController::class, 'destroy'])->name('jobs.destroy');
+            Route::post('jobs/run', [CronController::class, 'run'])->name('jobs.run');
+            Route::post('timers/{action}', [CronController::class, 'timer'])->whereIn('action', ['run', 'start', 'stop', 'enable', 'disable'])->name('timers.act');
+        });
+    });
+
+    Route::get('updates', [UpdateController::class, 'index'])->middleware('permission:updates.view')->name('updates.index');
+    Route::prefix('updates/{server}')->whereNumber('server')->name('updates.')->group(function () {
+        Route::post('/', [UpdateController::class, 'show'])->middleware('throttle:60,1')->name('show');
+        Route::post('job', [UpdateController::class, 'job'])->middleware('throttle:120,1')->name('job');
+        Route::middleware('throttle:20,1')->group(function () {
+            Route::post('start', [UpdateController::class, 'start'])->name('start');
+            Route::put('hold', [UpdateController::class, 'hold'])->name('hold');
+            Route::post('reboot', [UpdateController::class, 'reboot'])->name('reboot');
+        });
+    });
 
     Route::get('metrics', [MetricsController::class, 'index'])->middleware('permission:metrics.view')->name('metrics.index');
     Route::get('metrics/processes', MetricsProcessesController::class)

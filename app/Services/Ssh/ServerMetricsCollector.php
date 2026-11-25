@@ -11,6 +11,7 @@ use App\Models\Server;
 use App\Models\ServerMetric;
 use Illuminate\Support\Facades\DB;
 use phpseclib4\Crypt\PublicKeyLoader;
+use phpseclib4\Net\SFTP;
 use phpseclib4\Net\SSH2;
 use Throwable;
 
@@ -71,10 +72,33 @@ class ServerMetricsCollector
      */
     public function connect(Server $server): SSH2
     {
+        return $this->open($server, SSH2::class);
+    }
+
+    /**
+     * The same login as connect(), but as an SFTP session for moving files.
+     *
+     * @throws MetricsCollectionException
+     */
+    public function connectSftp(Server $server): SFTP
+    {
+        return $this->open($server, SFTP::class);
+    }
+
+    /**
+     * @template TConnection of SSH2
+     *
+     * @param  class-string<TConnection>  $class
+     * @return TConnection
+     *
+     * @throws MetricsCollectionException
+     */
+    private function open(Server $server, string $class): SSH2
+    {
         $credential = $this->credential($server);
 
         try {
-            $ssh = new SSH2(PublicHost::resolve($server->host), $server->port, self::CONNECT_TIMEOUT);
+            $ssh = new $class(PublicHost::resolve($server->host), $server->port, self::CONNECT_TIMEOUT);
             $ssh->setTimeout(self::COMMAND_TIMEOUT);
 
             $fingerprint = HostKeyVerifier::fingerprint($ssh);

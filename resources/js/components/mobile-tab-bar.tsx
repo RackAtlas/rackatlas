@@ -2,19 +2,23 @@ import { Link, router, usePage } from '@inertiajs/react';
 import {
     Activity,
     BookOpen,
+    CalendarClock,
     ChevronUp,
     Container,
     Database,
     DatabaseBackup,
+    FolderTree,
     KeyRound,
     Layers,
     LayoutGrid,
     LogOut,
     MemoryStick,
+    PackageCheck,
     ScrollText,
     Server,
     Settings,
     Shield,
+    ShieldCheck,
     SquareTerminal,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
@@ -33,15 +37,19 @@ import { dashboard, logout, terminal } from '@/routes';
 import { index as adminIndex } from '@/routes/admin';
 import { index as applicationsIndex } from '@/routes/applications';
 import { index as backupsIndex } from '@/routes/backups';
+import { index as cronIndex } from '@/routes/cron';
 import { index as databasesIndex } from '@/routes/databases';
 import { index as dockerIndex } from '@/routes/docker';
 import { index as documentsIndex } from '@/routes/documents';
+import { index as filesIndex } from '@/routes/files';
+import { index as firewallIndex } from '@/routes/firewall';
 import { index as logsIndex } from '@/routes/logs';
 import { index as metricsIndex } from '@/routes/metrics';
 import { index as redisIndex } from '@/routes/redis';
 import { edit as editProfile } from '@/routes/profile';
 import { index as serversIndex } from '@/routes/servers';
 import { index as sshKeysIndex } from '@/routes/ssh-keys';
+import { index as updatesIndex } from '@/routes/updates';
 import type { Auth, NavItem } from '@/types';
 
 type Tab = NavItem & { icon: LucideIcon; exact?: boolean };
@@ -72,6 +80,30 @@ const moreItems: Tab[] = [
         permission: 'docker.view',
         href: dockerIndex(),
         icon: Container,
+    },
+    {
+        title: 'Files',
+        permission: 'files.view',
+        href: filesIndex(),
+        icon: FolderTree,
+    },
+    {
+        title: 'Firewall',
+        permission: 'firewall.view',
+        href: firewallIndex(),
+        icon: ShieldCheck,
+    },
+    {
+        title: 'Cron and timers',
+        permission: 'cron.view',
+        href: cronIndex(),
+        icon: CalendarClock,
+    },
+    {
+        title: 'Updates',
+        permission: 'updates.view',
+        href: updatesIndex(),
+        icon: PackageCheck,
     },
     {
         title: 'Backups',

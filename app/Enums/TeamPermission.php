@@ -20,6 +20,10 @@ enum TeamPermission: string
     case DatabaseKill = 'database_kill';
     case Redis = 'redis';
     case Docs = 'docs';
+    case Firewall = 'firewall';
+    case Files = 'files';
+    case Cron = 'cron';
+    case Updates = 'updates';
 
     /**
      * The levels that make sense for the permission. Some are a switch: allowed or not.
@@ -36,11 +40,12 @@ enum TeamPermission: string
 
     /**
      * What a member can do when nothing is set: look at everything, change and run nothing.
+     * The files of a server hold secrets (.env, keys), so they stay closed until someone opens them.
      */
     public function defaultLevel(): PermissionLevel
     {
         return match ($this) {
-            self::Terminal, self::DatabaseKill => PermissionLevel::None,
+            self::Terminal, self::DatabaseKill, self::Files => PermissionLevel::None,
             default => PermissionLevel::View,
         };
     }
